@@ -1,6 +1,6 @@
 # Little Mind Gym
 
-Eight classic reasoning puzzles for an eight-year-old, in one small React app.
+Classic reasoning puzzles for an eight-year-old, in one small React app.
 No timers, no luck, no twitch — every puzzle can be reasoned all the way to the
 answer, and every one takes a few minutes.
 
@@ -22,11 +22,10 @@ npm run build
 | `/random_instantly` | The same pick, opened straight away and already immersed. Unlisted — nothing in the app links to it. |
 | `/settings`    | Three settings, kept on this device. Reached from the navbar.        |
 
-The front page is a title page and then the collection: eight cards, two
-columns of them, each with the puzzle's picture, its name, one line about it,
-and — once there is something to say — how far the player has got with it. All
-eight are on the screen at once, so the choice is made by looking. Nothing on
-the page moves.
+The front page is a title page and then the collection: two columns of cards,
+each with the puzzle's picture, its name, one line about it, and — once there
+is something to say — how far the player has got with it. The choice is made
+by looking rather than by scrolling. Nothing on the page moves.
 
 `/random` leans towards puzzles that have not been played yet, opens the first
 level the player has not finished, and never hands back the puzzle they just

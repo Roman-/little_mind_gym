@@ -196,12 +196,12 @@ board says it too, and the confetti is skipped outright, on
 cue's timer, either — it stands until the mistake it names is off the board.
 
 **Nothing moves until somebody asks it to.** The front page carried a
-carousel of the eight puzzles for a while, and it was the one thing here that
-moved on its own: a picture and a name at a time, for a child who cannot yet
-read a list. It was paying for its movement with a card that could slide out
-from under a finger already reaching for Start, and it was paying for a
-picture the collection under it was already showing — all eight of them, at
-once, and each one big enough to name across a table. A page that shows
+carousel of the puzzles for a while, and it was the one thing here that moved
+on its own: a picture and a name at a time, for a child who cannot yet read a
+list. It was paying for its movement with a card that could slide out from
+under a finger already reaching for Start, and it was paying for a picture the
+collection under it was already showing — every puzzle at once, and each one
+big enough to name across a table. A page that shows
 everything it has does not need to take turns. Motion a child did not ask for
 has to beat that, and only two things ever have: a mistake the board points
 at, and a level solved.

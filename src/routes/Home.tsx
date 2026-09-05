@@ -12,7 +12,7 @@ import s from './home.module.css'
 type Filter = 'all' | 'unsolved' | 'new'
 
 const FILTERS: { id: Filter; label: string }[] = [
-  { id: 'all', label: 'All eight' },
+  { id: 'all', label: 'All of them' },
   { id: 'unsolved', label: 'Still going' },
   { id: 'new', label: 'Not started' },
 ]
@@ -26,8 +26,8 @@ function keep(filter: Filter, status: Status): boolean {
 /**
  * One puzzle, as a card standing on the desk.
  *
- * The picture holds the same corner of every card, so the eight of them make
- * two columns of pictures a child can read down before they can read a name.
+ * The picture holds the same corner of every card, so the cards make two
+ * columns of pictures a child can read down before they can read a name.
  */
 function PuzzleCard({ meta, status }: { meta: PuzzleMeta; status: Status }) {
   const { Icon } = meta
@@ -37,7 +37,7 @@ function PuzzleCard({ meta, status }: { meta: PuzzleMeta; status: Status }) {
         <span className={s.plate}>
           <Icon />
         </span>
-        {/* Eight cards each stamped "Not tried" is eight repetitions of nothing.
+        {/* A wall of cards each stamped "Not tried" is a repetition of nothing.
             A card says something about itself only once there is something to say. */}
         {status !== 'new' && (
           <span className={`u-label ${s.status}`} data-state={status}>
@@ -67,10 +67,10 @@ export function Home() {
   return (
     <>
       {/* A title page: the words sit on the desk rather than on a sheet of
-          their own, so the only things standing on it are the eight puzzles. */}
+          their own, so the only things standing on it are the puzzles. */}
       <div className={s.masthead}>
         <div>
-          <h1 className={s.headline}>Eight puzzles you can work out.</h1>
+          <h1 className={s.headline}>Puzzles you can work out.</h1>
           <p className={s.lede}>
             You can work every one out by thinking. None of them need quick fingers.
           </p>

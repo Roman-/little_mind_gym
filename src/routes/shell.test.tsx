@@ -127,16 +127,16 @@ describe('the collection page', () => {
         `/puzzle/${puzzle.id}`,
       )
     }
-    // A card carries a status word only once it has one to carry. Eight cards
-    // stamped "Not tried" is eight repetitions of nothing.
+    // A card carries a status word only once it has one to carry. A wall of
+    // cards each stamped "Not tried" is a repetition of nothing.
     expect(screen.queryByText('Not tried')).not.toBeInTheDocument()
   })
 
   it('shows every puzzle once, and only in the collection', () => {
     open('/')
-    // The page used to open with a carousel that carried the same eight
-    // pictures and names past one at a time, above the list that already had
-    // them. One puzzle, one place on the page.
+    // The page used to open with a carousel that carried the same pictures
+    // and names past one at a time, above the list that already had them.
+    // One puzzle, one place on the page.
     for (const puzzle of PUZZLES) {
       expect(screen.getAllByRole('link', { name: new RegExp(puzzle.title, 'i') })).toHaveLength(1)
     }

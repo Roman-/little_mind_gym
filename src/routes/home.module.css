@@ -1,6 +1,6 @@
 /* The front page is a title page and then the collection. Nothing under the
-   words at the top: they sit on the desk, and the eight cards are the only
-   things standing on it. */
+   words at the top: they sit on the desk, and the cards are the only things
+   standing on it. */
 .masthead {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -10,12 +10,11 @@
   border-bottom: var(--hair) solid var(--desk-edge);
 }
 
-/* Wide enough for "Eight puzzles you" and then the rest: a display line that
-   breaks once reads as a title, and one that breaks at every word reads as an
-   accident. */
+/* No width of its own: the column it sits in is already narrower than the
+   page, and `text-wrap: balance` breaks it evenly when the column runs out.
+   A display line that breaks at every word reads as an accident. */
 .headline {
   font-size: var(--t-display);
-  max-width: 20ch;
 }
 
 .lede {
@@ -63,15 +62,18 @@
   color: var(--p-on-dark);
 }
 
-/* Two columns, so all eight are on the screen at once and the choice is made
-   by looking rather than by scrolling. Eight divides by two; a third column
-   would leave a hole in the last row. */
+/* As many columns as fit a card 22rem wide, which is two on a laptop and one
+   on a phone. The rule is the card's width rather than the collection's size,
+   so a ninth puzzle changes nothing here: a name and one line about it need
+   that much room, and a third column would take it away. */
 .grid {
   list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* min() so the track can go under 22rem on a narrow phone rather than
+     pushing the page sideways. */
+  grid-template-columns: repeat(auto-fill, minmax(min(22rem, 100%), 1fr));
   gap: var(--s4);
 }
 
@@ -160,20 +162,14 @@
   color: var(--ink-muted);
 }
 
-/* One column, and the button drops under the words it belongs to rather than
-   squeezing the headline into a stack of single words. */
+/* Too narrow to stand a button beside the words, so it drops under them and
+   the cards give a little of their padding back. */
 @media (max-width: 46rem) {
   .masthead {
     grid-template-columns: 1fr;
     justify-items: start;
     gap: var(--s4);
     padding-bottom: var(--s5);
-  }
-  .headline {
-    max-width: none;
-  }
-  .grid {
-    grid-template-columns: 1fr;
   }
   .card {
     padding: var(--s4);
