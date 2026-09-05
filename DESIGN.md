@@ -184,6 +184,18 @@ board says it too, and the confetti is skipped outright, on
 `usePrefersReducedMotion`. A sentence that answers a cue is never put on the
 cue's timer, either — it stands until the mistake it names is off the board.
 
+**The carousel in the hero moves without being asked, and it is the only
+thing here that does.** It carries the eight puzzles past one at a time, a
+picture and a name each, so a child who cannot yet read the list below still
+sees a boat, a frog and a pair of scales go by. It buys that by handing the
+movement straight back. A touch stops it for good, either arrow stops it for
+good, keyboard focus reaching Start stops it for good, and a pointer resting
+on it pauses it meanwhile; under reduced motion it never starts at all, and
+the arrows are then the only way through. A card that slid out from under a
+finger already reaching for Start would be worse than no carousel. What moves
+is content rather than decoration, and it is never the only way to any of it:
+every puzzle it shows is also a row in the collection underneath.
+
 There is no animation library, and that is a decision rather than an omission.
 All of the above is four sets of keyframes and one small hook, and what a
 library is good at — interruptible physics, gestures, layout transitions — is
@@ -300,9 +312,10 @@ Do not add: gradients, glassmorphism, neon, drop shadows with blur,
 rounded-pill buttons, more than one accent colour on a screen, or a second
 display typeface. Nothing bounces, pulses or sparkles to fill a wait, to pull
 the eye towards a control, or to dress up a screen that was doing fine without
-it. The two exceptions are named under **Motion** above and are the whole
-list: a cue on a mistake the board has to point at, and the confetti on a
-solve.
+it. The three exceptions are named under **Motion** above and are the whole
+list: a cue on a mistake the board has to point at, the confetti on a solve,
+and the carousel in the hero, which carries content rather than decoration and
+stops the moment it is touched.
 
 Do not put an emoji in a *sentence*: a picture is a pictogram on a plate,
 never a character in running text a screen reader has to read out. Do not
