@@ -231,7 +231,14 @@
 /* In the boat the pieces stand a little smaller and drop both their names and
    their plates — there is no room on a hull for a caption, and a passenger
    standing on a white tile reads as a box in the boat rather than as somebody
-   in it. */
+   in it.
+
+   The arrival below is an animation on the button, and so is the red flash a
+   dead end puts round a blamed piece: one element runs one animation, so the
+   two must never land together. They cannot. A dead end is read off the banks,
+   and a crossing empties the boat — the one piece still aboard when the board
+   locks is the pilot, and the only pilot in the collection is the farmer, who
+   is the guardian every pair rule steps around. */
 .piece[data-aboard='true'] {
   --tile: var(--seat);
   animation: aboard var(--dur-2) var(--ease-out);

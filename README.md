@@ -20,7 +20,7 @@ npm run build
 | `/puzzle/:id`  | One puzzle. `?level=<level-id>` opens a particular level.            |
 | `/random`      | **Picks a puzzle at random and opens it.** `/surprise` does the same. |
 | `/random_instantly` | The same pick, opened straight away and already immersed. Unlisted — nothing in the app links to it. |
-| `/settings`    | Three settings, kept on this device. Reached from the navbar.        |
+| `/settings`    | Four settings, kept on this device. Reached from the navbar.         |
 
 The front page is a title page and then the collection: two columns of cards,
 each with the puzzle's picture, its name, one line about it, and — once there
@@ -90,13 +90,22 @@ rules forbid.
 
 **Immerse gives the whole window to the board.** The button is in the navbar
 on a puzzle page. It asks the browser for the screen and takes away the navbar,
-the title-and-levels row and the How to play drawer, leaving the board, the
-move tape and the controls a child plays with — and the stage grows into the
-room all three gave back. Fullscreen is the source of truth: Escape, F11 and
-the browser's own control all bring the page back, because the mode watches
-`fullscreenchange` rather than remembering what it asked for. Where a browser
-will not give the screen at all, the page goes quiet anyway and **Leave
-immerse** under the board is still the way out.
+the title-and-levels row, the How to play drawer and the footer under it,
+leaving the board, the move tape and the controls a child plays with — and the
+stage grows into the room all four gave back. Fullscreen is the source of
+truth: Escape, F11 and the browser's own control all bring the page back,
+because the mode watches `fullscreenchange` rather than remembering what it
+asked for. Where a browser will not give the screen at all, the page goes quiet
+anyway and **Leave immerse** under the board is still the way out.
+
+**Paper falls on a solve, if it was asked for.** **Throw confetti** in the
+settings is the one choice that ships off: a level coming out is already said
+by the stamp, the move count and the three notes, so the paper is a thing to
+turn on rather than a thing to turn off. Turned on, a level solved gets
+`--dur-6` of it — four cuts of paper in the six enamel colours, each piece
+falling, swinging and turning at a rate of its own. It is fixed over the page,
+takes no taps and holds nothing focusable, and a reader who has asked for less
+motion gets none of it.
 
 **The app makes a small wooden sound when it is touched.** A click under every
 control, a knock when a piece goes down, two lower knocks when a rule says no,

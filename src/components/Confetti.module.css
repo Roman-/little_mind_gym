@@ -1,6 +1,12 @@
 /* The one place in the app where colour is decoration rather than state, and
-   the only motion longer than half a second. Both are deliberate: a level
-   solved is worth a second of paper. */
+   the only motion longer than half a second. Both are deliberate, and both are
+   asked for: the paper falls only where **Throw confetti** has been turned on.
+
+   Three nested elements, because one element runs one transform. The lane
+   falls, the swing inside it wanders from side to side, and the paper inside
+   that turns about a tilted axis under a perspective, so it goes edge-on and
+   all but disappears twice a turn. A rectangle spinning flat is a wheel; a
+   rectangle turning about a tilt is a piece of paper. */
 
 .confetti {
   position: fixed;
@@ -12,53 +18,97 @@
   z-index: 20;
 }
 
+/* The lane: straight down, at this piece's own rate, after this piece's own
+   wait. --speed and --delay are fractions of --dur-6 and never come to more
+   than one between them, so the whole burst is over by the time the shell
+   unmounts it. */
 .bit {
   position: absolute;
-  top: -5vh;
+  top: -8vh;
   left: var(--x);
-  width: var(--s2);
-  height: var(--s3);
-  border-radius: 1px;
-  background: var(--tint);
-  /* Each piece falls at its own rate, so a burst scatters instead of raining
-     in one line. --speed is a fraction of --dur-5, never more, so the whole
-     burst is over by the time the shell unmounts it. */
-  animation: fall calc(var(--dur-5) * var(--speed)) var(--ease) both;
+  display: block;
+  animation: fall calc(var(--dur-6) * var(--speed)) linear calc(var(--dur-6) * var(--delay)) both;
 }
 
-/* The enamel piece palette — the one palette in the app that is not a signal. */
-.bit:nth-child(6n + 1) {
-  --tint: var(--p-ochre);
-}
-.bit:nth-child(6n + 2) {
-  --tint: var(--p-moss);
-}
-.bit:nth-child(6n + 3) {
-  --tint: var(--p-indigo);
-}
-.bit:nth-child(6n + 4) {
-  --tint: var(--p-clay);
-}
-.bit:nth-child(6n + 5) {
-  --tint: var(--p-plum);
-}
-.bit:nth-child(6n) {
-  --tint: var(--p-teal);
-}
-
+/* Nothing lands: a piece is gone before it reaches the bottom of the window,
+   so the burst thins out rather than piling up along an edge. */
 @keyframes fall {
   from {
-    transform: translate3d(0, 0, 0) rotate(0deg);
+    transform: translate3d(0, 0, 0);
     opacity: 0;
   }
-  12% {
+  7% {
     opacity: 1;
   }
-  75% {
+  84% {
     opacity: 1;
   }
   to {
-    transform: translate3d(var(--drift), 105vh, 0) rotate(var(--spin));
+    transform: translate3d(0, 112vh, 0);
     opacity: 0;
   }
+}
+
+/* The wander. Paper does not fall down a line, and `alternate` is what keeps
+   the swing continuous rather than snapping back at the end of every run. The
+   same wait as the lane, so a piece is already swinging when it is let go. */
+.sway {
+  display: block;
+  perspective: 500px;
+  animation: sway var(--sway-ms) var(--ease) calc(var(--dur-6) * var(--delay)) infinite alternate
+    both;
+}
+
+@keyframes sway {
+  from {
+    transform: translateX(calc(var(--sway) * -0.5));
+  }
+  to {
+    transform: translateX(var(--sway));
+  }
+}
+
+/* The piece itself. --w and --h come from its shape; --size is how big this
+   one was cut. */
+.paper {
+  display: block;
+  width: calc(var(--w) * var(--size));
+  height: calc(var(--h) * var(--size));
+  background: var(--tint);
+  animation: tumble var(--spin-ms) linear calc(var(--dur-6) * var(--delay)) infinite both;
+}
+
+@keyframes tumble {
+  from {
+    transform: rotate3d(var(--ax), var(--ay), 0.2, 0deg);
+  }
+  to {
+    transform: rotate3d(var(--ax), var(--ay), 0.2, var(--turn));
+  }
+}
+
+/* Four cuts of paper. Sizes are spacing tokens, so the paper stays in scale
+   with everything else if the scale is ever retuned. */
+.paper[data-shape='strip'] {
+  --w: var(--s2);
+  --h: var(--s3);
+  border-radius: 1px;
+}
+
+.paper[data-shape='square'] {
+  --w: var(--s2);
+  --h: var(--s2);
+  border-radius: 2px;
+}
+
+.paper[data-shape='disc'] {
+  --w: var(--s2);
+  --h: var(--s2);
+  border-radius: var(--r-round);
+}
+
+.paper[data-shape='ribbon'] {
+  --w: var(--s1);
+  --h: var(--s4);
+  border-radius: var(--r-round);
 }

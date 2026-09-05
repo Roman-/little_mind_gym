@@ -6,7 +6,7 @@ import { useRefusal } from '../../lib/refusal'
 import type { BoardProps } from '../../lib/types'
 import type { FrogAction, FrogState, Seat } from './logic'
 import { colourOf, hopTarget, refusalOf } from './logic'
-import { EndArrow } from './glyphs'
+import { EndArrow, WayArrow } from './glyphs'
 import s from './board.module.css'
 
 interface Frog {
@@ -190,6 +190,12 @@ export function Board({ state, dispatch, locked }: BoardProps<FrogState, FrogAct
                         two say different halves of the same refusal. */}
                     <span className={cx(s.hop, refusal.shake(frog.key))} data-hop="">
                       <Pictogram name="frog" className={s.art} />
+                      {/* Which way this frog goes, on the frog. The labels at
+                          the ends say it for a colour; a child looking at one
+                          frog should not have to find its colour in a label
+                          first. It rides inside the hop, so it travels with
+                          the frog rather than staying behind on the stone. */}
+                      <WayArrow className={s.way} />
                     </span>
                   </button>
                 </div>

@@ -18,6 +18,11 @@ const OPTIONS: { key: SettingKey; name: string; what: string }[] = [
     what: 'A row of marks under the board, one for each move, with the count beside it. Tap a mark to go back to that moment.',
   },
   {
+    key: 'confetti',
+    name: 'Throw confetti',
+    what: 'When a level comes out, coloured paper tumbles down across the screen.',
+  },
+  {
     key: 'sound',
     name: 'Play sounds',
     what: 'Moves and taps make a small sound.',

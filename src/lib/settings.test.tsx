@@ -15,6 +15,7 @@ describe('the stored settings', () => {
     expect(DEFAULTS).toEqual({
       allowForbiddenMoves: true,
       showMoves: false,
+      confetti: false,
       sound: true,
     })
   })
@@ -33,8 +34,8 @@ describe('the stored settings', () => {
   })
 
   it('reads back the settings it was given', () => {
-    expect(settingsFrom(stored({ allowForbiddenMoves: false, showMoves: true, sound: false })))
-      .toEqual({ allowForbiddenMoves: false, showMoves: true, sound: false })
+    const every = { allowForbiddenMoves: false, showMoves: true, confetti: true, sound: false }
+    expect(settingsFrom(stored(every))).toEqual(every)
   })
 
   it('defaults a setting that is missing or is not a true or false', () => {
