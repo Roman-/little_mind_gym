@@ -3,8 +3,9 @@
   align-items: center;
   gap: var(--s3);
   flex-wrap: wrap;
-  /* The tape reads as one line beside the count, not as a labelled block
-     stacked above it: it is a record of what happened, not a control panel. */
+  /* Where the count is showing, the tape runs on the same line beside it
+     rather than under a heading of its own: the rail is a record of what
+     happened, not a control panel. Most of the time the rail is here alone. */
   min-width: 0;
 }
 

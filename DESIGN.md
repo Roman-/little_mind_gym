@@ -213,3 +213,10 @@ unlabelled row of pips standing in for a fact that a word beside it already
 states. If a mark cannot be decoded from the page it is on, it is decoration
 wearing the clothes of information — which is worse than an ornament, because
 it takes up the place where something useful could have gone.
+
+The move count is the most recent thing this rule took. The tape's rail stays,
+because every mark on it is a control that steps the board back to that moment
+rather than a pip standing in for a fact. The number beside it is off unless
+someone turns it on under Settings: a count climbing while the puzzle is open
+reads as a budget, and how many moves it took belongs in the solved notice,
+once there is a result to report.

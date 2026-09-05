@@ -4,6 +4,7 @@ import { useParams, useSearchParams } from 'react-router-dom'
 import { puzzleById } from '../puzzles'
 import { makeRng } from '../lib/rng'
 import { useProgress } from '../lib/progress'
+import { useSettings } from '../lib/settings'
 import { usePageTitle } from '../lib/title'
 import { useEphemeral } from '../lib/ephemeral'
 import { useCue } from '../lib/motion'
@@ -72,6 +73,7 @@ export function PuzzlePage() {
 
 function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
   const { get, markTried, markSolved } = useProgress()
+  const { settings } = useSettings()
   const record = get(meta.id)
   const [params, setParams] = useSearchParams()
 
@@ -322,7 +324,11 @@ function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
         )}
 
         <div className={s.toolbar}>
-          <MoveTape steps={history.slice(1).map((e) => e.note)} onRewind={rewind} />
+          <MoveTape
+            steps={history.slice(1).map((e) => e.note)}
+            onRewind={rewind}
+            showCount={settings.showMoveCount}
+          />
           <div className={s.tools}>
             {!noticeShowing && (
               <>
