@@ -128,6 +128,7 @@
    cut-out frog reads as a smudge. u-press still sinks it under the press. */
 
 .hop {
+  position: relative;
   display: grid;
   place-items: center;
   width: 74%;
@@ -137,6 +138,42 @@
 .art {
   width: 100%;
   height: 100%;
+}
+
+/* Which way this frog goes, worn by the frog.
+
+   A frog never turns round, and the two labels under the row say which way
+   each colour travels — but they say it about a colour, and a child looking at
+   one frog had to find that frog's colour in a label before the row meant
+   anything. The arrow is on the frog, so the answer is where the question is.
+
+   It is a mark, not a control: ink on bone with a hairline round it, which
+   reads on the grey of a stone and on the green or the blue of a frog, in
+   either theme. No press shadow — there is nothing here to press that the
+   frog is not already. */
+.way {
+  position: absolute;
+  left: 50%;
+  bottom: -9%;
+  transform: translateX(-50%);
+  width: 36%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-round);
+  background: var(--surface);
+  border: var(--hair) solid var(--ink);
+  color: var(--ink);
+}
+
+.way svg {
+  width: 76%;
+  height: 76%;
+}
+
+/* Drawn pointing left, which is the way the blue frogs go. */
+.frog[data-colour='green'] .way {
+  transform: translateX(-50%) scaleX(-1);
 }
 
 /* One set of artwork, two teams. 140 degrees turns OpenMoji's yellow-green

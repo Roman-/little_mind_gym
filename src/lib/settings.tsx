@@ -9,15 +9,24 @@ export interface Settings {
   allowForbiddenMoves: boolean
   /** Show the move tape — the rail of moves made, and their count — under the board. */
   showMoves: boolean
+  /** Throw paper across the screen when a level comes out. */
+  confetti: boolean
   /** Play the small sounds a move makes. */
   sound: boolean
 }
 
 export type SettingKey = keyof Settings
 
+/**
+ * The confetti starts off. It is the only motion in the app that says nothing:
+ * the stamp, the move count and the three notes all say the level came out,
+ * and the paper only celebrates it. So it is a thing a child turns on because
+ * they want it, rather than a thing a parent has to find in order to stop it.
+ */
 export const DEFAULTS: Settings = {
   allowForbiddenMoves: true,
   showMoves: false,
+  confetti: false,
   sound: true,
 }
 

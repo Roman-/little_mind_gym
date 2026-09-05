@@ -72,8 +72,8 @@
   padding: var(--s6) var(--s4) var(--s7);
 }
 
-/* Immersed, there is no header above the board and no drawer below it, so the
-   room the page was keeping for them goes to the board as well. */
+/* Immersed, there is no header above the board and no drawer or footer below
+   it, so the room the page was keeping for them goes to the board as well. */
 :global(html[data-immersed]) .main {
   padding-top: var(--s3);
   padding-bottom: var(--s3);

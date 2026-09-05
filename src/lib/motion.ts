@@ -21,10 +21,10 @@ export function cx(...names: (string | false | undefined)[]): string {
 /**
  * How long a cue stays on screen, named as the duration token it runs for:
  * `--dur-4` for a cue that has to be noticed (a shake, a flash, a "no"),
- * `--dur-5` for one the eye has to follow or read (a held highlight, the
- * confetti fall).
+ * `--dur-5` for one the eye has to follow or read (a held highlight), and
+ * `--dur-6` for the confetti, which is watched rather than read.
  */
-export type CueLength = '--dur-4' | '--dur-5'
+export type CueLength = '--dur-4' | '--dur-5' | '--dur-6'
 
 /**
  * The token's own value, so the timer that takes the class off and the

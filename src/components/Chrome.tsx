@@ -92,6 +92,7 @@ export function Header() {
 
 export function Footer() {
   const { clearAll, progress } = useProgress()
+  const { immersed } = useImmersion()
   const [armed, setArmed] = useState(false)
   const anything = Object.keys(progress).length > 0
 
@@ -100,6 +101,11 @@ export function Footer() {
     const t = setTimeout(() => setArmed(false), 4000)
     return () => clearTimeout(t)
   }, [armed])
+
+  // The same rule the navbar follows. A credit and a Clear all progress button
+  // are not things a child touches while playing, so immersed they wait outside
+  // with everything else, and the board keeps the room they were using.
+  if (immersed) return null
 
   return (
     <footer className={s.footer}>

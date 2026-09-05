@@ -215,12 +215,13 @@ function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
 
   /**
    * The two things that happen on the move that solves the level, and only on
-   * that move: the score is banked, and the paper is thrown. The ref is what
-   * keeps both out of every later render — the level stays solved, and a
-   * solved level re-renders every time a hint is opened or the tape is drawn.
+   * that move: the score is banked, and — where the paper has been asked for —
+   * it is thrown. The ref is what keeps both out of every later render: the
+   * level stays solved, and a solved level re-renders every time a hint is
+   * opened or the tape is drawn.
    */
   const reduced = usePrefersReducedMotion()
-  const [confetti, celebrate] = useCue('--dur-5')
+  const [confetti, celebrate] = useCue('--dur-6')
   const banked = useRef(false)
   useEffect(() => {
     if (!solved) {
@@ -230,8 +231,8 @@ function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
     if (banked.current) return
     banked.current = true
     markSolved(meta.id, level.id, moves)
-    if (!reduced) celebrate(true)
-  }, [solved, markSolved, meta.id, level.id, moves, reduced, celebrate])
+    if (settings.confetti && !reduced) celebrate(true)
+  }, [solved, markSolved, meta.id, level.id, moves, settings.confetti, reduced, celebrate])
 
   const Board = meta.engine.Board as ComponentType<{
     state: unknown

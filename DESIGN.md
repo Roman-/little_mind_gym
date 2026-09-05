@@ -24,9 +24,12 @@ list. A card in the collection is told apart by its picture, never by a colour
 of its own; the moment a puzzle had an identity colour, a moss tile would sit
 on the same card as a moss "Solved".
 
-The confetti on a solve is the one exception, and it lasts under a second. It
-is paper, so it takes the enamel palette — the one set of colours here that is
-not a signal — and it is gone before it can be read as one.
+The confetti on a solve is the one exception. It is paper, so it takes the
+enamel palette — the one set of colours here that is not a signal — and it
+falls for `--dur-6` and is gone. It is also the one thing in the app that has
+to be asked for: **Throw confetti** under Settings ships off, because the
+stamp, the move count and the three notes already say the level came out, and
+paper that nobody chose is a screen celebrating itself.
 
 Where a picture already says which thing this is, the plate under it goes
 neutral. Identity has been paid for by the picture, so the plate is free to
@@ -92,10 +95,11 @@ against the viewport, with a floor no smaller than a fingertip (`--tap-sm`) and
 a ceiling that keeps a 27" monitor sane.
 
 **Immerse is the same rule taken to the end of the page.** The navbar, the
-title-and-levels row and the drawer all go, the browser is asked for the
-screen, and the stage takes what the three of them were using. What stays is
-the board, the move tape, the controls under it and the credit in the footer —
-everything a child touches while playing, and nothing else. The screen itself
+title-and-levels row, the drawer and the footer under it all go, the browser is
+asked for the screen, and the stage takes what the four of them were using.
+What stays is the board, the move tape and the controls under it — everything a
+child touches while playing, and nothing else. The credit comes back with the
+footer the moment the page does. The screen itself
 is the source of truth, so Escape, F11 and the browser's own control all put
 the page back without the app being told; where a browser will not give the
 screen, the page goes quiet anyway and the toolbar carries both the way in and
@@ -191,8 +195,8 @@ message.
 Reduced motion is already handled — the duration tokens collapse to 1ms — so
 just use the tokens and never hard-code a duration. That collapse is also why
 a cue is never the only thing that says what happened: the sentence under the
-board says it too, and the confetti is skipped outright, on
-`usePrefersReducedMotion`. A sentence that answers a cue is never put on the
+board says it too, and the confetti — where it was asked for at all — is
+skipped outright, on `usePrefersReducedMotion`. A sentence that answers a cue is never put on the
 cue's timer, either — it stands until the mistake it names is off the board.
 
 **Nothing moves until somebody asks it to.** The front page carried a
@@ -324,7 +328,7 @@ display typeface. Nothing bounces, pulses or sparkles to fill a wait, to pull
 the eye towards a control, or to dress up a screen that was doing fine without
 it. The two exceptions are named under **Motion** above and are the whole
 list: a cue on a mistake the board has to point at, and the confetti on a
-solve.
+solve — and the second of those only where a child has turned it on.
 
 Do not put an emoji in a *sentence*: a picture is a pictogram on a plate,
 never a character in running text a screen reader has to read out. Do not

@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import type { CSSProperties } from 'react'
 import { useEphemeral } from '../../lib/ephemeral'
-import { cues, useCue } from '../../lib/motion'
+import { cues, cx, useCue } from '../../lib/motion'
 import { Pictogram } from '../../components/Pictogram'
 import type { BoardProps } from '../../lib/types'
 import type { Bank, RiverAction, RiverItem, RiverState } from './logic'
@@ -44,16 +44,20 @@ function Piece({
   return (
     <button
       type="button"
-      className={`${s.piece} ${onClick ? 'u-press' : ''}`}
+      className={cx(s.piece, onClick && 'u-press', shaking && cues.flash)}
       data-aboard={aboard ? 'true' : undefined}
       data-idle={onClick ? undefined : 'true'}
       onClick={onClick}
       disabled={!onClick}
       aria-label={label}
     >
-      {/* The cue goes on the plate rather than the button: a piece in the boat
-          is already riding its own arrival animation. */}
-      <span className={`${s.plate} ${shaking ? cues.shake : ''}`}>
+      {/* Two halves of one answer, so two elements: one element runs one
+          animation. Clay round the whole card says which pieces the sentence
+          is about — the same red every other board puts round a rule it will
+          not take — and the shake inside it is them refusing. The shake is on
+          the plate rather than the button because a piece in the boat is
+          already riding its own arrival animation. */}
+      <span className={cx(s.plate, shaking && cues.shake)}>
         <Pictogram name={item.glyph} className={s.art} />
       </span>
       <span className={s.name}>{item.label}</span>

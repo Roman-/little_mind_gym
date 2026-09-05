@@ -335,12 +335,22 @@ describe('the move tape', () => {
 })
 
 describe('solving a level', () => {
-  // jsdom loads no stylesheet, so --dur-5 reads as nothing and the burst is
+  // jsdom loads no stylesheet, so --dur-6 reads as nothing and the burst is
   // over on the next tick. What matters here is that it ends by itself.
   beforeEach(() => vi.useFakeTimers())
   afterEach(() => vi.useRealTimers())
 
+  it('throws no paper until somebody asks for it', () => {
+    // The one setting that ships off. Everything the solve has to say — the
+    // stamp, the count, the three notes — is said without it.
+    const view = open('/puzzle/river-crossing')
+    solveTheRiver()
+    expect(screen.getByText('Solved')).toBeInTheDocument()
+    expect(confetti(view)).toBeNull()
+  })
+
   it('throws a handful of paper, once', () => {
+    turnOn('Throw confetti')
     const view = open('/puzzle/river-crossing')
     expect(confetti(view)).toBeNull()
 
@@ -363,6 +373,7 @@ describe('solving a level', () => {
   })
 
   it('throws none of it at a reader who has asked for less motion', () => {
+    turnOn('Throw confetti')
     withReducedMotion(() => {
       const view = open('/puzzle/river-crossing')
       solveTheRiver()
@@ -431,13 +442,16 @@ describe('immerse', () => {
 
   it('takes the page away from around the board, and puts it back', () => {
     open('/puzzle/river-crossing')
+    expect(screen.getByRole('contentinfo')).toBeInTheDocument()
     immerse()
 
-    // The navbar, the title-and-levels row and the drawer: all gone.
+    // The navbar, the title-and-levels row, the drawer and the footer under
+    // it: all gone.
     expect(wayOut()).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument()
     expect(screen.queryByRole('group', { name: /choose a level/i })).not.toBeInTheDocument()
     expect(screen.queryByText('How to play')).not.toBeInTheDocument()
+    expect(screen.queryByRole('contentinfo')).not.toBeInTheDocument()
 
     // The board, and everything a child plays with: still here.
     expect(screen.getByRole('button', { name: /put the goat in the boat/i })).toBeInTheDocument()
@@ -453,6 +467,7 @@ describe('immerse', () => {
     expect(wayOut()).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
     expect(screen.getByText('How to play')).toBeInTheDocument()
+    expect(screen.getByRole('contentinfo')).toBeInTheDocument()
   })
 
   it('asks for the screen, and hands it back through the button', () => {
