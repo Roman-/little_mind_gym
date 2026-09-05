@@ -159,6 +159,53 @@ describe('playing a puzzle', () => {
   })
 })
 
+describe('a move that breaks a rule', () => {
+  const tape = () => screen.getByRole('group', { name: /move history/i })
+  const marks = () => within(tape()).getAllByRole('button')
+
+  /** Let the board put the refused move back, the way the browser would. */
+  const runCue = async () => {
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    })
+  }
+
+  it('is offered, taken, refused and undone, with nothing left behind', async () => {
+    open('/puzzle/tower-of-hanoi?level=hanoi-3')
+    click(/lift the small disc off peg a/i)
+    click(/drop the small disc on peg c/i)
+    expect(marks()).toHaveLength(2) // the start, and the one real move
+
+    // Peg C reads like any other peg, and takes the tap.
+    click(/lift the middle disc off peg a/i)
+    click(/drop the middle disc on peg c/i)
+    expect(
+      screen.getAllByRole('status').map((el) => el.textContent).join(' '),
+    ).toContain('The middle disc is too big for peg C.')
+    // Nothing was recorded: the tape has not grown, and there is nothing extra
+    // to step back out of.
+    expect(marks()).toHaveLength(2)
+
+    await runCue()
+    expect(marks()).toHaveLength(2)
+    expect(screen.queryByText('Solved')).not.toBeInTheDocument()
+
+    // The board plays on from exactly where it was.
+    click(/lift the middle disc off peg a/i)
+    click(/drop the middle disc on peg b/i)
+    expect(marks()).toHaveLength(3)
+  })
+
+  it('is refused up front once the setting is turned off', () => {
+    turnOn('Allow moves that break a rule') // it ships on, so this turns it off
+    open('/puzzle/tower-of-hanoi?level=hanoi-3')
+    click(/lift the small disc off peg a/i)
+    click(/drop the small disc on peg c/i)
+    click(/lift the middle disc off peg a/i)
+    expect(screen.getByRole('button', { name: /is too big for peg c/i })).toBeDisabled()
+  })
+})
+
 describe('the move count', () => {
   const tape = () => screen.getByRole('group', { name: /move history/i })
   const head = () => screen.getByText('Moves').parentElement

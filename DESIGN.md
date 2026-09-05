@@ -190,6 +190,40 @@ library is good at — interruptible physics, gestures, layout transitions — i
 work this app does not have. Add one when that stops being true, and not to
 save writing `@keyframes`.
 
+## A forbidden move is offered, not hidden
+
+A control that goes dead the moment a move would break a rule does the thinking
+for the child. Tap everything, and whatever lights up is legal; the rules never
+have to be held in a head at all. So a move a rule forbids stays live and is
+answered instead. The tap lands, the piece goes where the child put it, `.flash`
+puts `--clay` round the thing that would not take it, one plain sentence says
+what happened, and the board goes back to where it was. Nothing reaches the
+shell, so nothing reaches the history, the move tape or the solved check — and
+a position that breaks a rule is drawn but never played from.
+
+Two things follow. **A tell that only legal moves get goes with it**: an amber
+drop mark over exactly the pegs that will take the disc, or a sentence counting
+the pans before Weigh is pressed, is the same dead button in another coat. A
+drop mark now means "let go here", and it is on every peg. And **a screen
+reader hears what a looker sees**: every peg still says what is standing on it,
+and no label says "blocked".
+
+The line is a rule *broken*, not a move that changes nothing. Filling a jug
+that is already full breaks no rule — it is nothing happening, and a dead Fill
+button says so honestly. `reduce` returns the same reference either way, so the
+puzzle's own `logic.ts` draws the line, in a `refusalOf` beside its `canMove`,
+which hands back both the position to draw and the sentence to say.
+
+Where a piece cannot honestly pretend to move, nothing moves and it takes
+`.shake` as well: a frog jumping its own colour would swap two frogs of one
+colour past each other, and a balance tipping for a load it refused would say
+which side the heavy ball is on.
+
+One hook holds all of it — `useRefusal(state)` in `src/lib/refusal.ts`: the
+setting, the pretend position, the two cues and the sentence. **Allow moves
+that break a rule** under Settings is on by default; turned off, the dead
+control comes back.
+
 ## Words
 
 Plain, direct, second person, sentence case. No exclamation marks, no "Oops!",

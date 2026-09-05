@@ -1,9 +1,11 @@
 import { useLayoutEffect, useRef } from 'react'
 import type { CSSProperties } from 'react'
 import { Pictogram } from '../../components/Pictogram'
+import { cx } from '../../lib/motion'
+import { useRefusal } from '../../lib/refusal'
 import type { BoardProps } from '../../lib/types'
 import type { FrogAction, FrogState, Seat } from './logic'
-import { colourOf, hopTarget } from './logic'
+import { colourOf, hopTarget, refusalOf } from './logic'
 import { EndArrow } from './glyphs'
 import s from './board.module.css'
 
@@ -88,9 +90,13 @@ function leap(slot: HTMLElement, art: HTMLElement, stones: number, ms: number) {
   )
 }
 
-function moveLabel(state: FrogState, frog: Frog): string {
+function moveLabel(state: FrogState, frog: Frog, offered: boolean): string {
   const colour = colourOf(frog.dir)
   const here = `${colour === 'green' ? 'Green' : 'Blue'} frog on stone ${frog.pos + 1}`
+  // While forbidden hops are offered, every frog reads the same. Naming the
+  // one frog that has a move would hand a listener the answer that a child
+  // who can see the row has to work out from the row.
+  if (offered) return `${here}, hop it`
   const to = hopTarget(state, frog.pos)
   if (to < 0) return `${here}, blocked`
   if (Math.abs(to - frog.pos) === 1) return `${here}, step it to stone ${to + 1}`
@@ -105,7 +111,14 @@ function rowSummary(seats: Seat[]): string {
 }
 
 export function Board({ state, dispatch, locked }: BoardProps<FrogState, FrogAction>) {
-  const { seats } = state
+  /**
+   * With forbidden hops offered, every frog is tappable and none is faded. A
+   * frog with no hop takes the tap, strains where it stands, and says why it
+   * cannot go. Which frogs can really move is then read off the row, which is
+   * the whole puzzle.
+   */
+  const refusal = useRefusal(state)
+  const { seats } = refusal.shown
   const frogs = frogsByColour(seats)
 
   const slots = useRef(new Map<string, HTMLDivElement>())
@@ -130,7 +143,7 @@ export function Board({ state, dispatch, locked }: BoardProps<FrogState, FrogAct
   return (
     <div className={s.stage} style={{ '--seats': seats.length } as CSSProperties}>
       <p className="u-sr" role="status">
-        {rowSummary(seats)}
+        {refusal.say(rowSummary(seats))}
       </p>
 
       <div className={s.stream}>
@@ -143,7 +156,7 @@ export function Board({ state, dispatch, locked }: BoardProps<FrogState, FrogAct
           </div>
           <div className={s.frogs}>
             {frogs.map((frog) => {
-              const canHop = !locked && hopTarget(state, frog.pos) >= 0
+              const canHop = hopTarget(refusal.shown, frog.pos) >= 0
               const colour = colourOf(frog.dir)
               return (
                 <div
@@ -157,16 +170,25 @@ export function Board({ state, dispatch, locked }: BoardProps<FrogState, FrogAct
                 >
                   <button
                     type="button"
-                    className={`${s.frog} u-press`}
+                    className={cx(s.frog, 'u-press', refusal.flash(frog.key))}
                     data-colour={colour}
-                    disabled={!canHop}
-                    aria-label={moveLabel(state, frog)}
+                    disabled={locked || (!refusal.offered && !canHop)}
+                    aria-label={moveLabel(refusal.shown, frog, refusal.offered)}
                     onClick={() => {
                       if (locked) return
-                      dispatch({ type: 'hop', from: frog.pos })
+                      if (canHop) {
+                        dispatch({ type: 'hop', from: frog.pos })
+                        return
+                      }
+                      if (!refusal.offered) return
+                      const no = refusalOf(refusal.shown, frog.pos)
+                      if (no !== null) refusal.refuse({ ...no, where: frog.key })
                     }}
                   >
-                    <span className={s.hop} data-hop="">
+                    {/* The flash is on the button and the shake on the frog
+                        inside it: one element runs one animation, and these
+                        two say different halves of the same refusal. */}
+                    <span className={cx(s.hop, refusal.shake(frog.key))} data-hop="">
                       <Pictogram name="frog" className={s.art} />
                     </span>
                   </button>

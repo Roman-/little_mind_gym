@@ -89,10 +89,45 @@ export function reduce(state: FrogState, action: FrogAction): FrogState {
   if (action.type !== 'hop') return state
   const to = hopTarget(state, action.from)
   if (to < 0) return state
+  return hopped(state, action.from, to)
+}
+
+/** The frog on `from` standing on `to`, whatever the rules say about it. */
+function hopped(state: FrogState, from: number, to: number): FrogState {
   const seats = state.seats.slice()
-  seats[to] = seats[action.from]
-  seats[action.from] = 0
+  seats[to] = seats[from]
+  seats[from] = 0
   return { seats }
+}
+
+/**
+ * A hop the rules will not keep, and one sentence saying what stopped it.
+ * Null when the hop is legal, and null when there is no frog on that stone.
+ *
+ * Nothing pretends to move here, and the row itself is the reason. The one
+ * forbidden hop a child can picture — jumping a frog of your own colour —
+ * would swap two frogs of one colour past each other, and the board draws
+ * every frog in its own colour's left-to-right order (see `hopTarget`), so
+ * the swap comes out as both frogs shuffling sideways. The frog takes the
+ * tap, strains where it stands, and the sentence says the rest.
+ */
+export function refusalOf(
+  state: FrogState,
+  from: number,
+): { pretend: FrogState; message: string } | null {
+  const { seats } = state
+  if (!Number.isInteger(from) || from < 0 || from >= seats.length) return null
+  const dir = seats[from]
+  if (dir === 0 || hopTarget(state, from) >= 0) return null
+
+  const step = from + dir
+  const message =
+    step < 0 || step >= seats.length
+      ? 'That frog is at the end of the row.'
+      : seats[step] === dir
+        ? 'A frog only jumps over a frog of the other colour.'
+        : 'There is no free stone for that frog to land on.'
+  return { pretend: state, message }
 }
 
 /** The two groups have swapped ends: blues left, greens right, gap in the middle. */

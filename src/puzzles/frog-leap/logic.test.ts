@@ -1,7 +1,9 @@
 import { createElement } from 'react'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { PuzzleLevel } from '../../lib/types'
+import type { Settings } from '../../lib/settings'
+import { underSettings } from '../../test/settings'
 import { reachableCount, shortestSolution } from '../../lib/search'
 import { frogLeap } from './index'
 import { Board } from './Board'
@@ -16,6 +18,7 @@ import {
   isSolved,
   legalMoves,
   reduce,
+  refusalOf,
 } from './logic'
 
 const levels = frogLeap.levels as PuzzleLevel<FrogConfig>[]
@@ -414,6 +417,47 @@ describe('leapfrog', () => {
     expect(legalMoves(start)).toEqual([1, 3])
   })
 
+  it('names what stopped every frog that cannot move, and leaves the row alone', () => {
+    const start = init(levels[0]) // GG_BB
+    expect(refusalOf(start, 0)?.message).toBe(
+      'A frog only jumps over a frog of the other colour.',
+    )
+    expect(refusalOf(start, 4)?.message).toBe(
+      'A frog only jumps over a frog of the other colour.',
+    )
+    // A frog that has a hop has nothing to refuse.
+    expect(refusalOf(start, 1)).toBeNull()
+    expect(refusalOf(start, 3)).toBeNull()
+    // …and neither has the free stone, or a stone off the end of the row.
+    expect(refusalOf(start, 2)).toBeNull()
+    expect(refusalOf(start, 9)).toBeNull()
+
+    // A green frog home at the right-hand end, and a jam with nowhere to land.
+    expect(refusalOf(read('BB_GG'), 4)?.message).toBe('That frog is at the end of the row.')
+    expect(refusalOf(read('_GGBB'), 2)?.message).toBe(
+      'There is no free stone for that frog to land on.',
+    )
+  })
+
+  it('never moves a frog to refuse it, because the row could not draw the move', () => {
+    for (const level of levels) {
+      for (const state of allStates(init(level))) {
+        for (let from = 0; from < state.seats.length; from++) {
+          const no = refusalOf(state, from)
+          if (hopTarget(state, from) >= 0 || state.seats[from] === 0) {
+            expect(no).toBeNull()
+            continue
+          }
+          expect(no?.message).toMatch(/^[A-Z].*\.$/)
+          // The refusal is a sentence and a cue, never a position: a frog that
+          // jumped its own colour would swap two frogs of one colour past each
+          // other, which the board draws in colour order and cannot show.
+          expect(no?.pretend).toBe(state)
+        }
+      }
+    }
+  })
+
   it('jams the row when a colour steps twice in a row', () => {
     const start = init(levels[0]) // GG_BB
     const once = hop(start, 1) // G_GBB
@@ -514,9 +558,11 @@ describe('leapfrog', () => {
    pure function of the state, and it obeys `locked`.
    ============================================================ */
 
-const paint = (state: FrogState, locked = false) => {
+const paint = (state: FrogState, locked = false, settings?: Partial<Settings>) => {
   const dispatch = vi.fn()
-  const view = render(createElement(Board, { state, dispatch, locked }))
+  const view = render(createElement(Board, { state, dispatch, locked }), {
+    wrapper: underSettings(settings),
+  })
   const buttons = () => screen.getAllByRole('button') as HTMLButtonElement[]
   const live = () => buttons().filter((b) => !b.disabled)
   const stoneOf = (b: HTMLButtonElement) =>
@@ -528,10 +574,10 @@ describe('leapfrog board', () => {
   for (const level of levels) {
     const n = level.config.perSide
 
-    it(`"${level.label}" draws one button per frog and enables exactly the legal ones`, () => {
+    it(`"${level.label}" draws one button per frog, and with forbidden hops off enables exactly the legal ones`, () => {
       for (const state of allStates(init(level)).slice(0, 20)) {
         cleanup()
-        const { buttons, live, stoneOf } = paint(state)
+        const { buttons, live, stoneOf } = paint(state, false, { allowForbiddenMoves: false })
         expect(buttons()).toHaveLength(2 * n)
         expect(live().map(stoneOf).sort((a, b) => a - b)).toEqual(legalMoves(state))
         for (const b of buttons()) {
@@ -575,10 +621,11 @@ describe('leapfrog board', () => {
   })
 
   it('is a pure function of the state — the same row always draws the same way', () => {
-    const a = paint(read('GBG_B'))
+    const off = { allowForbiddenMoves: false }
+    const a = paint(read('GBG_B'), false, off)
     const labels = a.buttons().map((b) => b.getAttribute('aria-label'))
     cleanup()
-    const b = paint(read('GBG_B'))
+    const b = paint(read('GBG_B'), false, off)
     expect(b.buttons().map((x) => x.getAttribute('aria-label'))).toEqual(labels)
     // ...and re-rendering with a new state redraws from that state alone.
     // The frogs are drawn every green and then every blue, never in row order;
@@ -633,6 +680,73 @@ describe('leapfrog board', () => {
         'Left to right: a green frog, a blue frog, a green frog, the free stone, a blue frog.',
       ),
     ).toBeInTheDocument()
+  })
+
+  /* ----------------------------------------------------------
+     A hop that breaks the rule, with the setting that offers it
+     on — which is how the collection ships.
+
+     jsdom loads no stylesheet, so --dur-4 is put on the root by
+     hand: the cue lives for exactly as long as its token says.
+     ---------------------------------------------------------- */
+  describe('a frog that cannot go', () => {
+    const DUR_4 = 480
+    const runCue = () => act(() => vi.advanceTimersByTime(DUR_4))
+    const label = (b: HTMLButtonElement) => b.getAttribute('aria-label')
+
+    beforeEach(() => {
+      vi.useFakeTimers({
+        toFake: ['setTimeout', 'clearTimeout', 'requestAnimationFrame', 'cancelAnimationFrame'],
+      })
+      document.documentElement.style.setProperty('--dur-4', `${DUR_4}ms`)
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+      document.documentElement.removeAttribute('style')
+    })
+
+    it('looks exactly like a frog that can', () => {
+      const { buttons } = paint(read('GG_BB'))
+      // Nothing faded, nothing dead, and no label that gives a frog away.
+      for (const b of buttons()) expect(b.disabled).toBe(false)
+      expect(buttons().map(label)).toEqual([
+        'Green frog on stone 1, hop it',
+        'Green frog on stone 2, hop it',
+        'Blue frog on stone 4, hop it',
+        'Blue frog on stone 5, hop it',
+      ])
+    })
+
+    it('takes the tap, says no, and leaves the row exactly as it was', () => {
+      const { dispatch, buttons, view } = paint(read('GG_BB'))
+      const pond = () => view.container.querySelector('[class*="frogs"]')?.innerHTML
+      const said = () => view.container.querySelector('[role="status"]')?.textContent
+      const before = pond()
+
+      fireEvent.click(buttons()[0]) // the green frog behind another green one
+      expect(dispatch).not.toHaveBeenCalled()
+      expect(buttons()[0].className).toContain('flash')
+      expect(view.container.querySelector('[data-hop]')?.className).toContain('shake')
+      expect(said()).toBe(
+        'A frog only jumps over a frog of the other colour. Left to right: a green frog, ' +
+          'a green frog, the free stone, a blue frog, a blue frog.',
+      )
+
+      runCue()
+      // Every frog back where it was, and both cues off by themselves.
+      expect(pond()).toBe(before)
+      expect(dispatch).not.toHaveBeenCalled()
+      // The sentence outlasts the cue: under reduced motion it is all there is.
+      expect(said()).toContain('A frog only jumps over a frog of the other colour.')
+    })
+
+    it('still sends the hops that are real', () => {
+      const { dispatch, buttons } = paint(read('GG_BB'))
+      fireEvent.click(buttons()[1])
+      expect(dispatch).toHaveBeenCalledTimes(1)
+      expect(dispatch).toHaveBeenCalledWith({ type: 'hop', from: 1 })
+    })
   })
 
   it('leaves the title, hints, move count and win message to the shell', () => {

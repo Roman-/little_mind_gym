@@ -1,9 +1,11 @@
 import { createElement } from 'react'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Settings } from '../../lib/settings'
+import { underSettings } from '../../test/settings'
 import { makeRng } from '../../lib/rng'
 import { reachableCount, shortestSolution } from '../../lib/search'
-import type { PuzzleLevel } from '../../lib/types'
+import type { BoardProps, PuzzleLevel } from '../../lib/types'
 import { towerOfHanoi } from './index'
 import type { HanoiAction, HanoiConfig, HanoiState } from './logic'
 import {
@@ -19,6 +21,7 @@ import {
   isWellFormed,
   legalMoves,
   reduce,
+  refusalOf,
   stateKey,
   topOf,
 } from './logic'
@@ -269,6 +272,49 @@ describe('tower of hanoi — rules', () => {
     expect(reduce(mid, { type: 'move', from: 0, to: 2 }).pegs).toEqual([[3], [1], [2]])
   })
 
+  it('draws a refused move where the child dropped it, and says why it cannot stay', () => {
+    const mid: HanoiState = { discs: 3, pegs: [[3, 2], [1], []] }
+    const no = refusalOf(mid, 0, 1)
+    expect(no?.message).toBe('The middle disc is too big for peg B.')
+    expect(stateKey(no?.pretend as HanoiState)).toBe('3|1.2|')
+    // Worked out without touching what it was handed, and never a position the
+    // engine itself would make.
+    expect(stateKey(mid)).toBe('3.2|1|')
+    expect(reduce(mid, { type: 'move', from: 0, to: 1 })).toBe(mid)
+  })
+
+  it('refuses every move the rule forbids, and nothing else', () => {
+    for (const state of allStates(init(levels[2]))) {
+      for (let from = 0; from < PEG_COUNT; from++) {
+        for (let to = 0; to < PEG_COUNT; to++) {
+          const no = refusalOf(state, from, to)
+          // A legal move, a tap on the peg the disc is already on, and a bare
+          // peg are all "nothing to refuse": only a broken rule is refused.
+          if (canMove(state, from, to) || from === to || topOf(state, from) === null) {
+            expect(no).toBeNull()
+            continue
+          }
+          expect(no?.message).toMatch(/^The .+ disc is too big for peg [ABC]\.$/)
+          const pretend = no?.pretend as HanoiState
+          expect(topOf(pretend, to)).toBe(topOf(state, from))
+          expect(pretend.pegs[from].length).toBe(state.pegs[from].length - 1)
+          // A big disc on a smaller one: never a tower the rules can hold.
+          expect(isWellFormed(pretend)).toBe(false)
+        }
+      }
+    }
+  })
+
+  it('can pretend to finish the tower, which is why the shell never sees a pretend', () => {
+    const nearly: HanoiState = { discs: 3, pegs: [[3], [], [2, 1]] }
+    const pretend = refusalOf(nearly, 0, 2)?.pretend as HanoiState
+    expect(isSolved(pretend)).toBe(true)
+    expect(isWellFormed(pretend)).toBe(false)
+    // The engine will not make it, so the only place it can exist is the
+    // board's own drawing, for the length of one cue.
+    expect(reduce(nearly, { type: 'move', from: 0, to: 2 })).toBe(nearly)
+  })
+
   it('agrees with canMove on every reachable position, and never mutates anything', () => {
     for (const level5 of levels) {
       const states = allStates(init(level5))
@@ -369,11 +415,20 @@ describe('tower of hanoi — rules', () => {
 describe('tower of hanoi — board', () => {
   afterEach(cleanup)
 
-  const show = (state: HanoiState, locked = false) => {
+  const show = (state: HanoiState, locked = false, settings?: Partial<Settings>) => {
     const dispatch = vi.fn()
-    const view = render(createElement(towerOfHanoi.engine.Board, { state, dispatch, locked }))
+    const view = render(createElement(towerOfHanoi.engine.Board, { state, dispatch, locked }), {
+      wrapper: underSettings(settings),
+    })
     return { dispatch, view, pegs: () => screen.getAllByRole('button') }
   }
+
+  /** The shell always draws a board inside the settings; a bare render has to too. */
+  const drawn = (props: BoardProps<HanoiState, HanoiAction>) =>
+    render(createElement(towerOfHanoi.engine.Board, props), { wrapper: underSettings() })
+
+  const status = (view: { container: HTMLElement }) =>
+    view.container.querySelector('[role="status"]')?.textContent
 
   const discsOn = (view: { container: HTMLElement }, peg: number) =>
     view.container.querySelectorAll('button')[peg].querySelectorAll('[class*="disc"]')
@@ -409,8 +464,10 @@ describe('tower of hanoi — board', () => {
     expect(pegs()[1]).toBeDisabled()
   })
 
-  it('does not let a peg that would break the rule look pressable', () => {
-    const { dispatch, pegs, view } = show({ discs: 3, pegs: [[3, 2], [1], []] })
+  it('does not let a peg that would break the rule look pressable, once forbidden moves are off', () => {
+    const { dispatch, pegs, view } = show({ discs: 3, pegs: [[3, 2], [1], []] }, false, {
+      allowForbiddenMoves: false,
+    })
     fireEvent.click(pegs()[0])
     expect(pegs()[1]).toBeDisabled()
     expect(pegs()[1]).toHaveAttribute(
@@ -450,7 +507,7 @@ describe('tower of hanoi — board', () => {
   it('draws one bar per disc and forgets the lift when the state changes', () => {
     const state = init(levels[0])
     const dispatch = vi.fn()
-    const view = render(createElement(towerOfHanoi.engine.Board, { state, dispatch, locked: false }))
+    const view = drawn({ state, dispatch, locked: false })
     fireEvent.click(screen.getAllByRole('button')[0])
     expect(screen.getAllByRole('button')[0]).toHaveAttribute('aria-pressed', 'true')
 
@@ -472,7 +529,7 @@ describe('tower of hanoi — board', () => {
     const state = init(levels[0])
     const dispatch = vi.fn()
     const props = (s: HanoiState) => ({ state: s, dispatch, locked: false })
-    const view = render(createElement(towerOfHanoi.engine.Board, props(state)))
+    const view = drawn(props(state))
     fireEvent.click(screen.getAllByRole('button')[0])
     expect(screen.getAllByRole('button')[0]).toHaveAttribute('aria-pressed', 'true')
 
@@ -488,10 +545,10 @@ describe('tower of hanoi — board', () => {
 
   it('is a pure function of state — the same state always draws the same board', () => {
     const state = reduce(init(levels[2]), { type: 'move', from: 0, to: 1 })
-    const a = render(createElement(towerOfHanoi.engine.Board, { state, dispatch: vi.fn(), locked: false }))
+    const a = drawn({ state, dispatch: vi.fn(), locked: false })
     const first = a.container.innerHTML
     cleanup()
-    const b = render(createElement(towerOfHanoi.engine.Board, { state, dispatch: vi.fn(), locked: false }))
+    const b = drawn({ state, dispatch: vi.fn(), locked: false })
     expect(b.container.innerHTML).toBe(first)
   })
 
@@ -546,9 +603,103 @@ describe('tower of hanoi — board', () => {
 
   it('announces what is in the air for a screen reader', () => {
     const { pegs, view } = show(init(levels[0]))
-    const status = () => view.container.querySelector('[role="status"]')?.textContent
-    expect(status()).toBe('You are not holding a disc.')
+    expect(status(view)).toBe('You are not holding a disc.')
     fireEvent.click(pegs()[0])
-    expect(status()).toBe('You are holding the small disc above peg A.')
+    expect(status(view)).toBe('You are holding the small disc above peg A.')
+  })
+
+  /* ----------------------------------------------------------
+     A move that breaks the rule, with the setting that offers it
+     on — which is how the collection ships.
+
+     jsdom loads no stylesheet, so --dur-4 is put on the root by
+     hand: the cue lives for exactly as long as its token says.
+     ---------------------------------------------------------- */
+  describe('a peg that will not take the disc', () => {
+    const DUR_4 = 480
+    const runCue = () => act(() => vi.advanceTimersByTime(DUR_4))
+
+    beforeEach(() => {
+      vi.useFakeTimers({
+        toFake: ['setTimeout', 'clearTimeout', 'requestAnimationFrame', 'cancelAnimationFrame'],
+      })
+      document.documentElement.style.setProperty('--dur-4', `${DUR_4}ms`)
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+      document.documentElement.removeAttribute('style')
+    })
+
+    it('looks exactly like a peg that will', () => {
+      const { pegs, view } = show({ discs: 3, pegs: [[3, 2], [1], []] })
+      fireEvent.click(pegs()[0])
+      expect(pegs()[1]).toBeEnabled()
+      expect(pegs()[1]).toHaveAttribute(
+        'aria-label',
+        'Drop the middle disc on peg B. Peg B has 1 disc, and the small disc is on top.',
+      )
+      // Both pegs offer to take it, so the drop mark cannot be read as "this
+      // one is allowed" — it only ever says "let go here".
+      expect(view.container.querySelectorAll('[data-show="true"]')).toHaveLength(2)
+    })
+
+    it('takes the disc, says no, and puts it back with nothing sent to the shell', () => {
+      const { dispatch, pegs, view } = show({ discs: 3, pegs: [[3, 2], [1], []] })
+      fireEvent.click(pegs()[0])
+      fireEvent.click(pegs()[1])
+
+      // The disc really is on peg B, for the length of one cue.
+      expect(discsOn(view, 0)).toHaveLength(1)
+      expect(discsOn(view, 1)).toHaveLength(2)
+      expect(pegs()[1].className).toContain('flash')
+      expect(status(view)).toBe(
+        'The middle disc is too big for peg B. You are not holding a disc.',
+      )
+
+      runCue()
+      expect(discsOn(view, 0)).toHaveLength(2)
+      expect(discsOn(view, 1)).toHaveLength(1)
+      expect(pegs()[1].className).not.toContain('flash')
+      // Nothing reached the shell, so nothing reached the history, the move
+      // tape, or the solved check.
+      expect(dispatch).not.toHaveBeenCalled()
+    })
+
+    it('takes no second tap while it is putting the first one back', () => {
+      const { dispatch, pegs } = show({ discs: 3, pegs: [[3, 2], [1], []] })
+      fireEvent.click(pegs()[0])
+      fireEvent.click(pegs()[1])
+      fireEvent.click(pegs()[2])
+      expect(dispatch).not.toHaveBeenCalled()
+
+      // …and once it is back, the board plays on.
+      runCue()
+      fireEvent.click(pegs()[0])
+      fireEvent.click(pegs()[2])
+      expect(dispatch).toHaveBeenCalledWith({ type: 'move', from: 0, to: 2 })
+    })
+
+    it('never refuses a move a rewind has already undone', () => {
+      const state: HanoiState = { discs: 3, pegs: [[3, 2], [1], []] }
+      const dispatch = vi.fn()
+      const view = drawn({ state, dispatch, locked: false })
+      fireEvent.click(screen.getAllByRole('button')[0])
+      fireEvent.click(screen.getAllByRole('button')[1])
+      expect(status(view)).toContain('too big')
+
+      // The move tape can be tapped while the cue is still running. The
+      // pretend position belongs to the state it was refused from, so it goes
+      // the moment the board is handed another one.
+      view.rerender(
+        createElement(towerOfHanoi.engine.Board, {
+          state: init(levels[0]),
+          dispatch,
+          locked: false,
+        }),
+      )
+      expect(status(view)).toBe('You are not holding a disc.')
+      expect(discsOn(view, 0)).toHaveLength(3)
+    })
   })
 })

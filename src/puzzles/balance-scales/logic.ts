@@ -74,6 +74,30 @@ export function canWeigh(
   return true
 }
 
+/**
+ * A press on Weigh the balance will not take, and one sentence saying why.
+ * Null when the pans hold a real weighing.
+ *
+ * Nothing pretends to happen. The beam only ever tips for an answer it has
+ * worked out, so a pretend tip would say which side the heavy ball is on; the
+ * balance takes the press, refuses, and gives nothing away.
+ *
+ * It answers for the pans alone. The board never offers the press once the
+ * balance is spent or a ball has been named.
+ */
+export function refusalOf(
+  state: BalanceState,
+  left: readonly number[],
+  right: readonly number[],
+): { pretend: BalanceState; message: string } | null {
+  if (canWeigh(state, left, right)) return null
+  const message =
+    left.length === 0 && right.length === 0
+      ? 'There is nothing on the balance to weigh.'
+      : 'The balance needs the same number of balls on each pan.'
+  return { pretend: state, message }
+}
+
 export function canAccuse(state: BalanceState, index: number): boolean {
   if (state.accused !== null) return false
   return Number.isInteger(index) && index >= 0 && index < state.balls

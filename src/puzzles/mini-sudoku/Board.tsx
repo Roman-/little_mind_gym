@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { cues, useCue } from '../../lib/motion'
+import { cues, cx, useCue } from '../../lib/motion'
 import type { BoardProps } from '../../lib/types'
 import type { Clash, SudokuAction, SudokuState, SymbolSet } from './logic'
 import { FRUIT_NAMES, clashOf, conflicts, describeClash, symbolName } from './logic'
@@ -7,9 +7,6 @@ import { ClearGlyph, FruitGlyph } from './glyphs'
 import s from './board.module.css'
 
 const noun = (symbols: SymbolSet) => (symbols === 'fruit' ? 'fruit' : 'number')
-
-/** A cue class comes and goes, so every className on the grid is joined the same way. */
-const cx = (...names: (string | false | undefined)[]) => names.filter(Boolean).join(' ')
 
 /** What a symbol key says to a screen reader, and what a keypress writes. */
 const keyLabel = (symbols: SymbolSet, value: number) =>

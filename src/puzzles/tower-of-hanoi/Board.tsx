@@ -1,8 +1,10 @@
 import { useEphemeral } from '../../lib/ephemeral'
+import { cx } from '../../lib/motion'
+import { useRefusal } from '../../lib/refusal'
 import type { CSSProperties } from 'react'
 import type { BoardProps } from '../../lib/types'
 import type { HanoiAction, HanoiState } from './logic'
-import { GOAL_PEG, PEG_COUNT, PEG_LETTERS, canMove, describeDisc, topOf } from './logic'
+import { GOAL_PEG, PEG_COUNT, PEG_LETTERS, canMove, describeDisc, refusalOf, topOf } from './logic'
 import { DropMark, GoalFlag } from './glyphs'
 import s from './board.module.css'
 
@@ -21,10 +23,6 @@ function widthOf(size: number, total: number): string {
   return `${40 + ((size - 1) / (total - 1)) * 56}%`
 }
 
-function capitalise(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1)
-}
-
 /** Which peg a disc has been lifted off, and which disc it is. Selection only. */
 interface Lift {
   peg: number
@@ -32,42 +30,56 @@ interface Lift {
 }
 
 export function Board({ state, dispatch, locked }: BoardProps<HanoiState, HanoiAction>) {
-  const [lifted, setLifted] = useEphemeral<Lift | null>(state, null)
+  /**
+   * With forbidden moves offered, every peg takes the disc. A peg that will not
+   * keep it lets it land, flashes, and hands it back — so which pegs are legal
+   * is the child's to work out from the discs rather than the board's to say
+   * with a dead button.
+   */
+  const refusal = useRefusal(state)
+  const shown = refusal.shown
+  const [lifted, setLifted] = useEphemeral<Lift | null>(shown, null)
 
   /**
    * A lift only counts while that exact disc is still on top of that peg.
-   * useEphemeral already clears it whenever the puzzle state moves; this guard
-   * is belt and braces against a peg ever reading as armed with the wrong disc.
+   * useEphemeral already clears it whenever the position moves — a refusal
+   * included, since the disc has left the child's hand by then — and this
+   * guard is belt and braces against a peg ever reading as armed with the
+   * wrong disc.
    */
-  const armed = lifted !== null && topOf(state, lifted.peg) === lifted.size ? lifted : null
+  const armed = lifted !== null && topOf(shown, lifted.peg) === lifted.size ? lifted : null
   const armedPeg = armed === null ? null : armed.peg
-  const held = armed === null ? null : describeDisc(armed.size, state.discs)
+  const held = armed === null ? null : describeDisc(armed.size, shown.discs)
 
   const canPress = (peg: number): boolean => {
     if (locked) return false
-    if (armedPeg === null) return topOf(state, peg) !== null
-    return peg === armedPeg || canMove(state, armedPeg, peg)
+    if (armedPeg === null) return topOf(shown, peg) !== null
+    if (peg === armedPeg || canMove(shown, armedPeg, peg)) return true
+    return refusal.offered
   }
 
   const tap = (peg: number) => {
-    if (locked) return
+    if (locked || refusal.busy) return
     if (armedPeg === null) {
-      const size = topOf(state, peg)
+      const size = topOf(shown, peg)
       if (size !== null) setLifted({ peg, size })
     } else if (peg === armedPeg) {
       setLifted(null)
-    } else if (canMove(state, armedPeg, peg)) {
+    } else if (canMove(shown, armedPeg, peg)) {
       dispatch({ type: 'move', from: armedPeg, to: peg })
+    } else if (refusal.offered) {
+      const no = refusalOf(shown, armedPeg, peg)
+      if (no !== null) refusal.refuse({ ...no, where: PEG_LETTERS[peg] })
     }
   }
 
   /** One sentence saying what is on a peg. */
   const contentsOf = (peg: number): string => {
     const letter = PEG_LETTERS[peg]
-    const stack = state.pegs[peg]
+    const stack = shown.pegs[peg]
     if (stack.length === 0) return `Peg ${letter} is empty.`
     const count = `${stack.length} disc${stack.length === 1 ? '' : 's'}`
-    const top = describeDisc(stack[stack.length - 1], state.discs)
+    const top = describeDisc(stack[stack.length - 1], shown.discs)
     return `Peg ${letter} has ${count}, and ${top} is on top.`
   }
 
@@ -75,29 +87,36 @@ export function Board({ state, dispatch, locked }: BoardProps<HanoiState, HanoiA
     const letter = PEG_LETTERS[peg]
     if (locked) return contentsOf(peg)
     if (armedPeg === null || held === null) {
-      const top = topOf(state, peg)
+      const top = topOf(shown, peg)
       if (top === null) return contentsOf(peg)
-      return `Lift ${describeDisc(top, state.discs)} off peg ${letter}.`
+      return `Lift ${describeDisc(top, shown.discs)} off peg ${letter}.`
     }
     if (peg === armedPeg) return `Put ${held} back on peg ${letter}.`
-    if (canMove(state, armedPeg, peg)) return `Drop ${held} on peg ${letter}. ${contentsOf(peg)}`
-    return `${capitalise(held)} is too big for peg ${letter}. ${contentsOf(peg)}`
+    // Offering the move means offering it to a listener too: the peg says what
+    // is standing on it either way, so the rule is worked out from the same
+    // facts a child who can see the discs works it out from.
+    const no = refusal.offered ? null : refusalOf(shown, armedPeg, peg)
+    if (no === null) return `Drop ${held} on peg ${letter}. ${contentsOf(peg)}`
+    return `${no.message} ${contentsOf(peg)}`
   }
 
   return (
-    <div className={s.board} style={{ '--discs': state.discs } as CSSProperties}>
+    <div className={s.board} style={{ '--discs': shown.discs } as CSSProperties}>
       <p className={s.goal}>Get the whole tower onto peg {PEG_LETTERS[GOAL_PEG]}.</p>
       <div className={s.bench}>
         <div className={s.row}>
           {Array.from({ length: PEG_COUNT }, (_, peg) => {
-            const stack = state.pegs[peg]
+            const stack = shown.pegs[peg]
             const isArmed = peg === armedPeg
-            const takes = armedPeg !== null && !isArmed && canMove(state, armedPeg, peg)
+            // The mark says "let go here", not "this one is allowed": while
+            // forbidden moves are offered, every other peg will take the disc.
+            const takes =
+              armedPeg !== null && !isArmed && (refusal.offered || canMove(shown, armedPeg, peg))
             return (
               <button
                 key={peg}
                 type="button"
-                className={`${s.peg} u-press`}
+                className={cx(s.peg, 'u-press', refusal.flash(PEG_LETTERS[peg]))}
                 data-armed={isArmed ? 'true' : undefined}
                 aria-pressed={isArmed}
                 aria-label={labelFor(peg)}
@@ -122,7 +141,7 @@ export function Board({ state, dispatch, locked }: BoardProps<HanoiState, HanoiA
                         data-lifted={isArmed && i === stack.length - 1 ? 'true' : undefined}
                         style={
                           {
-                            '--disc-w': widthOf(size, state.discs),
+                            '--disc-w': widthOf(size, shown.discs),
                             '--disc-color': DISC_COLORS[(size - 1) % DISC_COLORS.length],
                           } as CSSProperties
                         }
@@ -144,9 +163,11 @@ export function Board({ state, dispatch, locked }: BoardProps<HanoiState, HanoiA
         </div>
       </div>
       <p className="u-sr" role="status">
-        {armed === null || held === null
-          ? 'You are not holding a disc.'
-          : `You are holding ${held} above peg ${PEG_LETTERS[armed.peg]}.`}
+        {refusal.say(
+          armed === null || held === null
+            ? 'You are not holding a disc.'
+            : `You are holding ${held} above peg ${PEG_LETTERS[armed.peg]}.`,
+        )}
       </p>
     </div>
   )

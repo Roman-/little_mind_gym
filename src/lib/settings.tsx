@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 
-const KEY = 'little-mind-gym:settings:v1'
+/** Where the choices live. Exported so a test can seed them before a provider mounts. */
+export const SETTINGS_KEY = 'little-mind-gym:settings:v1'
 
 export interface Settings {
   /** Let a move that breaks a rule be made, shown to be wrong, and undone. */
@@ -46,7 +47,7 @@ export function settingsFrom(raw: string | null): Settings {
 
 function read(): Settings {
   try {
-    return settingsFrom(localStorage.getItem(KEY))
+    return settingsFrom(localStorage.getItem(SETTINGS_KEY))
   } catch {
     // Reading storage can throw on its own, before any parsing happens.
     return DEFAULTS
@@ -55,7 +56,7 @@ function read(): Settings {
 
 function write(settings: Settings) {
   try {
-    localStorage.setItem(KEY, JSON.stringify({ version: 1, settings }))
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ version: 1, settings }))
   } catch {
     /* a full or blocked store just means the choice lasts this visit only */
   }

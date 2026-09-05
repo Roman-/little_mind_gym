@@ -53,7 +53,7 @@ own rules and draw its own pieces.
 
 ```
 src/
-  lib/          the contract (types.ts), a seeded rng, a BFS over state graphs, the motion cues
+  lib/          the contract (types.ts), a seeded rng, a BFS over state graphs, the motion cues, the refusals
   components/   the shell's furniture, including the move tape and the confetti
   routes/       home, one puzzle, the random pick, the settings
   puzzles/<id>/ logic.ts · Board.tsx · glyphs.tsx · board.module.css · index.ts · logic.test.ts
@@ -66,6 +66,16 @@ explore a wrong idea all the way to its end and walk back out of it. The tape
 keeps no score: how many moves have been made is printed only when **Show the
 move count** is turned on in the settings, and that setting starts off. What a
 finished puzzle took is in the solved notice either way.
+
+**A move that breaks a rule is offered, not hidden.** Tap it and it happens:
+the piece goes where you put it, the board flashes red, one sentence says what
+was wrong, and the board puts it back — with nothing on the move tape and
+nothing in the history, so a forbidden position is drawn and never played from.
+A dead button would have said which moves are legal without the child ever
+having to work it out. **Allow moves that break a rule** in the settings turns
+it off, and the controls go back to refusing up front. It changes the Tower of
+Hanoi, leapfrog and the balance scales; the other five disable nothing their
+rules forbid.
 
 - Adding a puzzle: **[PUZZLE_CONTRACT.md](PUZZLE_CONTRACT.md)**
 - Changing how it looks: **[DESIGN.md](DESIGN.md)**
