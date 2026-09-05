@@ -1,0 +1,278 @@
+/* Three grids and a list of clues.
+
+   A paper logic puzzle puts the grids in an L: the children against each list
+   along the top, the two lists against each other underneath, and the clues in
+   the square the L leaves empty. This does the same, so nothing on the board
+   is small and nothing is filler. */
+
+.board {
+  /* Never below 48px: that is a box a fingertip can hit. The ceiling is set by
+     the widest thing this board ever has to do — two 4x4 grids side by side in
+     880px of stage — and 60px still leaves a picture a child reads at a glance. */
+  --cell: clamp(3rem, 5.5vw, 3.75rem);
+  --plate: calc(var(--cell) * 0.85);
+  display: grid;
+  gap: var(--s5);
+  justify-items: center;
+  width: 100%;
+}
+
+/* One grid has the whole stage to itself, so its boxes go as big as the
+   pictures deserve. */
+.board[data-grids='1'] {
+  --cell: clamp(3rem, 9vw, 6rem);
+}
+
+/* Grid on the left, clues on the right. */
+@media (min-width: 48rem) {
+  .board[data-grids='1'] {
+    grid-template-columns: minmax(0, auto) minmax(14rem, 20rem);
+    justify-content: center;
+    align-items: start;
+    gap: var(--s6);
+  }
+}
+
+/* The L. Children against list one, children against list two, list one
+   against list two under it, and the clues in the corner. */
+@media (min-width: 58rem) {
+  .board[data-grids='3'] {
+    grid-template-columns: minmax(0, auto) minmax(0, auto);
+    justify-content: center;
+    align-items: start;
+  }
+  .board[data-grids='3'] .scroller[data-slot='0'] {
+    grid-area: 1 / 1;
+  }
+  .board[data-grids='3'] .scroller[data-slot='1'] {
+    grid-area: 1 / 2;
+  }
+  .board[data-grids='3'] .scroller[data-slot='2'] {
+    grid-area: 2 / 2;
+  }
+  .board[data-grids='3'] .clues {
+    grid-area: 2 / 1;
+  }
+}
+
+/* --- one grid ----------------------------------------------- */
+
+.scroller {
+  min-width: 0;
+  max-width: 100%;
+  /* A 4x4 grid is wider than the narrowest phone, so it scrolls rather than
+     shrinking its boxes below a fingertip. The padding keeps the focus ring
+     off the clipping edge. */
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+.grid {
+  border-collapse: separate;
+  border-spacing: var(--s1);
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Which two lists this grid joins. Quiet: the pictures on the edges say it
+   again, in a form a child reads faster. */
+.caption {
+  caption-side: top;
+  text-align: left;
+  padding: 0 var(--s1) var(--s1);
+  color: var(--ink-muted);
+}
+
+.corner {
+  padding: 0;
+}
+
+/* Layout only. The voice comes from u-label: these are names a child has to
+   read and match against the clues, not an axis annotation. */
+.headName {
+  color: var(--ink);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.colHead {
+  vertical-align: bottom;
+  padding: 0 0 var(--s1);
+  font-weight: 600;
+}
+
+.colHead .plate {
+  display: flex;
+  margin: 0 auto var(--s1);
+}
+
+.colHead .headName {
+  display: block;
+  font-size: var(--t-xs);
+  margin: 0 auto;
+}
+
+.rowHead {
+  text-align: right;
+  padding: 0 var(--s2) 0 0;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* One width for every name down the side, so the two grids stacked in the
+   right-hand column put their boxes in the same places. */
+.rowHead .headName {
+  display: inline-block;
+  min-width: 4.25rem;
+  margin-right: var(--s2);
+  vertical-align: middle;
+}
+
+.rowHead .plate {
+  vertical-align: middle;
+}
+
+/* --- an item's plate ---------------------------------------- */
+
+/* Neutral, and it stays neutral: the picture names the thing, so the plate
+   never has to. */
+.plate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--plate);
+  height: var(--plate);
+  padding: var(--s1);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  border: var(--hair) solid var(--rule-strong);
+}
+
+.art {
+  width: 100%;
+  height: 100%;
+}
+
+/* --- a box you tick or cross -------------------------------- */
+
+.slot {
+  padding: 0;
+}
+
+.cell {
+  display: grid;
+  place-items: center;
+  width: var(--cell);
+  height: var(--cell);
+  margin: 0 auto;
+  border: var(--hair) solid var(--rule-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface-raised);
+  color: var(--ink-muted);
+}
+
+/* A pencil mark, not a badge: the amber box behind it already says "ticked". */
+.mark {
+  width: 68%;
+  height: 68%;
+}
+
+.cell[data-mark='no'] {
+  background: var(--surface-sunk);
+}
+
+/* Amber, not moss: a tick is the solver's decision, not a verdict. The board
+   never knows whether the pairing is right — that is the puzzle. */
+.cell[data-mark='yes'] {
+  background: var(--amber-soft);
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+.cell[data-mark='blank']:disabled {
+  border-color: var(--rule);
+}
+
+/* --- the clues ---------------------------------------------- */
+
+/* Reading matter, not controls: one quiet sheet, no shadow, no box round each
+   line. The sentences are the most-read words on the board, so they take the
+   body size and the room to breathe. */
+.clues {
+  width: 100%;
+  max-width: 36rem;
+  min-width: 0;
+  align-self: start;
+  background: var(--surface);
+  border: var(--hair) solid var(--rule);
+  border-radius: var(--r-lg);
+  padding: var(--s4);
+}
+
+.cluesHead {
+  margin-bottom: var(--s3);
+}
+
+.clueList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.clue {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+  color: var(--ink);
+  font-size: var(--t-body);
+  line-height: 1.7;
+}
+
+.clueNo {
+  flex: none;
+}
+
+.clueBody {
+  min-width: 0;
+}
+
+/* The same tile as the one on the edge of the grid, so a child can match a
+   clue to a row without reading a word of it. */
+.inline {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.inlinePlate {
+  width: 1.7em;
+  height: 1.7em;
+  padding: 0.1em;
+  border-radius: var(--r-sm);
+  margin-right: 0.2em;
+  vertical-align: -0.5em;
+}
+
+/* Phone: claw back every pixel around the grid so the widest board needs as
+   little sideways scrolling as possible. */
+@media (max-width: 30rem) {
+  .board {
+    gap: var(--s4);
+  }
+  .rowHead {
+    padding-right: var(--s1);
+  }
+  .rowHead .headName {
+    min-width: 0;
+    margin-right: var(--s1);
+  }
+  .clues {
+    padding: var(--s3);
+  }
+  .clue {
+    font-size: var(--t-sm);
+  }
+}

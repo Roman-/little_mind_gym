@@ -1,0 +1,157 @@
+/* ============================================================
+   Little Mind Gym — design tokens
+   Never hard-code a colour, radius, duration or font in a
+   component. Everything comes from here so dark mode, and any
+   later retune, stay a one-file change.
+   ============================================================ */
+
+:root {
+  /* --- Surfaces -------------------------------------------- */
+  /* The desk: a warm oat work surface. Cards sit on top of it. */
+  --desk: #d5d0c2;
+  --desk-edge: #beb7a6;
+  /* Bone: every card, panel and sheet. */
+  --surface: #faf9f5;
+  /* Sunk: the recessed stage a puzzle board is played on. */
+  --surface-sunk: #eeece3;
+  --surface-raised: #ffffff;
+
+  /* --- Ink -------------------------------------------------- */
+  --ink: #22262b;
+  --ink-muted: #5b616a;
+  /* Marks, dots, hairlines and disabled controls only — never body text.
+     Anything a person reads uses --ink-muted, or --ink-on-desk on the desk. */
+  --ink-faint: #8a9099;
+  --ink-on-desk: #4a463d;
+  --rule: #d8d5c9;
+  --rule-strong: #b9b6a9;
+
+  /* --- Signals. Colour means state. Never decoration. ------- */
+  --amber: #9a6108;   /* selected, in progress, your turn */
+  --amber-soft: #f2e3c6;
+  --moss: #2c6a48;    /* solved, correct */
+  --moss-soft: #d5e6da;
+  --clay: #a94526;    /* rule broken, dead end */
+  --clay-soft: #f3ddd4;
+  /* Clay is a sheet colour; on the desk it needs to go darker to stay readable. */
+  --clay-on-desk: #8f3418;
+
+  /* --- Enamel piece palette. Flat, no gradients. ------------ */
+  --p-indigo: #2f4b84;
+  --p-ochre: #cf9526;
+  --p-moss: #3d7a57;
+  --p-clay: #b3502f;
+  --p-plum: #6c4370;
+  --p-teal: #2a6b70;
+  --p-slate: #4c5661;
+  --p-bone: #e7e2d4;
+  /* Readable text on top of the enamel colours. */
+  --p-on-dark: #faf9f5;
+  --p-on-light: #22262b;
+
+  /* --- Depth. A hard offset shadow means "you can touch it". */
+  --shadow-ink: rgba(34, 38, 43, 0.30);
+  --press: 2px 2px 0 var(--shadow-ink);
+  --press-lg: 3px 3px 0 var(--shadow-ink);
+  --press-none: 0 0 0 var(--shadow-ink);
+
+  /* --- Geometry. Crisp, print-like. ------------------------- */
+  /* 4px for marks and lattice cells, 8px for controls, 12px for sheets. */
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-round: 999px;
+  --hair: 1px;
+
+  /* No control goes under --tap-sm. */
+  --tap: 48px;
+  --tap-sm: 40px;
+
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 64px;
+
+  --content: 62rem;
+  --content-narrow: 46rem;
+
+  /* --- Type ------------------------------------------------- */
+  --font-display: 'Bricolage Grotesque', 'Trebuchet MS', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+
+  --t-mono: 0.75rem;
+  --t-xs: 0.8125rem;
+  --t-sm: 0.9375rem;
+  --t-body: 1.0625rem;
+  --t-lg: 1.25rem;
+  --t-xl: 1.5rem;
+  --t-title: clamp(1.75rem, 1.3rem + 1.8vw, 2.5rem);
+  --t-display: clamp(2.125rem, 1.35rem + 3.3vw, 3.5rem);
+
+  --track-mono: 0.09em;
+  --track-tight: -0.02em;
+
+  --lh-body: 1.6;
+  --lh-head: 1.15;
+
+  /* --- Motion. Quick and confident. ------------------------- */
+  --ease: cubic-bezier(0.2, 0.75, 0.3, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 340ms;
+
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--amber);
+  --focus-ring-desk: 0 0 0 2px var(--desk), 0 0 0 4px var(--amber);
+}
+
+:root[data-theme='dark'] {
+  --desk: #1a1917;
+  --desk-edge: #0e0d0c;
+  --surface: #262c28;
+  --surface-sunk: #1d2220;
+  --surface-raised: #303733;
+
+  --ink: #e9e7e0;
+  --ink-muted: #a5a9a1;
+  --ink-faint: #767c76;
+  --ink-on-desk: var(--ink-muted);
+  --rule: #39403b;
+  --rule-strong: #4d554e;
+
+  --amber: #e0a244;
+  --amber-soft: #3d3120;
+  --moss: #6cba8c;
+  --moss-soft: #22362a;
+  --clay: #e08260;
+  --clay-soft: #3b241d;
+  --clay-on-desk: var(--clay);
+
+  --p-indigo: #5878bd;
+  --p-ochre: #d8a63f;
+  --p-moss: #55a077;
+  --p-clay: #cd7150;
+  --p-plum: #a173a5;
+  --p-teal: #3f979c;
+  --p-slate: #7c8791;
+  --p-bone: #cdc7b6;
+  --p-on-dark: #141715;
+  --p-on-light: #141715;
+
+  --shadow-ink: rgba(0, 0, 0, 0.55);
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--amber);
+  --focus-ring-desk: 0 0 0 2px var(--desk), 0 0 0 4px var(--amber);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-1: 1ms;
+    --dur-2: 1ms;
+    --dur-3: 1ms;
+  }
+}

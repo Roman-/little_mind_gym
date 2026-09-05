@@ -1,0 +1,86 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  /* The tape reads as one line beside the count, not as a labelled block
+     stacked above it: it is a record of what happened, not a control panel. */
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+}
+
+.count {
+  font-family: var(--font-mono);
+  font-size: var(--t-lg);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.rail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s1);
+  /* --r-lg would read as a pill on a rail this short. */
+  border-radius: var(--r-md);
+  padding: var(--s1) var(--s2);
+  min-height: var(--tap-sm);
+}
+
+.mark,
+.start {
+  /* The mark a child sees is small — it is ink on a tape. The button around it
+     is not: a 28px box gives a fingertip something to land on. */
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  background: none;
+  border: none;
+}
+
+.mark::after,
+.start::after {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border-radius: var(--r-sm);
+  transition:
+    background-color var(--dur-1) var(--ease),
+    border-color var(--dur-1) var(--ease),
+    transform var(--dur-1) var(--ease);
+}
+
+.mark::after {
+  background: var(--ink-muted);
+  border: var(--hair) solid transparent;
+}
+
+.start::after {
+  background: transparent;
+  border: 2px solid var(--ink-muted);
+}
+
+.mark:hover:not(:disabled)::after {
+  background: var(--amber);
+  transform: translateY(-2px);
+}
+
+.start:hover:not(:disabled)::after {
+  border-color: var(--amber);
+}
+
+.mark[data-now='true']::after {
+  background: var(--amber);
+}
+
+.mark:disabled,
+.start:disabled {
+  cursor: default;
+}

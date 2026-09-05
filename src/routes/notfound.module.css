@@ -1,0 +1,9 @@
+.wrap {
+  padding: var(--s7) var(--s5);
+  text-align: center;
+}
+
+.title {
+  font-size: var(--t-title);
+  margin-bottom: var(--s5);
+}

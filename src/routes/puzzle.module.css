@@ -1,0 +1,296 @@
+/* One line of chrome, then the board.
+
+   The board used to be the smallest thing on the page: a display-sized title,
+   a tagline, a row of level buttons and two explaining cards all took more
+   room than the puzzle they surrounded. Everything here is sized against that
+   one rule — a child's eye should land on the pieces. */
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3) var(--s4);
+  flex-wrap: wrap;
+  margin: 0 0 var(--s3);
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  /* Not --t-title. The name of the puzzle is worth one line, not a headline. */
+  font-size: var(--t-xl);
+}
+
+.titleMark {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+}
+
+.titleMark svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* --- level picker ------------------------------------------- */
+
+.levels {
+  display: flex;
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+
+.level {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s2) var(--s3);
+  min-height: var(--tap-sm);
+  border: var(--hair) solid var(--rule-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--ink-muted);
+  font-size: var(--t-sm);
+  font-weight: 500;
+}
+
+/* Amber means chosen. The old signal was a border colour and a 2% whiter
+   white, which is no answer at all to a child who has just tapped. */
+.level[aria-pressed='true'] {
+  background: var(--amber-soft);
+  border-color: var(--ink);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.tick {
+  width: 15px;
+  height: 15px;
+  color: var(--moss);
+}
+
+/* --- the board panel ---------------------------------------- */
+
+.main {
+  padding: var(--s4);
+}
+
+/* The point of the whole retune. The stage claims a screenful and centres
+   whatever the puzzle draws in it, so a board can be built to fill it rather
+   than to fit around the furniture. */
+.stage {
+  min-height: clamp(20rem, 50vh, 34rem);
+  padding: var(--s5);
+  display: grid;
+  place-items: center;
+  align-content: center;
+}
+
+.stage > * {
+  width: 100%;
+}
+
+.notice {
+  margin-top: var(--s3);
+  padding: var(--s4);
+  border-radius: var(--r-lg);
+  border: var(--hair) solid var(--rule);
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  flex-wrap: wrap;
+}
+
+.notice[data-tone='clay'] {
+  border-color: color-mix(in oklab, var(--clay) 50%, transparent);
+  background: var(--clay-soft);
+}
+
+.notice[data-tone='moss'] {
+  border-color: color-mix(in oklab, var(--moss) 50%, transparent);
+  background: var(--moss-soft);
+}
+
+.noticeBody {
+  flex: 1 1 16rem;
+}
+
+.noticeTitle {
+  font-weight: 600;
+}
+
+.noticeLine {
+  color: var(--ink-muted);
+  font-size: var(--t-sm);
+  margin-top: 2px;
+}
+
+.noticeActions {
+  display: flex;
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+
+.toolbar {
+  margin-top: var(--s3);
+  padding-top: var(--s3);
+  border-top: var(--hair) solid var(--rule);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  flex-wrap: wrap;
+}
+
+.tools {
+  display: flex;
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+
+/* --- the one drawer ----------------------------------------- */
+
+.help {
+  margin-top: var(--s3);
+  background: var(--surface);
+  border: var(--hair) solid var(--rule);
+  border-radius: var(--r-lg);
+  padding: var(--s3) var(--s4);
+}
+
+.helpTop {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2);
+  min-height: var(--tap-sm);
+  font-size: var(--t-body);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.helpTop::-webkit-details-marker {
+  display: none;
+}
+
+.chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--ink-muted);
+  transition: transform var(--dur-2) var(--ease);
+}
+
+.help[open] .chevron {
+  transform: rotate(180deg);
+}
+
+/* Rules on the left, hints on the right: open, the drawer is still one screen
+   of reading rather than two stacked cards. */
+.helpBody {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: var(--s5);
+  padding: var(--s3) 0 var(--s3);
+  border-top: var(--hair) solid var(--rule);
+  margin-top: var(--s2);
+}
+
+.helpIntro {
+  color: var(--ink-muted);
+  font-size: var(--t-sm);
+  margin-bottom: var(--s3);
+}
+
+/* The most important text on the page for a child, and it used to be the
+   smallest and greyest thing in the app. */
+.steps {
+  margin: 0;
+  padding-left: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  font-size: var(--t-body);
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.steps::marker {
+  color: var(--ink-faint);
+}
+
+.hints {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s3);
+}
+
+.hintsTitle {
+  font-size: var(--t-body);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.hintList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  width: 100%;
+}
+
+.hintList:empty {
+  display: none;
+}
+
+.hintIntro {
+  font-size: var(--t-sm);
+  color: var(--ink-muted);
+  min-height: 1.35em;
+}
+
+.hint {
+  font-size: var(--t-body);
+  padding: var(--s3) var(--s4);
+  border-left: 3px solid var(--amber);
+  background: var(--surface-sunk);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  width: 100%;
+}
+
+/* Not amber: --amber on --surface-sunk is 4.34:1, under the text bar.
+   Amber stays on the rule at the left, where it clears the 3:1 graphics bar. */
+.hintNum {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--ink);
+}
+
+@media (max-width: 44rem) {
+  .helpBody {
+    grid-template-columns: 1fr;
+    gap: var(--s4);
+  }
+  .main {
+    padding: var(--s3);
+  }
+  .stage {
+    min-height: clamp(18rem, 52vh, 30rem);
+    padding: var(--s4) var(--s3);
+  }
+  .head {
+    gap: var(--s2);
+  }
+  .title {
+    font-size: var(--t-lg);
+  }
+  .titleMark {
+    width: 28px;
+    height: 28px;
+  }
+}

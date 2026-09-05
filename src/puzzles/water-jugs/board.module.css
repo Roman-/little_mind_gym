@@ -1,0 +1,227 @@
+/* The water jugs.
+
+   One shelf of vessels, drawn to a single scale: one litre is the same number
+   of pixels in every jug on the level, so a child can read one jug off against
+   the next by eye. That scale is picked here, once, from two numbers the board
+   hands over — --tallest (litres in the biggest jug) and --count (how many jugs
+   there are) — and the tallest jug is then grown until it stands as tall as the
+   stage allows. Everything else is kept small so the jugs are what fills it. */
+
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+/* The one sentence a child has to understand. */
+.goal {
+  max-width: 44ch;
+  margin: 0 auto;
+  text-align: center;
+  color: var(--ink);
+  font-size: var(--t-body);
+}
+
+/* Three jugs can outgrow a narrow phone. The shelf scrolls sideways rather
+   than shrinking the drawing below reading size. The padding is headroom: a
+   held jug lifts, and a scrolling box clips whatever leaves it. */
+.field {
+  overflow-x: auto;
+  padding: var(--s3) var(--s1) var(--s1);
+}
+
+.jugs {
+  --gap: clamp(var(--s3), 3vw, var(--s6));
+  --jug-pad: var(--s2);
+  --jug-chrome: calc(2 * var(--jug-pad) + 2 * var(--hair));
+  /* Near enough the room the shelf has: the viewport less the page, card and
+     stage padding, and never wider than the content column. */
+  --row-w: min(100vw - 8rem, 54rem);
+  /* One litre, in pixels. The tallest jug stands as tall as the stage allows,
+     unless that would push the shelf off the side of the screen — then the
+     width decides and every jug shrinks together. */
+  --by-height: calc(clamp(9rem, 36vh, 22rem) / var(--tallest, 1));
+  --by-width: calc(
+    ((var(--row-w) - (var(--count, 1) - 1) * var(--gap)) / var(--count, 1) - var(--jug-chrome)) * 22 /
+      76
+  );
+  --litre: min(var(--by-height), var(--by-width));
+  /* The drawing is 76 units across and 22 units per litre tall. */
+  --jug-w: calc(var(--litre) * 76 / 22);
+
+  /* max-content plus auto margins centres the shelf when it fits and does not
+     clip its left edge when it has to scroll. */
+  width: max-content;
+  margin-inline: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gap);
+}
+
+.jug {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2);
+}
+
+/* Every jug stands on the same shelf, so the heights can be read against each
+   other. The box is as tall as the tallest jug on the level, chrome included. */
+.vesselWrap {
+  box-sizing: content-box;
+  align-self: stretch;
+  height: calc(var(--jug-w) * (var(--tallest, 1) * 22 + 7) / 76 + var(--jug-chrome));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: var(--s2);
+  border-bottom: var(--hair) solid var(--rule-strong);
+}
+
+/* The jug is a piece you pick up, so it gets the press shadow — and a plate to
+   cast it from, which also keeps the target comfortably over 44px. */
+.vessel {
+  display: grid;
+  place-items: center;
+  padding: var(--jug-pad);
+  min-width: 44px;
+  min-height: 44px;
+  border: var(--hair) solid var(--rule);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+
+.vessel:disabled {
+  cursor: default;
+  background: var(--surface-sunk);
+}
+
+/* Amber: this is the one in your hands. */
+.vessel[data-held='true'] {
+  background: var(--amber-soft);
+  border-color: var(--amber);
+  transform: translateY(-8px);
+}
+
+.glassSvg {
+  width: var(--jug-w);
+  height: calc(var(--jug-w) * (var(--cap, 1) * 22 + 7) / 76);
+}
+
+/* The outline is drawn at one weight whatever the jug is scaled to, so a
+   3-litre jug is not sketched in a thinner pen than a 9-litre one. */
+.glass {
+  stroke: var(--ink-muted);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.vessel[data-held='true'] .glass {
+  stroke: var(--amber);
+  stroke-width: 4;
+}
+
+.water {
+  fill: var(--p-teal);
+  transition: transform var(--dur-3) var(--ease);
+}
+
+/* --- the reading -------------------------------------------------------- */
+
+/* Two values and no words: what is in the jug now, and what it holds full. */
+.readout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+
+.litres {
+  font-family: var(--font-mono);
+  font-size: clamp(var(--t-xl), 4vh, 2.25rem);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.litres[data-empty='true'] {
+  color: var(--ink-muted);
+}
+
+.capLabel {
+  margin-top: var(--s1);
+  white-space: nowrap;
+}
+
+/* --- the tap and the drain ---------------------------------------------- */
+
+/* Small, and tucked under the jug they act on. */
+.acts {
+  align-self: stretch;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--s1);
+}
+
+.act {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--s1);
+  border-radius: var(--r-md);
+  border: var(--hair) solid var(--ink);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--t-xs);
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.act:hover:not(:disabled) {
+  background: var(--surface-sunk);
+}
+
+.act:disabled {
+  background: var(--surface-sunk);
+  border-color: var(--rule-strong);
+  color: var(--ink-faint);
+}
+
+.actGlyph {
+  width: 18px;
+  height: 18px;
+}
+
+/* --- the running note --------------------------------------------------- */
+
+.note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+  min-height: 1.5em;
+  font-size: var(--t-sm);
+  color: var(--ink-muted);
+  text-align: center;
+}
+
+.noteGlyph {
+  flex: none;
+  width: 1.15em;
+  height: 1.15em;
+  color: var(--amber);
+}
+
+@media (max-width: 44rem) {
+  .jugs {
+    --row-w: calc(100vw - 5.5rem);
+    --jug-pad: var(--s1);
+  }
+}

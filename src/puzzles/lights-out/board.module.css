@@ -1,0 +1,118 @@
+/* A bench of lamps, sized for a child's hand.
+
+   The old board drew 44–60px cells, so a 3x3 was a coaster-sized huddle in the
+   middle of a screenful of stage. Every lamp is now an OpenMoji bulb on a
+   plate, and the plate carries the state: an amber-tinted plate under a bulb
+   in full colour means on, a plain plate under a grey bulb means off. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s4);
+}
+
+/* The grid sits centred. On a phone narrow enough that a lamp would drop below
+   a fingertip, this scrolls sideways instead of shrinking one. */
+.scroller {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-content: safe center;
+  /* Exactly the room the press shadow (2px) and the focus ring (4px) need:
+     this box clips at its padding edge, and any more would cost a lamp width
+     on a 360px phone. */
+  padding: var(--s1);
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.grid {
+  /* The ceiling eases up on the smaller boards — 125px a lamp at 3 wide, 114px
+     at 4, 103px at 5 — so a 3x3 grows into the stage instead of huddling in
+     the middle of it, and a 5x5 still fits a laptop. */
+  --cell: clamp(58px, 13vw, calc(158px - var(--cols) * 11px));
+  --gap: clamp(var(--s2), 1.1vw, var(--s3));
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+  gap: var(--gap);
+  /* Every level is square today, and this keeps the cells square if one is not. */
+  aspect-ratio: var(--cols) / var(--rows);
+  /* Fill the stage: never wider than --cell a lamp, never narrower than a
+     44px fingertip. Below that the width stands still and .scroller scrolls. */
+  flex: none;
+  width: clamp(
+    calc(var(--cols) * 44px + (var(--cols) - 1) * var(--gap)),
+    100%,
+    calc(var(--cols) * var(--cell) + (var(--cols) - 1) * var(--gap))
+  );
+}
+
+.cell {
+  /* Amber traces the lamps a press would flip. On a lit plate amber is already
+     the plate, so the trace takes the ink instead and stays visible. */
+  --trace: var(--amber);
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  border: var(--hair) solid var(--rule-strong);
+}
+
+/* Beats .u-press, so the flip runs at --dur-2 while the press still snaps. */
+.grid .cell {
+  transition:
+    background-color var(--dur-2) var(--ease),
+    border-color var(--dur-2) var(--ease),
+    transform var(--dur-1) var(--ease),
+    box-shadow var(--dur-1) var(--ease);
+}
+
+/* On: the bulb in its own colours, on a plate tinted in the "still to do" colour. */
+.cell[data-lit='true'] {
+  --trace: var(--ink);
+  background: var(--amber-soft);
+  border-color: var(--amber);
+}
+
+/* Off: the same bulb, grey and faint. The picture never changes — only the
+   light in it does, which is what a lamp does. */
+.bulb {
+  width: 76%;
+  height: 76%;
+  filter: grayscale(1) opacity(0.42);
+  transition: filter var(--dur-2) var(--ease);
+}
+
+.cell[data-lit='true'] .bulb {
+  filter: grayscale(0) opacity(1);
+}
+
+/* Traces the lamps a press would flip, on hover or keyboard focus. */
+.cell::after {
+  content: '';
+  position: absolute;
+  inset: var(--s2);
+  /* Concentric inside the cell's own corner, not a second radius guessing. */
+  border-radius: calc(var(--r-lg) - var(--s2));
+  border: 3px solid transparent;
+  transition: border-color var(--dur-1) var(--ease);
+  pointer-events: none;
+}
+
+.cell[data-traced='true']::after {
+  border-color: var(--trace);
+}
+
+/* The board's only sentence: what to do, and how much is left. */
+.status {
+  text-align: center;
+  min-height: 1.4em;
+  font-size: var(--t-lg);
+  color: var(--ink);
+}

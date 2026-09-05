@@ -1,0 +1,215 @@
+/* A real tower on a bench: one plank running under all three pegs, three posts
+   standing on it, and the discs threaded on the posts. Every measurement hangs
+   off --disc-h, so the whole tower grows and shrinks with one clamp. */
+
+.board {
+  /* A disc is bound by the height of the stage on a laptop and by the width of
+     the screen on a phone, so it takes whichever of the two is smaller and then
+     the floor and the ceiling apply. */
+  --disc-h: clamp(20px, min(6.2vh, 8vw), 56px);
+  --disc-gap: var(--s1);
+  --disc-step: calc(var(--disc-h) + var(--disc-gap));
+  /* One slot per disc, plus one of air above the tallest possible stack — the
+     room a lifted disc needs. A fixed five would leave the three-disc level
+     playing at the bottom of a post with two empty slots over it, and the drop
+     mark hanging a long way from where the disc actually lands. */
+  --slots: calc(var(--discs) + 1);
+  /* How far a disc rises when you pick it up. More than a whole disc of air, so
+     a held disc reads as held and not as merely sitting on top. */
+  --lift: calc(var(--disc-h) + var(--s3));
+  --post-w: clamp(6px, 1.2vh, 11px);
+  --plank-h: clamp(28px, 4.4vh, 42px);
+  --mark-h: clamp(22px, 3.4vh, 32px);
+  --flag-w: clamp(24px, 4vh, 38px);
+  /* The post starts just under the drop mark, so a lifted disc is still
+     threaded on it. */
+  --post-top: calc(var(--mark-h) + var(--s2));
+  --col-gap: var(--s3);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  /* Room inside the scroller for the press shadows and the focus ring: the
+     ring spreads 4px outward, so --s1 would sit it exactly on the edge. */
+  padding: var(--s2);
+  overflow-x: auto;
+}
+
+/* The one sentence a child has to hold on to. Every other board here
+   states its goal on the board; this one used to leave it to a drawer that is
+   shut by the second visit. */
+.goal {
+  text-align: center;
+  color: var(--ink);
+  font-size: var(--t-body);
+}
+
+/* The bench: the three pegs, then the plank they stand on. */
+.bench {
+  width: min(100%, 48rem);
+  min-width: 16rem;
+  margin-inline: auto;
+}
+
+/* One set of columns, shared so each letter sits under its own peg. */
+.row,
+.plank {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--col-gap);
+  /* The plank runs a little wider than the pegs standing on it. */
+  padding-inline: var(--s3);
+}
+
+.row {
+  align-items: end;
+}
+
+/* --- one peg. The whole bay is the button. ------------------- */
+
+.peg {
+  display: block;
+  width: 100%;
+  padding: var(--s2) var(--s2) 0;
+  border: var(--hair) solid var(--rule);
+  border-bottom: 0;
+  border-radius: var(--r-md) var(--r-md) 0 0;
+  background: var(--surface);
+}
+
+.peg:disabled {
+  background: var(--surface-sunk);
+}
+
+.peg[data-armed='true'] {
+  border-color: var(--amber);
+  background: color-mix(in oklab, var(--amber) 14%, var(--surface));
+}
+
+/* --- the post and the stack of discs on it ------------------- */
+
+.lane {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: calc(var(--post-top) + var(--slots) * var(--disc-step) + var(--lift));
+}
+
+.post {
+  position: absolute;
+  top: var(--post-top);
+  bottom: 0;
+  left: 50%;
+  width: var(--post-w);
+  margin-left: calc(var(--post-w) / -2);
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+  background: color-mix(in oklab, var(--p-slate) 62%, var(--surface));
+  transition: background-color var(--dur-2) var(--ease);
+}
+
+.peg[data-armed='true'] .post {
+  background: var(--amber);
+}
+
+.stack {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: var(--disc-gap);
+}
+
+/* --- a disc. Flat enamel, and nothing else: a disc is a disc. */
+
+.disc {
+  flex: none;
+  width: var(--disc-w);
+  height: var(--disc-h);
+  border-radius: var(--r-sm);
+  background: var(--disc-color);
+  border: var(--hair) solid color-mix(in oklab, var(--ink) 40%, transparent);
+  transition: transform var(--dur-2) var(--ease);
+  /* Only ever runs when this disc is put on a peg — a disc that merely becomes
+     the top of its peg because the one above it left keeps sitting still. */
+  animation: settle var(--dur-2) var(--ease-out);
+}
+
+.disc[data-lifted='true'] {
+  transform: translateY(calc(-1 * var(--lift)));
+}
+
+@keyframes settle {
+  from {
+    transform: translateY(calc(-1 * var(--lift)));
+  }
+}
+
+/* --- "this peg will take it" -------------------------------- */
+
+.mark {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--mark-h);
+  height: var(--mark-h);
+  margin-left: calc(var(--mark-h) / -2);
+  color: var(--amber);
+  opacity: 0;
+  transition: opacity var(--dur-2) var(--ease);
+}
+
+.mark[data-show='true'] {
+  opacity: 1;
+}
+
+/* --- "the tower ends up here". One mark, on peg C only. ------ */
+
+.flag {
+  position: absolute;
+  top: var(--post-top);
+  left: 50%;
+  width: var(--flag-w);
+  height: calc(var(--flag-w) * 0.62);
+  margin-left: calc(var(--post-w) / -2);
+  /* Ink, not furniture: on first load this is the only thing on the board that
+     says where the tower has to end up. */
+  color: var(--ink);
+}
+
+.mark svg,
+.flag svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* --- the plank, with the peg letters stamped on it ----------- */
+
+.plank {
+  align-items: center;
+  height: var(--plank-h);
+  border-radius: var(--r-sm);
+  background: var(--p-slate);
+}
+
+.plank .letter {
+  justify-self: center;
+  font-size: clamp(var(--t-sm), 2.2vh, var(--t-body));
+  font-weight: 600;
+  color: var(--p-on-dark);
+}
+
+@media (max-width: 30rem) {
+  .board {
+    --col-gap: var(--s1);
+  }
+
+  .row,
+  .plank {
+    padding-inline: var(--s1);
+  }
+
+  .peg {
+    padding: var(--s1) var(--s1) 0;
+  }
+}

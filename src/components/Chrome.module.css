@@ -1,0 +1,142 @@
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: var(--s2);
+  padding: var(--s2) var(--s3);
+  background: var(--surface);
+  border: var(--hair) solid var(--ink);
+  border-radius: var(--r-sm);
+  font-size: var(--t-sm);
+  z-index: 10;
+}
+
+.skip:focus {
+  left: var(--s4);
+}
+
+.header {
+  border-bottom: var(--hair) solid var(--desk-edge);
+}
+
+.inner {
+  max-width: var(--content);
+  margin: 0 auto;
+  padding: var(--s3) var(--s4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.0625rem;
+  letter-spacing: var(--track-tight);
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.brand svg {
+  width: 22px;
+  height: 22px;
+  color: var(--ink-muted);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.iconBtn {
+  width: var(--tap-sm);
+  height: var(--tap-sm);
+  min-height: 0;
+  padding: 0;
+}
+
+.iconBtn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--content);
+  margin: 0 auto;
+  padding: var(--s6) var(--s4) var(--s7);
+}
+
+.footer {
+  border-top: var(--hair) solid var(--desk-edge);
+  margin-top: auto;
+}
+
+.footInner {
+  max-width: var(--content);
+  margin: 0 auto;
+  padding: var(--s4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s4);
+  flex-wrap: wrap;
+}
+
+.credit {
+  font-size: var(--t-sm);
+  color: var(--ink-on-desk);
+}
+
+.credit a {
+  color: inherit;
+}
+
+/* The most destructive control in the app. It used to be styled as footer
+   texture; it is a button, and it looks like one. */
+.clear {
+  font-size: var(--t-sm);
+  font-weight: 600;
+  min-height: var(--tap-sm);
+  padding: var(--s2) var(--s3);
+  border: var(--hair) solid var(--rule-strong);
+  border-radius: var(--r-md);
+  color: var(--ink-on-desk);
+}
+
+.clear:hover {
+  color: var(--ink);
+}
+
+.clear[data-armed='true'] {
+  color: var(--clay-on-desk);
+  border-color: var(--clay-on-desk);
+}
+
+@media (max-width: 34rem) {
+  .main {
+    padding: var(--s5) var(--s3) var(--s6);
+  }
+  .inner {
+    padding: var(--s3);
+  }
+  .brandWord {
+    display: none;
+  }
+  /* Three controls do not fit at this width. "All puzzles" keeps its words —
+     a child who wants out needs them — and "Surprise me" clips to its icon,
+     clipped rather than hidden so it keeps its name for a screen reader. */
+  .navWord {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
