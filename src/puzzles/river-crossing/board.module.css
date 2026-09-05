@@ -7,6 +7,8 @@
 
 .board {
   --tile: clamp(54px, 11vw, 78px);
+  /* A passenger stands a little smaller than someone waiting on the bank. */
+  --seat: clamp(44px, 9vw, 62px);
   display: grid;
   grid-template-rows: auto 1fr auto;
   gap: var(--s3);
@@ -59,13 +61,27 @@
   color: var(--ink-muted);
 }
 
+/* A bank is a row of places, one to a creature, and a place is one tile wide
+   whether or not somebody is standing in it. Every place is drawn on every
+   render, so the row wraps in the same shape all the way through a level:
+   before, the row closed up the moment a piece stepped into the boat and slid
+   the next animal out from under the finger already on its way to it. */
 .pieces {
   display: flex;
   flex-wrap: wrap;
   gap: var(--s3);
   justify-content: center;
-  align-items: flex-end;
+  align-items: flex-start;
   min-height: calc(var(--tile) + 1.5rem);
+}
+
+/* A place with nobody in it. The outline is what says somebody belongs here
+   and is coming back. */
+.hole {
+  flex: 0 0 var(--tile);
+  height: var(--tile);
+  border-radius: var(--r-lg);
+  border: var(--hair) dashed var(--rule-strong);
 }
 
 /* --- the river ---------------------------------------------- */
@@ -117,15 +133,24 @@
   transform: translate(-50%, 0);
 }
 
+/* The boat has seats for the same reason the banks have places: taking one
+   passenger out must not slide the other one along the thwart. */
 .cargo {
-  display: flex;
-  align-items: flex-end;
+  display: grid;
+  grid-template-columns: repeat(var(--seats), var(--seat));
+  align-items: end;
   justify-content: center;
   gap: var(--s2);
   min-height: 1.5rem;
   /* Standing in the boat, not hovering over it: the hull comes after the
      cargo in the DOM, so it paints over the passengers' feet. */
   margin-bottom: -0.7rem;
+}
+
+/* An empty seat. There is nothing to draw on an open thwart, so it holds its
+   width and nothing else. */
+.seat {
+  width: var(--seat);
 }
 
 /* The hull is the control: tap the boat and the boat goes.
@@ -197,6 +222,10 @@
   gap: 3px;
   border-radius: var(--r-lg);
   background: none;
+  /* On a bank a piece is exactly its place: a longer name overhangs into the
+     gap rather than widening the place and shifting everyone along. */
+  flex: 0 0 var(--tile);
+  min-width: 0;
 }
 
 /* In the boat the pieces stand a little smaller and drop both their names and
@@ -204,7 +233,7 @@
    standing on a white tile reads as a box in the boat rather than as somebody
    in it. */
 .piece[data-aboard='true'] {
-  --tile: clamp(44px, 9vw, 62px);
+  --tile: var(--seat);
   animation: aboard var(--dur-2) var(--ease-out);
 }
 

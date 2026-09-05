@@ -5,8 +5,9 @@ import { shortestSolution } from '../../lib/search'
 import { cues } from '../../lib/motion'
 import { riverCrossing } from './index'
 import { Board } from './Board'
-import type { RiverAction, RiverState } from './logic'
+import type { Bank, RiverAction, RiverState } from './logic'
 import { failure, failureOf, init, isSolved, legalMoves, reduce } from './logic'
+import s from './board.module.css'
 
 const solve = (state: RiverState) =>
   shortestSolution<RiverState, RiverAction>({
@@ -105,6 +106,16 @@ const paint = (state: RiverState, locked = false) => {
 describe('river crossing board', () => {
   afterEach(cleanup)
   const classic = riverCrossing.levels[0]
+  const catsAndMice = riverCrossing.levels[1]
+
+  /** Who is standing in each place, in the order the board lays the places out. */
+  const placesIn = (el: Element | null) =>
+    [...(el?.children ?? [])].map((place) => place.textContent || '—')
+
+  const bank = (side: Bank) =>
+    placesIn(document.querySelector(`.${s.bank}[data-side="${side}"] .${s.pieces}`))
+
+  const inTheBoat = () => placesIn(document.querySelector(`.${s.cargo}`))
 
   it('stands everyone on the near bank, with the rower already aboard', () => {
     const { by } = paint(init(classic))
@@ -113,6 +124,41 @@ describe('river crossing board', () => {
     expect(by(/put the cabbage in the boat/i)).toBeEnabled()
     // The only piece that can row never leaves the boat, so it is not a control.
     expect(by(/you, rowing the boat/i)).toBeDisabled()
+  })
+
+  it('keeps a creature’s place while the creature is in the boat', () => {
+    const { by } = paint(init(catsAndMice))
+    expect(bank('near')).toEqual(['Pip', 'Nib', 'Tom', 'Kit'])
+    expect(bank('far')).toEqual(['—', '—', '—', '—'])
+
+    // The whole point of the places: the first tap must not move what the
+    // second tap is already aimed at.
+    fireEvent.click(by(/put pip in the boat/i))
+    expect(bank('near')).toEqual(['—', 'Nib', 'Tom', 'Kit'])
+    fireEvent.click(by(/put kit in the boat/i))
+    expect(bank('near')).toEqual(['—', 'Nib', 'Tom', '—'])
+  })
+
+  it('stands a creature in the same place on either bank', () => {
+    // Pip and Kit have crossed. Nib and Tom have not moved an inch.
+    paint(reduce(init(catsAndMice), { type: 'cross', passengers: [0, 3] }))
+    expect(bank('far')).toEqual(['Pip', '—', '—', 'Kit'])
+    expect(bank('near')).toEqual(['—', 'Nib', 'Tom', '—'])
+  })
+
+  it('keeps a seat in the boat, so taking one passenger out leaves the other', () => {
+    const { by } = paint(init(catsAndMice))
+    fireEvent.click(by(/put pip in the boat/i))
+    fireEvent.click(by(/put kit in the boat/i))
+    expect(inTheBoat()).toEqual(['Pip', 'Kit'])
+    fireEvent.click(by(/take pip out of the boat/i))
+    expect(inTheBoat()).toEqual(['—', 'Kit'])
+  })
+
+  it('holds no place ashore for a pilot who never leaves the boat', () => {
+    paint(init(classic))
+    expect(bank('near')).toEqual(['Wolf', 'Goat', 'Cabbage'])
+    expect(inTheBoat()).toEqual(['You', '—'])
   })
 
   it('loading the boat is not a move', () => {
