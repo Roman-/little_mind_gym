@@ -16,6 +16,9 @@ export function App() {
           <Route path="/puzzle/:id" element={<PuzzlePage />} />
           <Route path="/random" element={<RandomPuzzle />} />
           <Route path="/surprise" element={<RandomPuzzle />} />
+          {/* Unlisted. Nothing in the UI points here; it is the same pick as
+              /random with the reel skipped, for a bookmark or a shortcut. */}
+          <Route path="/random_instantly" element={<RandomPuzzle instant />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

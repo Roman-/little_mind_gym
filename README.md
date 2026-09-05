@@ -19,10 +19,13 @@ npm run build
 | `/`            | The collection, with what has been tried and what has been solved.   |
 | `/puzzle/:id`  | One puzzle. `?level=<level-id>` opens a particular level.            |
 | `/random`      | **Picks a puzzle at random and opens it.** `/surprise` does the same. |
+| `/random_instantly` | The same pick, opened straight away. Unlisted — nothing in the app links to it. |
 
 `/random` leans towards puzzles that have not been played yet, opens the first
 level the player has not finished, and never hands back the puzzle they just
-came from.
+came from. It spends about a second on a reel of icons before it lands;
+`/random_instantly` makes the same choice and skips that, for a bookmark or a
+launcher shortcut that wants the puzzle and not the ceremony.
 
 ## The collection
 

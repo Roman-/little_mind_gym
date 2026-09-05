@@ -32,7 +32,12 @@ function chooseFor(weightOf: (meta: PuzzleMeta) => number): PuzzleMeta {
 const STEPS = 9
 const TICK = 105
 
-export function RandomPuzzle() {
+/**
+ * `instant` is the unlisted /random_instantly door: same pick, no reel. Nothing
+ * links to it — it exists for a bookmark or a shortcut that wants the puzzle
+ * and not the ceremony.
+ */
+export function RandomPuzzle({ instant = false }: { instant?: boolean }) {
   const navigate = useNavigate()
   const { get } = useProgress()
   const reduced = usePrefersReducedMotion()
@@ -67,19 +72,22 @@ export function RandomPuzzle() {
   }
 
   useEffect(() => {
-    if (reduced) {
+    if (reduced || instant) {
       go.current()
       return
     }
     const timer = setInterval(() => setTick((t) => t + 1), TICK)
     return () => clearInterval(timer)
-  }, [reduced])
+  }, [reduced, instant])
 
   useEffect(() => {
     if (!settled) return
     const timer = setTimeout(() => go.current(), 420)
     return () => clearTimeout(timer)
   }, [settled])
+
+  // The effect above has already sent us on; a panel here would only flash.
+  if (instant) return null
 
   const shown = settled ? target : PUZZLES[(tick * 3 + 1) % PUZZLES.length]
   const Icon = shown.Icon
