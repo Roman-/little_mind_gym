@@ -53,9 +53,10 @@ export function topOf(state: HanoiState, peg: number): number | null {
   return stack[stack.length - 1]
 }
 
+const inRange = (peg: number) => Number.isInteger(peg) && peg >= 0 && peg < PEG_COUNT
+
 export function canMove(state: HanoiState, from: number, to: number): boolean {
-  if (!Number.isInteger(from) || !Number.isInteger(to)) return false
-  if (from < 0 || from >= PEG_COUNT || to < 0 || to >= PEG_COUNT) return false
+  if (!inRange(from) || !inRange(to)) return false
   if (from === to) return false
   const moving = topOf(state, from)
   if (moving === null) return false
@@ -66,12 +67,39 @@ export function canMove(state: HanoiState, from: number, to: number): boolean {
 export function reduce(state: HanoiState, action: HanoiAction): HanoiState {
   if (action?.type !== 'move') return state
   if (!canMove(state, action.from, action.to)) return state
-  const source = state.pegs[action.from]
+  return moved(state, action.from, action.to)
+}
+
+/** The top disc of `from` on top of `to`, whatever the rule says about it. */
+function moved(state: HanoiState, from: number, to: number): HanoiState {
+  const source = state.pegs[from]
   const disc = source[source.length - 1]
   const pegs = state.pegs.slice()
-  pegs[action.from] = source.slice(0, -1)
-  pegs[action.to] = [...pegs[action.to], disc]
+  pegs[from] = source.slice(0, -1)
+  pegs[to] = [...pegs[to], disc]
   return { ...state, pegs }
+}
+
+/**
+ * A move the rule will not keep, drawn anyway: the disc lands where the child
+ * dropped it, and one sentence says why it cannot stay there. Null when the
+ * move is legal, and null when there is no disc to move at all — an empty peg
+ * is nothing happening rather than a rule broken.
+ */
+export function refusalOf(
+  state: HanoiState,
+  from: number,
+  to: number,
+): { pretend: HanoiState; message: string } | null {
+  if (canMove(state, from, to)) return null
+  if (from === to || !inRange(from) || !inRange(to)) return null
+  const moving = topOf(state, from)
+  if (moving === null) return null
+  const disc = describeDisc(moving, state.discs)
+  return {
+    pretend: moved(state, from, to),
+    message: `${disc[0].toUpperCase()}${disc.slice(1)} is too big for ${PEG_NAMES[to]}.`,
+  }
 }
 
 export function isSolved(state: HanoiState): boolean {

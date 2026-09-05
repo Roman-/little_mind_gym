@@ -1,8 +1,10 @@
 import type { CSSProperties } from 'react'
 import { useEphemeral } from '../../lib/ephemeral'
+import { cx } from '../../lib/motion'
+import { useRefusal } from '../../lib/refusal'
 import type { BoardProps } from '../../lib/types'
 import type { BalanceAction, BalanceState } from './logic'
-import { answerSentence, canWeigh, readWeighing, weighingsLeft } from './logic'
+import { answerSentence, canWeigh, readWeighing, refusalOf, weighingsLeft } from './logic'
 import { TickMark, TipMark } from './glyphs'
 import s from './board.module.css'
 
@@ -10,6 +12,8 @@ type Side = 'left' | 'right'
 type Load = Record<Side, number[]>
 
 const EMPTY: Load = { left: [], right: [] }
+/** The one thing a refusal here points at: the press, and the instrument under it. */
+const WEIGH = 'weigh'
 const sides: Side[] = ['left', 'right']
 
 /* --- The instrument, in viewBox units. ----------------------------------
@@ -72,6 +76,13 @@ const without = (load: Load, i: number): Load => ({
 })
 
 export function Board({ state, dispatch, locked }: BoardProps<BalanceState, BalanceAction>) {
+  /**
+   * With forbidden moves offered, Weigh takes the press whatever is on the
+   * pans. Counting the balls onto two matching pans is most of the skill here,
+   * and a button that lights up the moment they match does that counting for
+   * the child.
+   */
+  const refusal = useRefusal(state)
   /** null while the pans still hold the weighing that was just made. */
   const [draft, setDraft] = useEphemeral<Load | null>(state, null)
   const [naming, setNaming] = useEphemeral(state, false)
@@ -88,8 +99,20 @@ export function Board({ state, dispatch, locked }: BoardProps<BalanceState, Bala
   const spare = weighingsLeft(state)
   const tilt = resting && last && last.tip !== 'even' ? (last.tip === 'left' ? -TILT : TILT) : 0
 
+  /** The balance is free, and what is on it has not been weighed already. */
+  const fresh = !locked && !naming && spare > 0 && !resting
   // Whether this load is a weighing is the engine's rule, not the board's.
-  const ready = !locked && !naming && draft !== null && canWeigh(state, draft.left, draft.right)
+  const ready = fresh && (refusal.offered || canWeigh(state, load.left, load.right))
+
+  const weigh = () => {
+    if (canWeigh(state, load.left, load.right)) {
+      dispatch({ type: 'weigh', left: load.left, right: load.right })
+      return
+    }
+    if (!refusal.offered) return
+    const no = refusalOf(state, load.left, load.right)
+    if (no !== null) refusal.refuse({ ...no, where: WEIGH })
+  }
 
   /** What a ball taken off the bench starts from: a resting weighing is over. */
   const from = (d: Load | null, i: number) => d ?? (onPan(i) ? load : EMPTY)
@@ -150,7 +173,9 @@ export function Board({ state, dispatch, locked }: BoardProps<BalanceState, Bala
           ? 'No weighings left. Press Name the heavy one.'
           : loaded === 0
             ? 'Tap a ball to put it on a pan.'
-            : load.left.length !== load.right.length
+            : // The rule is stated up front only while the button is enforcing
+              // it. Offered, the counting is the child's to do.
+              !refusal.offered && load.left.length !== load.right.length
               ? 'Each pan needs the same number of balls.'
               : 'Press Weigh to see which pan goes down.'
 
@@ -160,7 +185,7 @@ export function Board({ state, dispatch, locked }: BoardProps<BalanceState, Bala
   return (
     <div className={s.board}>
       <p className="u-sr" role="status">
-        {last ? readWeighing(last, state.done.length) : ''}
+        {refusal.say(last ? readWeighing(last, state.done.length) : '')}
       </p>
 
       <div className={s.rail}>
@@ -190,7 +215,11 @@ export function Board({ state, dispatch, locked }: BoardProps<BalanceState, Bala
       </div>
 
       <div className={s.rigWrap}>
-        <div className={s.rig} style={rigStyle} data-open={held !== null || undefined}>
+        <div
+          className={cx(s.rig, refusal.shake(WEIGH))}
+          style={rigStyle}
+          data-open={held !== null || undefined}
+        >
           <svg
             className={s.scale}
             viewBox={`0 0 ${W} ${H}`}
@@ -325,9 +354,9 @@ export function Board({ state, dispatch, locked }: BoardProps<BalanceState, Bala
         </span>
         <button
           type="button"
-          className={`${s.weigh} u-press`}
+          className={cx(s.weigh, 'u-press', refusal.flash(WEIGH))}
           disabled={!ready}
-          onClick={() => draft && dispatch({ type: 'weigh', left: draft.left, right: draft.right })}
+          onClick={weigh}
         >
           Weigh
         </button>

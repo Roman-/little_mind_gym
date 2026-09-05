@@ -1,9 +1,11 @@
 import { createElement } from 'react'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Settings } from '../../lib/settings'
+import { underSettings } from '../../test/settings'
 import { makeRng, randInt, shuffled } from '../../lib/rng'
 import { shortestSolution } from '../../lib/search'
-import type { PuzzleLevel } from '../../lib/types'
+import type { BoardProps, PuzzleLevel } from '../../lib/types'
 import { balanceScales } from './index'
 import { Board } from './Board'
 import type { BalanceAction, BalanceConfig, BalanceState, Weighing } from './logic'
@@ -18,6 +20,7 @@ import {
   listBalls,
   readWeighing,
   reduce,
+  refusalOf,
   tipFor,
   weighingsLeft,
 } from './logic'
@@ -423,6 +426,17 @@ describe('illegal actions return the identical state object', () => {
     expect(reduce(start, { type: 'weigh', left: [0], right: [1, 2] })).toBe(start)
   })
 
+  it('names what is wrong with a load it will not weigh, and moves nothing', () => {
+    expect(refusalOf(start, [], [])?.message).toBe('There is nothing on the balance to weigh.')
+    expect(refusalOf(start, [0, 1], [2])?.message).toBe(
+      'The balance needs the same number of balls on each pan.',
+    )
+    // The beam gives nothing away: a refusal is a sentence, never a position.
+    expect(refusalOf(start, [0, 1], [2])?.pretend).toBe(start)
+    // A load the balance will take has nothing to refuse.
+    expect(refusalOf(start, [0], [1])).toBeNull()
+  })
+
   it('rejects a ball that is on both pans', () => {
     expect(reduce(start, { type: 'weigh', left: [0, 1], right: [1, 2] })).toBe(start)
     expect(reduce(start, { type: 'weigh', left: [4], right: [4] })).toBe(start)
@@ -701,13 +715,18 @@ describe('the board', () => {
   afterEach(cleanup)
 
   const level = levelById('eight-balls')
-  const mount = (state: BalanceState, locked = false) => {
+  const mount = (state: BalanceState, locked = false, settings?: Partial<Settings>) => {
     const sent: BalanceAction[] = []
     const view = render(
       createElement(Board, { state, dispatch: (a: BalanceAction) => sent.push(a), locked }),
+      { wrapper: underSettings(settings) },
     )
     return { sent, view }
   }
+
+  /** The shell always draws a board inside the settings; a bare render has to too. */
+  const drawn = (props: BoardProps<BalanceState, BalanceAction>) =>
+    render(createElement(Board, props), { wrapper: underSettings() })
 
   const weighed = (heavy: number, w: Weighing['left'], r: Weighing['right']) =>
     reduce(withHeavy(level, heavy), { type: 'weigh', left: w, right: r })
@@ -727,7 +746,9 @@ describe('the board', () => {
   })
 
   it('loads the pans a ball at a time and dispatches one action for one weighing', () => {
-    const { sent } = mount(withHeavy(level, 2))
+    // With forbidden moves off, Weigh only lights up for a load the balance
+    // will take. The describe at the foot of this file plays it the other way.
+    const { sent } = mount(withHeavy(level, 2), false, { allowForbiddenMoves: false })
     expect(button('Weigh')).toBeDisabled()
 
     fireEvent.click(button('Put ball 1 on a pan'))
@@ -743,8 +764,8 @@ describe('the board', () => {
     expect(sent).toEqual([{ type: 'weigh', left: [0], right: [1] }])
   })
 
-  it('will not offer a weighing with the pans unequal', () => {
-    mount(withHeavy(level, 2))
+  it('will not offer a weighing with the pans unequal, once forbidden moves are off', () => {
+    mount(withHeavy(level, 2), false, { allowForbiddenMoves: false })
     for (const n of [1, 2, 3]) fireEvent.click(button(`Put ball ${n} on a pan`))
     expect(button('Weigh')).toBeDisabled()
     expect(screen.getByText('Each pan needs the same number of balls.')).toBeInTheDocument()
@@ -907,13 +928,9 @@ describe('the board', () => {
 
   it('draws the same board for a state however it was arrived at', () => {
     const state = weighed(2, [0, 1], [2, 3])
-    const fresh = render(
-      createElement(Board, { state, dispatch: () => {}, locked: false }),
-    ).container.innerHTML
+    const fresh = drawn({ state, dispatch: () => {}, locked: false }).container.innerHTML
     cleanup()
-    const view = render(
-      createElement(Board, { state: withHeavy(level, 2), dispatch: () => {}, locked: false }),
-    )
+    const view = drawn({ state: withHeavy(level, 2), dispatch: () => {}, locked: false })
     view.rerender(createElement(Board, { state, dispatch: () => {}, locked: false }))
     expect(view.container.innerHTML).toBe(fresh)
   })
@@ -950,13 +967,11 @@ describe('the board', () => {
         )
         expect(consistent.length).toBeGreaterThan(1)
         const drawings = consistent.map((heavy) => {
-          const view = render(
-            createElement(Board, {
-              state: { ...withHeavy(level, heavy), done, accused },
-              dispatch: () => {},
-              locked: false,
-            }),
-          )
+          const view = drawn({
+            state: { ...withHeavy(level, heavy), done, accused },
+            dispatch: () => {},
+            locked: false,
+          })
           const html = view.container.innerHTML
           cleanup()
           return html
@@ -991,7 +1006,7 @@ describe('the board', () => {
           dispatched++
           draw()
         }
-        const view = render(createElement(Board, { state, dispatch, locked: false }))
+        const view = drawn({ state, dispatch, locked: false })
         const rng = makeRng(seed * 613 + 11)
         for (let tap = 0; tap < 80; tap++) {
           const live = Array.from(document.querySelectorAll('button')).filter((b) => !b.disabled)
@@ -1002,6 +1017,70 @@ describe('the board', () => {
         expect(dispatched).toBeGreaterThan(0)
       }
     }
+  })
+
+  /* ----------------------------------------------------------
+     A press the balance will not take, with the setting that
+     offers it on — which is how the collection ships.
+
+     jsdom loads no stylesheet, so --dur-4 is put on the root by
+     hand: the cue lives for exactly as long as its token says.
+     ---------------------------------------------------------- */
+  describe('a weighing the balance will not make', () => {
+    const DUR_4 = 480
+    const runCue = () => act(() => vi.advanceTimersByTime(DUR_4))
+    const said = () => document.querySelector('[role="status"]')?.textContent
+
+    beforeEach(() => {
+      vi.useFakeTimers({
+        toFake: ['setTimeout', 'clearTimeout', 'requestAnimationFrame', 'cancelAnimationFrame'],
+      })
+      document.documentElement.style.setProperty('--dur-4', `${DUR_4}ms`)
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+      document.documentElement.removeAttribute('style')
+    })
+
+    it('leaves Weigh live whatever is on the pans', () => {
+      mount(withHeavy(level, 2))
+      for (const n of [1, 2, 3]) fireEvent.click(button(`Put ball ${n} on a pan`))
+      expect(button('Weigh')).toBeEnabled()
+      // Nor is the rule stated up front: counting the two pans is the puzzle.
+      expect(screen.queryByText('Each pan needs the same number of balls.')).toBeNull()
+    })
+
+    it('refuses the press, says why, and burns no weighing', () => {
+      const { sent, view } = mount(withHeavy(level, 2))
+      for (const n of [1, 2, 3]) fireEvent.click(button(`Put ball ${n} on a pan`))
+      fireEvent.click(button('Weigh'))
+
+      expect(sent).toEqual([])
+      expect(button('Weigh').className).toContain('flash')
+      // The beam itself shakes, and it never tips: a pretend answer would say
+      // which side the heavy ball is on.
+      expect(view.container.querySelector('[class*="shake"]')).toBe(
+        view.container.querySelector('[style*="--rig-ratio"]'),
+      )
+      expect(said()).toBe('The balance needs the same number of balls on each pan.')
+      expect(screen.getByText('3 weighings left')).toBeInTheDocument()
+
+      runCue()
+      expect(button('Weigh').className).not.toContain('flash')
+
+      // …and the weighing the child works out for themselves still goes.
+      fireEvent.click(button('Put ball 4 on a pan'))
+      fireEvent.click(button('Weigh'))
+      expect(sent).toEqual([{ type: 'weigh', left: [0, 2], right: [1, 3] }])
+    })
+
+    it('says the pans are bare when they are', () => {
+      const { sent } = mount(withHeavy(level, 2))
+      fireEvent.click(button('Weigh'))
+      expect(sent).toEqual([])
+      expect(said()).toBe('There is nothing on the balance to weigh.')
+    })
   })
 
   it('gives every control a real name and a real button', () => {

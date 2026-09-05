@@ -10,6 +10,15 @@ import cues from '../styles/motion.module.css'
 export { cues }
 
 /**
+ * Join class names, dropping the ones that are not there. A cue class comes
+ * and goes with the cue, so every element that can wear one is written the
+ * same way: `cx(s.frog, 'u-press', refusal.flash(id))`.
+ */
+export function cx(...names: (string | false | undefined)[]): string {
+  return names.filter(Boolean).join(' ')
+}
+
+/**
  * How long a cue stays on screen, named as the duration token it runs for:
  * `--dur-4` for a cue that has to be noticed (a shake, a flash, a "no"),
  * `--dur-5` for one the eye has to follow or read (a held highlight, the

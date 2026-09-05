@@ -78,6 +78,20 @@ state too — just don't render it.
   A cue that points at a piece asks `logic.ts` which piece — `clashOf` in the
   sudoku, `failureOf` in the river crossing — so the board never works a rule
   out a second time. See DESIGN.md, **Motion**.
+- **A move your rules forbid is offered, not disabled.** With **Allow moves
+  that break a rule** on — the default — a control that would break a rule
+  stays live and is answered afterwards. `useRefusal(state)` from
+  `src/lib/refusal.ts` is the whole of it: draw `refusal.shown` instead of
+  `state`, keep the control live while `refusal.offered`, and on a forbidden
+  tap call `refusal.refuse()` with what your own `logic.ts` hands back — a
+  `refusalOf` beside your `canMove`, returning the position the tap pretends to
+  reach and one sentence saying why it cannot stay. Wear `refusal.flash(id)`
+  and `refusal.shake(id)` on the piece it names, and put `refusal.say(...)`
+  in your `role="status"`. Never dispatch it: `reduce` still returns the same
+  reference, so the history, the move tape and `isSolved` never see a forbidden
+  position. A control that is dead because the move would *change nothing* —
+  filling a full jug, writing the digit that is already there — stays dead.
+  See DESIGN.md, **A forbidden move is offered, not hidden**.
 - **You do not have to manage focus.** Boards routinely replace the very button
   that was pressed — a piece moves into the boat, a ball moves onto a pan, a
   Fill button greys out — which drops focus onto `<body>`. The shell listens
