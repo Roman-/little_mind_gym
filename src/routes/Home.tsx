@@ -7,7 +7,6 @@ import type { Status } from '../lib/progress'
 import type { PuzzleMeta } from '../lib/types'
 import { ButtonLink, Panel } from '../components/kit'
 import { ShuffleIcon } from '../components/icons'
-import { PuzzleCarousel } from '../components/PuzzleCarousel'
 import s from './home.module.css'
 
 type Filter = 'all' | 'unsolved' | 'new'
@@ -24,25 +23,31 @@ function keep(filter: Filter, status: Status): boolean {
   return status !== 'complete'
 }
 
-function PuzzleRow({ meta, status }: { meta: PuzzleMeta; status: Status }) {
+/**
+ * One puzzle, as a card standing on the desk.
+ *
+ * The picture holds the same corner of every card, so the eight of them make
+ * two columns of pictures a child can read down before they can read a name.
+ */
+function PuzzleCard({ meta, status }: { meta: PuzzleMeta; status: Status }) {
   const { Icon } = meta
   return (
     <li>
-      <Link to={`/puzzle/${meta.id}`} className={`${s.row} u-press`}>
-        <span className={s.glyph}>
+      <Link to={`/puzzle/${meta.id}`} className={`${s.card} u-press`}>
+        <span className={s.plate}>
           <Icon />
         </span>
-        <span>
-          <span className={s.rowTitle}>{meta.title}</span>
-          <span className={s.rowTagline}>{meta.tagline}</span>
-        </span>
-        {/* Eight rows each stamped "Not tried" is eight repetitions of nothing.
-            A row says something about itself only once there is something to say. */}
+        {/* Eight cards each stamped "Not tried" is eight repetitions of nothing.
+            A card says something about itself only once there is something to say. */}
         {status !== 'new' && (
           <span className={`u-label ${s.status}`} data-state={status}>
             {STATUS_LABEL[status]}
           </span>
         )}
+        <span className={s.text}>
+          <span className={s.cardTitle}>{meta.title}</span>
+          <span className={s.tagline}>{meta.tagline}</span>
+        </span>
       </Link>
     </li>
   )
@@ -53,27 +58,28 @@ export function Home() {
   const [filter, setFilter] = useState<Filter>('all')
   usePageTitle(null)
 
-  const rows = PUZZLES.map((meta) => {
+  const cards = PUZZLES.map((meta) => {
     const record = get(meta.id)
-    return { meta, record, status: statusOf(record, meta) }
+    return { meta, status: statusOf(record, meta) }
   })
-  const shown = rows.filter((r) => keep(filter, r.status))
+  const shown = cards.filter((c) => keep(filter, c.status))
 
   return (
     <>
-      <Panel className={s.hero}>
-        <div className={s.heroText}>
+      {/* A title page: the words sit on the desk rather than on a sheet of
+          their own, so the only things standing on it are the eight puzzles. */}
+      <div className={s.masthead}>
+        <div>
           <h1 className={s.headline}>Eight puzzles you can work out.</h1>
           <p className={s.lede}>
             You can work every one out by thinking. None of them need quick fingers.
           </p>
-          <ButtonLink to="/random" variant="primary">
-            <ShuffleIcon />
-            Surprise me
-          </ButtonLink>
         </div>
-        <PuzzleCarousel />
-      </Panel>
+        <ButtonLink to="/random" variant="primary">
+          <ShuffleIcon />
+          Surprise me
+        </ButtonLink>
+      </div>
 
       <section id="index">
         <div className={s.indexHead}>
@@ -101,9 +107,11 @@ export function Home() {
             </p>
           </Panel>
         ) : (
-          <ol className={s.list} role="list">
+          /* Ordered, because the collection runs roughly from the puzzle a
+             newcomer gets a foothold in soonest to the one that takes longest. */
+          <ol className={s.grid} role="list">
             {shown.map(({ meta, status }) => (
-              <PuzzleRow key={meta.id} meta={meta} status={status} />
+              <PuzzleCard key={meta.id} meta={meta} status={status} />
             ))}
           </ol>
         )}

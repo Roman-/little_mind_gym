@@ -1,30 +1,31 @@
-.hero {
+/* The front page is a title page and then the collection. Nothing under the
+   words at the top: they sit on the desk, and the eight cards are the only
+   things standing on it. */
+.masthead {
   display: grid;
-  grid-template-columns: 1.02fr 0.98fr;
-  gap: var(--s6);
-  align-items: center;
-  padding: var(--s6);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--s5);
+  padding-bottom: var(--s6);
+  border-bottom: var(--hair) solid var(--desk-edge);
 }
 
-.heroText {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--s4);
-}
-
+/* Wide enough for "Eight puzzles you" and then the rest: a display line that
+   breaks once reads as a title, and one that breaks at every word reads as an
+   accident. */
 .headline {
   font-size: var(--t-display);
-  max-width: 15ch;
+  max-width: 20ch;
 }
 
 .lede {
-  color: var(--ink-muted);
+  margin-top: var(--s3);
+  max-width: 44ch;
+  color: var(--ink-on-desk);
   font-size: var(--t-lg);
-  max-width: 40ch;
 }
 
-/* --- the index --------------------------------------------- */
+/* --- the collection ---------------------------------------- */
 
 .indexHead {
   display: flex;
@@ -32,7 +33,7 @@
   justify-content: space-between;
   gap: var(--s3);
   flex-wrap: wrap;
-  margin: var(--s7) 0 var(--s3);
+  margin: var(--s6) 0 var(--s4);
 }
 
 .sectionTitle {
@@ -62,21 +63,26 @@
   color: var(--p-on-dark);
 }
 
-.list {
+/* Two columns, so all eight are on the screen at once and the choice is made
+   by looking rather than by scrolling. Eight divides by two; a third column
+   would leave a hole in the last row. */
+.grid {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--s3);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s4);
 }
 
-.row {
+.card {
+  height: 100%;
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: var(--s4);
-  align-items: center;
-  padding: var(--s3) var(--s4);
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--s4);
+  row-gap: var(--s4);
+  align-content: start;
+  padding: var(--s5);
   background: var(--surface);
   border: var(--hair) solid var(--rule);
   border-radius: var(--r-lg);
@@ -84,49 +90,36 @@
   color: var(--ink);
 }
 
-.row:hover {
+.card:hover {
   border-color: var(--ink-muted);
 }
 
-/* The picture is how a child who is not yet a fluent reader finds a row, so it
-   is the first thing on it and it is big enough to recognise across a table. */
-.glyph {
-  width: 68px;
-  height: 68px;
+/* The picture is how a child who is not yet a fluent reader finds a puzzle, so
+   it is the first thing on the card and it is big enough to recognise across a
+   table. The plate under it stays neutral: the picture has already said which
+   puzzle this is. */
+.plate {
+  width: clamp(64px, 9vw, 84px);
+  height: clamp(64px, 9vw, 84px);
   flex: none;
   display: grid;
   place-items: center;
-  padding: 6px;
+  padding: var(--s2);
   border: var(--hair) solid var(--rule);
   border-radius: var(--r-lg);
   background: var(--surface-sunk);
   color: var(--ink);
 }
 
-.glyph svg {
+.plate svg {
   width: 100%;
   height: 100%;
 }
 
-.rowTitle {
-  display: block;
-  font-family: var(--font-display);
-  font-size: var(--t-xl);
-  font-weight: 700;
-  letter-spacing: var(--track-tight);
-  line-height: 1.15;
-}
-
-.rowTagline {
-  display: block;
-  margin-top: var(--s1);
-  max-width: 48ch;
-  color: var(--ink-muted);
-  font-size: var(--t-body);
-  line-height: 1.5;
-}
-
+/* Beside the picture, at the top corner: the same place on every card that has
+   one, so a glance down the column finds them all. */
 .status {
+  justify-self: end;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -140,31 +133,50 @@
   color: var(--moss);
 }
 
+.text {
+  grid-column: 1 / -1;
+}
+
+.cardTitle {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--t-xl);
+  font-weight: 700;
+  letter-spacing: var(--track-tight);
+  line-height: var(--lh-head);
+}
+
+.tagline {
+  display: block;
+  margin-top: var(--s2);
+  color: var(--ink-muted);
+  font-size: var(--t-body);
+  line-height: 1.5;
+}
+
 .empty {
   padding: var(--s6);
   text-align: center;
   color: var(--ink-muted);
 }
 
-@media (max-width: 54rem) {
-  .hero {
+/* One column, and the button drops under the words it belongs to rather than
+   squeezing the headline into a stack of single words. */
+@media (max-width: 46rem) {
+  .masthead {
     grid-template-columns: 1fr;
-    gap: var(--s5);
-    padding: var(--s5) var(--s4);
+    justify-items: start;
+    gap: var(--s4);
+    padding-bottom: var(--s5);
   }
   .headline {
     max-width: none;
   }
-}
-
-@media (max-width: 34rem) {
-  .row {
-    grid-template-columns: auto 1fr;
-    gap: var(--s3);
+  .grid {
+    grid-template-columns: 1fr;
   }
-  .status {
-    grid-column: 1 / -1;
-    padding-top: var(--s2);
-    border-top: var(--hair) solid var(--rule);
+  .card {
+    padding: var(--s4);
+    row-gap: var(--s3);
   }
 }

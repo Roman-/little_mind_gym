@@ -22,9 +22,11 @@ npm run build
 | `/random_instantly` | The same pick, opened straight away and already immersed. Unlisted — nothing in the app links to it. |
 | `/settings`    | Three settings, kept on this device. Reached from the navbar.        |
 
-The front page opens with a carousel of the eight puzzles — a picture, a name
-and a Start. It moves on by itself until a child touches it or steers it with
-either arrow, and it holds still for a reader who has asked for less motion.
+The front page is a title page and then the collection: eight cards, two
+columns of them, each with the puzzle's picture, its name, one line about it,
+and — once there is something to say — how far the player has got with it. All
+eight are on the screen at once, so the choice is made by looking. Nothing on
+the page moves.
 
 `/random` leans towards puzzles that have not been played yet, opens the first
 level the player has not finished, and never hands back the puzzle they just
@@ -62,7 +64,7 @@ own rules and draw its own pieces.
 ```
 src/
   lib/          the contract (types.ts), a seeded rng, a BFS over state graphs, the motion cues, the sounds, the refusals, the immerse mode
-  components/   the shell's furniture: the move tape, the confetti, the hero carousel
+  components/   the shell's furniture: the move tape, the confetti, the pictograms
   routes/       home, one puzzle, the random pick, the settings
   puzzles/<id>/ logic.ts · Board.tsx · glyphs.tsx · board.module.css · index.ts · logic.test.ts
   styles/       tokens.css: every colour, size and duration. motion.module.css: the cues
