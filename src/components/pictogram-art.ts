@@ -34,7 +34,7 @@ export const PICTO_NAMES = [
   'apple',
   'banana',
   'grapes',
-  'strawberry',
+  'pear',
   'rabbit',
   'dog',
   'fish',

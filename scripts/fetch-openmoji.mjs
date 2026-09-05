@@ -35,7 +35,7 @@ const MANIFEST = {
   apple: '1F34E',
   banana: '1F34C',
   grapes: '1F347',
-  strawberry: '1F353',
+  pear: '1F350',
   // who has what
   rabbit: '1F430',
   dog: '1F436',

@@ -1,6 +1,7 @@
 import { createElement, useState } from 'react'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { ART } from '../../components/pictogram-art'
 import { cues } from '../../lib/motion'
 import { makeRng } from '../../lib/rng'
 import { shortestSolution } from '../../lib/search'
@@ -983,6 +984,19 @@ describe('the meta', () => {
       expect(level.config.n % level.config.boxW).toBe(0)
       expect(level.config.boxH * level.config.boxW).toBe(level.config.n)
     }
+  })
+
+  /**
+   * OpenMoji lays a fruit's body down first, so the artwork's first fill is
+   * the colour a child sees from across the room. The apple and the strawberry
+   * shared that fill, which is how two of the four came to look alike.
+   */
+  it('draws every fruit in a colour of its own', () => {
+    const bodyColour = (name: string) =>
+      ART[name].body.match(/fill="(#[0-9a-fA-F]{6})"/)?.[1]?.toLowerCase()
+    const colours = FRUIT_NAMES.map(bodyColour)
+    expect(colours.every(Boolean)).toBe(true)
+    expect(new Set(colours).size).toBe(FRUIT_NAMES.length)
   })
 })
 
