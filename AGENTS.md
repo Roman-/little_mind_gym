@@ -38,6 +38,33 @@ ones if any is unset:
 They are exported from `~/.bashrc`, in the block next to the `,bestsiteeva`
 alias. A new shell picks them up; an open one needs `source ~/.bashrc` first.
 
+**In a non-interactive shell they will not be there, and `source ~/.bashrc`
+will not put them there either.** `~/.bashrc` opens with the stock Debian
+guard:
+
+```bash
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+```
+
+Sourcing it from a script or an agent's shell hits that `return` on line 8 and
+comes back having set nothing, so `npm run deploy` stops on all four variables
+being unset — which looks exactly like never having configured them. Load just
+the block instead:
+
+```bash
+set -a; eval "$(grep -E '^export BESTSITEEVER_' ~/.bashrc)"; set +a
+npm run deploy
+```
+
+That picks up the same `BESTSITEEVER_` exports an interactive shell would and
+leaves the rest of `~/.bashrc` alone. Anything else that has to deploy without a terminal — CI,
+a cron job — should carry the four in its own environment rather than reaching
+into `~/.bashrc` at all.
+
 Those four say which server. The folder inside that web root, and the public
 URL the checks at the end fetch, are both read out of `base` in
 `vite.config.ts` — `/little_mind_gym/` under
