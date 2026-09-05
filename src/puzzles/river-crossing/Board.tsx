@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react'
+import type { CSSProperties } from 'react'
 import { useEphemeral } from '../../lib/ephemeral'
 import { cues, useCue } from '../../lib/motion'
 import { Pictogram } from '../../components/Pictogram'
@@ -15,7 +16,16 @@ import s from './board.module.css'
  * arrow pointing at the bank it will land on, and rowing is a tap on it.
  * There is no "Row across" button, because there is no need to name a thing
  * the child can already see.
+ *
+ * Every creature has a place of its own — the same place on either bank, and a
+ * seat in the boat — and the place stays where it is while the creature is
+ * somewhere else. A bank that closed its ranks would slide the second animal
+ * out from under a child who was already reaching for it, so the only thing
+ * that rearranges anybody is a crossing.
  */
+
+/** One place in the boat: whoever is sitting in it, or nobody. */
+type Seat = number | null
 
 function Piece({
   item,
@@ -51,6 +61,11 @@ function Piece({
   )
 }
 
+/** A place with nobody in it. It holds the width its creature comes back to. */
+function Empty({ className }: { className: string }) {
+  return <span className={className} aria-hidden="true" />
+}
+
 /** The row read out for anyone who cannot see the banks. */
 function bankSummary(state: RiverState, bank: Bank, label: string): string {
   const here = state.cfg.items.filter((_, i) => state.at[i] === bank)
@@ -60,7 +75,6 @@ function bankSummary(state: RiverState, bank: Bank, label: string): string {
 
 export function Board({ state, dispatch, locked }: BoardProps<RiverState, RiverAction>) {
   const { cfg, boat } = state
-  const [selected, setSelected] = useEphemeral<number[]>(state, [])
 
   /**
    * The pieces a dead end names, shaken once as the board locks. Which pieces
@@ -83,31 +97,46 @@ export function Board({ state, dispatch, locked }: BoardProps<RiverState, RiverA
     return rowers.length === 1 ? rowers[0] : null
   }, [cfg])
 
-  const seats = pilot === null ? cfg.capacity : cfg.capacity - 1
-  const passengers = pilot === null ? selected : [pilot, ...selected]
-  const ready = !locked && canCross(state, passengers)
+  /** An empty boat: every seat in it, less the one a pilot never gives up. */
+  const emptyBoat = useMemo<Seat[]>(
+    () => Array.from({ length: pilot === null ? cfg.capacity : cfg.capacity - 1 }, () => null),
+    [cfg, pilot],
+  )
+  const [seats, setSeats] = useEphemeral<Seat[]>(state, emptyBoat)
 
+  const riders = seats.filter((i): i is number => i !== null)
+  const passengers = pilot === null ? riders : [pilot, ...riders]
+  const ready = !locked && canCross(state, passengers)
+  const roomAboard = seats.includes(null)
+
+  /** A tap on a creature: into the first free seat, or out of the boat and home. */
   const toggle = (i: number) => {
     if (locked) return
-    setSelected((cur) =>
-      cur.includes(i)
-        ? cur.filter((x) => x !== i)
-        : cur.length < seats && state.at[i] === boat
-          ? [...cur, i]
-          : cur,
-    )
+    setSeats((cur) => {
+      if (cur.includes(i)) return cur.map((who) => (who === i ? null : who))
+      const seat = cur.indexOf(null)
+      if (seat < 0 || state.at[i] !== boat) return cur
+      return cur.map((who, k) => (k === seat ? i : who))
+    })
   }
 
-  const onBank = (bank: Bank) =>
-    cfg.items
-      .map((item, i) => ({ item, i }))
-      .filter(({ i }) => state.at[i] === bank && i !== pilot && !selected.includes(i))
+  /**
+   * Every creature that stands on a bank, in one order both banks keep. A
+   * pilot is not among them: they are in the boat from the first tap to the
+   * last, so a place ashore would only ever be an empty one.
+   */
+  const places = useMemo(
+    () => cfg.items.map((item, i) => ({ item, i })).filter(({ i }) => i !== pilot),
+    [cfg, pilot],
+  )
 
   const renderBank = (bank: Bank, label: string) => (
     <div className={s.bank} data-side={bank}>
       <div className={s.pieces}>
-        {onBank(bank).map(({ item, i }) => {
-          const reachable = !locked && bank === boat && selected.length < seats
+        {places.map(({ item, i }) => {
+          const ashore = state.at[i] === bank && !seats.includes(i)
+          if (!ashore) return <Empty key={item.id} className={s.hole} />
+          const reachable = !locked && bank === boat && roomAboard
           return (
             <Piece
               key={item.id}
@@ -148,21 +177,29 @@ export function Board({ state, dispatch, locked }: BoardProps<RiverState, RiverA
         <div className={s.river}>
           <div className={s.track}>
             <div className={s.boat} data-bank={boat}>
-              <div className={s.cargo}>
-                {passengers.map((i) => (
+              <div className={s.cargo} style={{ '--seats': cfg.capacity } as CSSProperties}>
+                {pilot !== null && (
                   <Piece
-                    key={cfg.items[i].id}
-                    item={cfg.items[i]}
+                    item={cfg.items[pilot]}
                     aboard
-                    shaking={shaking.has(cfg.items[i].id)}
-                    label={
-                      i === pilot
-                        ? `${cfg.items[i].label}, rowing the boat`
-                        : `Take ${nameFor(cfg.items[i])} out of the boat`
-                    }
-                    onClick={i === pilot || locked ? undefined : () => toggle(i)}
+                    shaking={shaking.has(cfg.items[pilot].id)}
+                    label={`${cfg.items[pilot].label}, rowing the boat`}
                   />
-                ))}
+                )}
+                {seats.map((i, seat) =>
+                  i === null ? (
+                    <Empty key={seat} className={s.seat} />
+                  ) : (
+                    <Piece
+                      key={seat}
+                      item={cfg.items[i]}
+                      aboard
+                      shaking={shaking.has(cfg.items[i].id)}
+                      label={`Take ${nameFor(cfg.items[i])} out of the boat`}
+                      onClick={locked ? undefined : () => toggle(i)}
+                    />
+                  ),
+                )}
               </div>
 
               {/* The hull is the control. Amber means "your turn": it lights up

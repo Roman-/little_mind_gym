@@ -91,6 +91,14 @@ to fill the stage, not to fit around the furniture.** Size pieces in `clamp()`
 against the viewport, with a floor no smaller than a fingertip (`--tap-sm`) and
 a ceiling that keeps a 27" monitor sane.
 
+**A place stays a place.** When a piece leaves its row — into the boat, onto a
+pan — the row does not close up behind it. The place stays where it was, drawn
+as an empty outline, and every other piece keeps its position. A row that
+closes up slides the piece that a child was already reaching for out from under
+their finger, so the second of two taps lands on the wrong animal. Both banks
+of the river crossing and the bench in the balance scales are laid out this
+way: only a move rearranges anybody.
+
 ## Materials
 
 - **Desk** (`--desk`) — the warm oat work surface the page sits on.
