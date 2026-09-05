@@ -136,4 +136,20 @@ describe('the random route', () => {
     const heading = screen.getByRole('heading', { level: 1 })
     expect(titles).toContain(heading.textContent)
   })
+
+  it('opens one straight away at the unlisted instant route', () => {
+    open('/random_instantly')
+    expect(screen.queryByText(/picking one for you/i)).not.toBeInTheDocument()
+    const titles = PUZZLES.map((p) => p.title)
+    const heading = screen.getByRole('heading', { level: 1 })
+    expect(titles).toContain(heading.textContent)
+  })
+
+  it('keeps the instant route out of the UI', () => {
+    open('/')
+    const hrefs = screen
+      .getAllByRole('link')
+      .map((a) => a.getAttribute('href') ?? '')
+    expect(hrefs.some((h) => h.includes('random_instantly'))).toBe(false)
+  })
 })
