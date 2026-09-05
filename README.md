@@ -48,8 +48,8 @@ question has an answer — the fewest moves it can possibly be done in.
 
 Every puzzle is a **pure state machine plus a presentational board**. The shell
 in `src/routes/PuzzlePage.tsx` owns the history, the undo, the move tape, the
-counter, the hints, the level picker and the progress, so a puzzle only has to
-describe its own rules and draw its own pieces.
+hints, the level picker and the progress, so a puzzle only has to describe its
+own rules and draw its own pieces.
 
 ```
 src/
@@ -62,7 +62,10 @@ src/
 
 Because the state is pure and the board is a function of it, the **move tape**
 under every board can rewind to any earlier moment with one tap. A child can
-explore a wrong idea all the way to its end and walk back out of it.
+explore a wrong idea all the way to its end and walk back out of it. The tape
+keeps no score: how many moves have been made is printed only when **Show the
+move count** is turned on in the settings, and that setting starts off. What a
+finished puzzle took is in the solved notice either way.
 
 - Adding a puzzle: **[PUZZLE_CONTRACT.md](PUZZLE_CONTRACT.md)**
 - Changing how it looks: **[DESIGN.md](DESIGN.md)**

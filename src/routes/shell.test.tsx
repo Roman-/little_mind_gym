@@ -37,6 +37,13 @@ function solveTheRiver() {
   click(/row across/i)
 }
 
+/** Tick a setting on the settings page, the way a parent would, and leave. */
+function turnOn(name: string) {
+  const view = open('/settings')
+  fireEvent.click(screen.getByRole('checkbox', { name }))
+  view.unmount()
+}
+
 /** Play the same taps as a reader who has asked the system to keep motion down. */
 function withReducedMotion(run: () => void) {
   const real = window.matchMedia
@@ -149,6 +156,47 @@ describe('playing a puzzle', () => {
     expect(screen.queryByText('Hint 2')).not.toBeInTheDocument()
     click(/one more nudge/i)
     expect(screen.getByText('Hint 2')).toBeInTheDocument()
+  })
+})
+
+describe('the move count', () => {
+  const tape = () => screen.getByRole('group', { name: /move history/i })
+  const head = () => screen.getByText('Moves').parentElement
+
+  it('is not printed while the puzzle is open, but the rail still is', () => {
+    open('/puzzle/river-crossing')
+    click(/put the goat in the boat/i)
+    click(/row across/i)
+    expect(screen.queryByText('Moves')).not.toBeInTheDocument()
+    // The rail is the way back, not a counter, so it is here whatever the
+    // settings say: start + the one crossing made so far.
+    expect(within(tape()).getAllByRole('button')).toHaveLength(2)
+  })
+
+  it('counts up beside the rail once the setting is on', () => {
+    turnOn('Show the move count')
+    open('/puzzle/river-crossing')
+    expect(head()).toHaveTextContent(/^Moves0$/)
+    click(/put the goat in the boat/i)
+    click(/row across/i)
+    expect(head()).toHaveTextContent(/^Moves1$/)
+  })
+
+  it('reports a finished puzzle the same way either way', () => {
+    const off = open('/puzzle/river-crossing')
+    solveTheRiver()
+    expect(screen.getByText(/^7 moves/)).toBeInTheDocument()
+    expect(screen.getByText(/^Solved\. 7 moves/)).toBeInTheDocument()
+    off.unmount()
+
+    turnOn('Show the move count')
+    // The level has been solved by now, so ask for it by name: a returning
+    // player is otherwise sent on to the level after it.
+    open('/puzzle/river-crossing?level=wolf-goat-cabbage')
+    solveTheRiver()
+    expect(head()).toHaveTextContent(/^Moves7$/)
+    expect(screen.getByText(/^7 moves/)).toBeInTheDocument()
+    expect(screen.getByText(/^Solved\. 7 moves/)).toBeInTheDocument()
   })
 })
 
