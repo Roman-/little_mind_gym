@@ -69,7 +69,7 @@ for var in BESTSITEEVER_HOST BESTSITEEVER_PORT BESTSITEEVER_KEY BESTSITEEVER_PUB
 done
 if [ -n "$MISSING" ]; then
   printf '\ndeploy: these are not set:\n%b\n' "$MISSING" >&2
-  printf 'They belong in ~/.bashrc — see the Deploying section of README.md.\n' >&2
+  printf 'They belong in ~/.bashrc — see the Deploying section of AGENTS.md.\n' >&2
   printf 'If you just added them, open a new shell or run: source ~/.bashrc\n\n' >&2
   exit 1
 fi
