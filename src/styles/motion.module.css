@@ -1,0 +1,81 @@
+/* The app's whole vocabulary for saying something in motion.
+
+   A board does not write keyframes of its own. It picks a cue from here and
+   fires it with useCue() from src/lib/motion.ts, which puts the class on for
+   the length of one run and then takes it off again:
+
+     import { cues, useCue } from '../../lib/motion'
+     ...
+     const [wrong, sayNo] = useCue<string>()
+     sayNo(item.id)
+     <span className={wrong === item.id ? cues.shake : undefined} />
+
+   Every cue ends where it started, so it can go on any element without
+   knowing anything about that element. The one thing to watch: a cue that
+   moves a thing overrides that thing's own transform for its run, so put it
+   on a wrapper if the piece is already rotated or offset.
+
+   Under prefers-reduced-motion the duration tokens collapse to 1ms and a cue
+   is over before it is seen. That is why a cue is never the only thing that
+   says what happened — the sentence under the board still says it. */
+
+/* A thing refusing to move: the piece that broke the rule. */
+.shake {
+  animation: shake var(--dur-4) var(--ease) both;
+}
+
+@keyframes shake {
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+/* Red around a thing for a moment. An outline rather than a background or a
+   box-shadow, so it reads on any colour, cannot move the layout, and does not
+   fight the press shadow underneath it. */
+.flash {
+  outline: 3px solid transparent;
+  outline-offset: 2px;
+  animation: flash var(--dur-4) var(--ease) both;
+}
+
+@keyframes flash {
+  25%,
+  55% {
+    outline-color: var(--clay);
+  }
+}
+
+/* "No." One shrink and back, for a tap the puzzle will not take. */
+.no {
+  animation: no var(--dur-4) var(--ease) both;
+}
+
+@keyframes no {
+  40% {
+    transform: scale(0.92);
+  }
+}
+
+/* A group of cells lit long enough to be read: the row a repeated fruit sits
+   in, the squares that already hold a 2. Clay, because the group is being
+   blamed for something. */
+.highlight {
+  animation: highlight var(--dur-5) var(--ease) both;
+}
+
+@keyframes highlight {
+  15%,
+  65% {
+    background-color: var(--clay-soft);
+  }
+}
