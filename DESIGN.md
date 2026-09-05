@@ -338,9 +338,12 @@ states. If a mark cannot be decoded from the page it is on, it is decoration
 wearing the clothes of information — which is worse than an ornament, because
 it takes up the place where something useful could have gone.
 
-The move count is the most recent thing this rule took. The tape's rail stays,
-because every mark on it is a control that steps the board back to that moment
-rather than a pip standing in for a fact. The number beside it is off unless
-someone turns it on under Settings: a count climbing while the puzzle is open
-reads as a budget, and how many moves it took belongs in the solved notice,
-once there is a result to report.
+The move tape is the most recent thing this rule took. Nothing counts the
+moves while the puzzle is open: a tally climbing under a child who is still
+thinking reads as a budget, and a rail of marks beside it is that same tally
+drawn a second time. Both are off until someone turns on **Show your moves**
+under Settings, and then they arrive together — the count is what the rail
+already says, so showing one without the other only makes the rail a row of
+pips. How many moves it took belongs in the solved notice, once there is a
+result to report; Step back and Start over stay in the toolbar throughout, so
+the way out of a wrong idea is never behind a setting.

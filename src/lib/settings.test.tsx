@@ -14,7 +14,7 @@ describe('the stored settings', () => {
   it('starts every setting where the collection wants it', () => {
     expect(DEFAULTS).toEqual({
       allowForbiddenMoves: true,
-      showMoveCount: false,
+      showMoves: false,
       sound: true,
     })
   })
@@ -33,18 +33,18 @@ describe('the stored settings', () => {
   })
 
   it('reads back the settings it was given', () => {
-    expect(settingsFrom(stored({ allowForbiddenMoves: false, showMoveCount: true, sound: false })))
-      .toEqual({ allowForbiddenMoves: false, showMoveCount: true, sound: false })
+    expect(settingsFrom(stored({ allowForbiddenMoves: false, showMoves: true, sound: false })))
+      .toEqual({ allowForbiddenMoves: false, showMoves: true, sound: false })
   })
 
   it('defaults a setting that is missing or is not a true or false', () => {
     // A key an older build never wrote, and one somebody edited by hand. Both
     // have to land on the default: reading them as false turns a setting off.
-    expect(settingsFrom(stored({ showMoveCount: true }))).toEqual({
+    expect(settingsFrom(stored({ showMoves: true }))).toEqual({
       ...DEFAULTS,
-      showMoveCount: true,
+      showMoves: true,
     })
-    expect(settingsFrom(stored({ sound: 'yes', showMoveCount: 1 }))).toEqual(DEFAULTS)
+    expect(settingsFrom(stored({ sound: 'yes', showMoves: 1 }))).toEqual(DEFAULTS)
   })
 
   it('ignores a key it does not know about', () => {
@@ -62,11 +62,11 @@ describe('the settings store', () => {
 
   it('remembers a change for the next visit', () => {
     const first = open()
-    act(() => first.result.current.set('showMoveCount', true))
-    expect(first.result.current.settings.showMoveCount).toBe(true)
+    act(() => first.result.current.set('showMoves', true))
+    expect(first.result.current.settings.showMoves).toBe(true)
     first.unmount()
 
-    expect(open().result.current.settings).toEqual({ ...DEFAULTS, showMoveCount: true })
+    expect(open().result.current.settings).toEqual({ ...DEFAULTS, showMoves: true })
   })
 
   it('opens on the defaults when the stored value is corrupt', () => {

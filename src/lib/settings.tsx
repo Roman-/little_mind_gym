@@ -7,8 +7,8 @@ export const SETTINGS_KEY = 'little-mind-gym:settings:v1'
 export interface Settings {
   /** Let a move that breaks a rule be made, shown to be wrong, and undone. */
   allowForbiddenMoves: boolean
-  /** Show how many moves have been made under the board. */
-  showMoveCount: boolean
+  /** Show the move tape — the rail of moves made, and their count — under the board. */
+  showMoves: boolean
   /** Play the small sounds a move makes. */
   sound: boolean
 }
@@ -17,7 +17,7 @@ export type SettingKey = keyof Settings
 
 export const DEFAULTS: Settings = {
   allowForbiddenMoves: true,
-  showMoveCount: false,
+  showMoves: false,
   sound: true,
 }
 
