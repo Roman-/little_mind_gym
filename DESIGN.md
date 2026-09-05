@@ -154,6 +154,11 @@ say nothing about any of them — and which group it is comes from the puzzle's
 own rules in `logic.ts`, never from the board working the rule out a second
 time.
 
+A dead end is pointed at the same way. `failureOf` in the river crossing's
+`logic.ts` returns the pieces its sentence names alongside the sentence, so the
+board shakes the wolf and the goat without reading the English back out of the
+message.
+
 Reduced motion is already handled — the duration tokens collapse to 1ms — so
 just use the tokens and never hard-code a duration. That collapse is also why
 a cue is never the only thing that says what happened: the sentence under the

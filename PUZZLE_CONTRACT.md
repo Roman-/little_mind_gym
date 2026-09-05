@@ -75,7 +75,9 @@ state too — just don't render it.
   holds all four, and `useCue()` from `src/lib/motion.ts` puts one on and takes
   it off again. Write no keyframes of your own for these — a mistake should
   look the same in every puzzle, and one mistake may fire two of them at once.
-  See DESIGN.md, **Motion**.
+  A cue that points at a piece asks `logic.ts` which piece — `clashOf` in the
+  sudoku, `failureOf` in the river crossing — so the board never works a rule
+  out a second time. See DESIGN.md, **Motion**.
 - **You do not have to manage focus.** Boards routinely replace the very button
   that was pressed — a piece moves into the boat, a ball moves onto a pan, a
   Fill button greys out — which drops focus onto `<body>`. The shell listens

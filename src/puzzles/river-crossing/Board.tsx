@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useEphemeral } from '../../lib/ephemeral'
+import { cues, useCue } from '../../lib/motion'
 import { Pictogram } from '../../components/Pictogram'
 import type { BoardProps } from '../../lib/types'
 import type { Bank, RiverAction, RiverItem, RiverState } from './logic'
-import { canCross, nameFor } from './logic'
+import { canCross, failureOf, nameFor } from './logic'
 import { BoatArrow } from './glyphs'
 import s from './board.module.css'
 
@@ -21,11 +22,14 @@ function Piece({
   aboard,
   onClick,
   label,
+  shaking,
 }: {
   item: RiverItem
   aboard?: boolean
   onClick?: () => void
   label: string
+  /** This piece broke the rule the board has just been stopped by. */
+  shaking?: boolean
 }) {
   return (
     <button
@@ -37,7 +41,9 @@ function Piece({
       disabled={!onClick}
       aria-label={label}
     >
-      <span className={s.plate}>
+      {/* The cue goes on the plate rather than the button: a piece in the boat
+          is already riding its own arrival animation. */}
+      <span className={`${s.plate} ${shaking ? cues.shake : ''}`}>
         <Pictogram name={item.glyph} className={s.art} />
       </span>
       <span className={s.name}>{item.label}</span>
@@ -55,6 +61,21 @@ function bankSummary(state: RiverState, bank: Bank, label: string): string {
 export function Board({ state, dispatch, locked }: BoardProps<RiverState, RiverAction>) {
   const { cfg, boat } = state
   const [selected, setSelected] = useEphemeral<number[]>(state, [])
+
+  /**
+   * The pieces a dead end names, shaken once as the board locks. Which pieces
+   * those are comes back from the rule that broke, alongside the sentence, so
+   * the board never reads the sentence to find out. The shake is decoration
+   * over a dead end the shell has already settled: under reduced motion it is
+   * gone in a millisecond, and the notice under the board still says what
+   * happened.
+   */
+  const [blamed, blame] = useCue<string[]>()
+  useEffect(() => {
+    const dead = failureOf(state)
+    if (dead !== null) blame(dead.blamed)
+  }, [state, blame])
+  const shaking = useMemo(() => new Set(blamed), [blamed])
 
   /** When only one piece can row, it never leaves the boat — nobody wants to tap it 14 times. */
   const pilot = useMemo(() => {
@@ -91,6 +112,7 @@ export function Board({ state, dispatch, locked }: BoardProps<RiverState, RiverA
             <Piece
               key={item.id}
               item={item}
+              shaking={shaking.has(item.id)}
               label={
                 reachable
                   ? `Put ${nameFor(item)} in the boat`
@@ -132,6 +154,7 @@ export function Board({ state, dispatch, locked }: BoardProps<RiverState, RiverA
                     key={cfg.items[i].id}
                     item={cfg.items[i]}
                     aboard
+                    shaking={shaking.has(cfg.items[i].id)}
                     label={
                       i === pilot
                         ? `${cfg.items[i].label}, rowing the boat`

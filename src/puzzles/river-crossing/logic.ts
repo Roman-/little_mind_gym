@@ -94,22 +94,48 @@ export function isSolved(state: RiverState): boolean {
   return state.at.every((b) => b === 'far')
 }
 
-export function failure(state: RiverState): string | null {
+/**
+ * A dead end: the sentence the player is shown, and the pieces that sentence
+ * is about. The board shakes those pieces, so it points at the wolf and the
+ * goat without ever reading the English back out of the message.
+ */
+export interface RiverFailure {
+  /** One short sentence of fact. */
+  message: string
+  /** The ids of the pieces the sentence names. */
+  blamed: string[]
+}
+
+/** The first rule the banks break, if any. Near bank first, then far. */
+export function failureOf(state: RiverState): RiverFailure | null {
   const { cfg } = state
   for (const bank of ['near', 'far'] as Bank[]) {
     const here = population(state, bank)
     const ids = new Set(here.map((i) => cfg.items[i].id))
     const guarded = here.some((i) => cfg.items[i].guardian)
     if (!guarded && cfg.pairs) {
-      for (const p of cfg.pairs) if (ids.has(p.a) && ids.has(p.b)) return p.message
+      for (const p of cfg.pairs) {
+        if (ids.has(p.a) && ids.has(p.b)) return { message: p.message, blamed: [p.a, p.b] }
+      }
     }
     if (cfg.outnumber) {
-      const predators = here.filter((i) => cfg.items[i].role === 'predator').length
-      const prey = here.filter((i) => cfg.items[i].role === 'prey').length
-      if (prey > 0 && predators > prey) return cfg.outnumber.message
+      const cast = (role: RiverItem['role']) =>
+        here.filter((i) => cfg.items[i].role === role).map((i) => cfg.items[i].id)
+      const predators = cast('predator')
+      const prey = cast('prey')
+      if (prey.length > 0 && predators.length > prey.length) {
+        // Everyone the sentence counts, and nobody off this bank: the cats
+        // that outnumbered, and the mice they outnumbered.
+        return { message: cfg.outnumber.message, blamed: [...predators, ...prey] }
+      }
     }
   }
   return null
+}
+
+/** What the engine hands the shell: the sentence on its own. */
+export function failure(state: RiverState): string | null {
+  return failureOf(state)?.message ?? null
 }
 
 export function describeMove(prev: RiverState, _next: RiverState, action: RiverAction): string {
