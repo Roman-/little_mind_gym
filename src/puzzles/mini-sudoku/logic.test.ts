@@ -1,20 +1,23 @@
-import { createElement } from 'react'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { createElement, useState } from 'react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { cues } from '../../lib/motion'
 import { makeRng } from '../../lib/rng'
 import { shortestSolution } from '../../lib/search'
 import type { PuzzleLevel } from '../../lib/types'
 import { miniSudoku } from './index'
 import { Board } from './Board'
-import type { Geometry, SudokuAction, SudokuConfig, SudokuState } from './logic'
+import type { Clash, Geometry, SudokuAction, SudokuConfig, SudokuState } from './logic'
 import {
   FRUIT_NAMES,
   allGeometries,
   applyGeometry,
   blankCount,
   canonicalKey,
+  clashOf,
   conflicts,
   countSolutions,
+  describeClash,
   describeMove,
   filledCount,
   init,
@@ -483,6 +486,102 @@ describe('isSolved and conflicts', () => {
   })
 })
 
+describe('the clash a placement makes', () => {
+  /** Hand-built, so the test says which unit breaks rather than hunting for one. */
+  const board = (givens: number[], entries = new Array<number>(16).fill(0)): SudokuState => ({
+    n: 4,
+    boxH: 2,
+    boxW: 2,
+    symbols: 'fruit',
+    givens,
+    entries,
+  })
+
+  /** An apple printed in the top-left corner, and nothing else on the board. */
+  const corner = board([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+  it('says nothing when the square takes the symbol cleanly', () => {
+    expect(clashOf(corner, 10, 1)).toBeNull()
+    // Rubbing a square out breaks nothing, and a printed clue is not yours to write in.
+    expect(clashOf(corner, 5, 0)).toBeNull()
+    expect(clashOf(corner, 0, 2)).toBeNull()
+  })
+
+  it('names the row, and holds the whole of it', () => {
+    const clash = clashOf(corner, 1, 1)
+    expect(clash).toEqual({
+      kind: 'row',
+      ordinal: 1,
+      cells: [0, 1, 2, 3],
+      blamed: [0, 1],
+      value: 1,
+    })
+  })
+
+  it('falls to the column when the row is clean', () => {
+    expect(clashOf(corner, 4, 1)).toMatchObject({
+      kind: 'column',
+      ordinal: 1,
+      cells: [0, 4, 8, 12],
+      blamed: [0, 4],
+    })
+  })
+
+  it('falls to the box when the row and the column are both clean', () => {
+    expect(clashOf(corner, 5, 1)).toMatchObject({
+      kind: 'box',
+      cells: [0, 1, 4, 5],
+      blamed: [0, 5],
+    })
+  })
+
+  it('blames every square in that unit holding the symbol, not only the first two', () => {
+    const already = board(corner.givens, [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    expect(clashOf(already, 1, 1)?.blamed).toEqual([0, 1, 2])
+  })
+
+  it('fires exactly when the move would turn the square red', () => {
+    for (const level of levels) {
+      for (const state of walk(start(level, 12), 5, 8)) {
+        for (const move of legalMoves(state)) {
+          const clash = clashOf(state, move.index, move.value)
+          expect(clash !== null).toBe(conflicts(reduce(state, move))[move.index])
+          if (clash === null) continue
+          expect(clash.cells).toHaveLength(state.n)
+          expect(clash.cells).toContain(move.index)
+          expect(clash.blamed).toContain(move.index)
+          expect(clash.blamed.length).toBeGreaterThan(1)
+          for (const i of clash.blamed) expect(clash.cells).toContain(i)
+        }
+      }
+    }
+  })
+
+  it('puts the broken rule in one sentence', () => {
+    expect(describeClash(corner, clashOf(corner, 1, 1) as Clash)).toBe(
+      'The apple is already in row 1.',
+    )
+    expect(describeClash(corner, clashOf(corner, 4, 1) as Clash)).toBe(
+      'The apple is already in column 1.',
+    )
+    // A box has no number a child could count to, so the lit squares say which one.
+    expect(describeClash(corner, clashOf(corner, 5, 1) as Clash)).toBe(
+      'The apple is already in this box.',
+    )
+  })
+
+  it('says the numeral at 6x6', () => {
+    const state = start(levels[2], 7)
+    const clue = state.givens.findIndex((v) => v !== 0)
+    const row = unitsOf(6, 2, 3)[Math.floor(clue / 6)]
+    const blank = row.find((i) => state.givens[i] === 0) as number
+    const clash = clashOf(state, blank, state.givens[clue]) as Clash
+    expect(describeClash(state, clash)).toBe(
+      `The ${state.givens[clue]} is already in row ${Math.floor(clue / 6) + 1}.`,
+    )
+  })
+})
+
 describe('describe', () => {
   it('names the fruit and the square, in the past tense', () => {
     const state = start(levels[0], 3)
@@ -538,6 +637,40 @@ describe('the board', () => {
     document.querySelector(
       `[aria-label^="Row ${Math.floor(index / state.n) + 1}, column ${(index % state.n) + 1},"]`,
     ) as HTMLButtonElement
+
+  /** The board with a real state behind it, so a cue can be watched from the tap that fires it. */
+  const Play = ({ from }: { from: SudokuState }) => {
+    const [state, setState] = useState(from)
+    return createElement(Board, {
+      state,
+      dispatch: (action: SudokuAction) => setState((cur) => reduce(cur, action)),
+      locked: false,
+    })
+  }
+
+  const wearing = (cue: string) =>
+    [...document.querySelectorAll('[class]')].filter((el) => el.classList.contains(cue))
+
+  /** The first row that holds both a blank and a printed clue: one tap breaks that row. */
+  const rowClash = (state: SudokuState) => {
+    for (let r = 0; r < state.n; r++) {
+      const cells = unitsOf(state.n, state.boxH, state.boxW)[r]
+      const blank = cells.find((i) => state.givens[i] === 0)
+      const clue = cells.find((i) => state.givens[i] !== 0)
+      if (blank !== undefined && clue !== undefined) {
+        const value = state.givens[clue]
+        return {
+          row: r + 1,
+          blank,
+          clue,
+          value,
+          key: `Put the ${FRUIT_NAMES[value - 1]} in the square`,
+          said: `The ${FRUIT_NAMES[value - 1]} is already in row ${r + 1}.`,
+        }
+      }
+    }
+    throw new Error('no row holds both a blank and a printed clue')
+  }
 
   it('draws a pressable tile for every blank and a printed clue for every given', () => {
     const { state } = setup(levels[0], 2)
@@ -707,6 +840,81 @@ describe('the board', () => {
     expect(printed.tagName).toBe('DIV')
     expect(printed.getAttribute('data-conflict')).toBeNull()
     expect(printed.getAttribute('aria-label')).toMatch(/, printed$/)
+  })
+
+  it('lights the whole row and shakes the two fruits at fault', () => {
+    const state = start(levels[0], 33)
+    const { row, blank, clue, key } = rowClash(state)
+    render(createElement(Play, { from: state }))
+    fireEvent.click(tileAt(state, blank))
+    fireEvent.click(screen.getByRole('button', { name: key }))
+
+    // The whole row, and not one square outside it.
+    const lit = wearing(cues.highlight)
+    expect(lit).toHaveLength(state.n)
+    for (const square of lit) {
+      expect(square.getAttribute('aria-label')).toMatch(new RegExp(`^Row ${row}, `))
+    }
+
+    // And inside it, the two squares that hold the fruit: the answer just
+    // written, and the clue it repeats.
+    const shaking = wearing(cues.shake).map((mark) => mark.closest('[aria-label]'))
+    expect(shaking).toHaveLength(2)
+    expect(shaking).toContain(tileAt(state, blank))
+    expect(shaking).toContain(tileAt(state, clue))
+  })
+
+  it('names the repeat out loud, and in the line under the board', () => {
+    const state = start(levels[0], 33)
+    const { blank, key, said } = rowClash(state)
+    render(createElement(Play, { from: state }))
+    fireEvent.click(tileAt(state, blank))
+    fireEvent.click(screen.getByRole('button', { name: key }))
+
+    expect(screen.getByRole('status')).toHaveTextContent(said)
+    // Both lines say it: the one a child reads and the one a screen reader speaks.
+    expect(screen.getAllByText(said)).toHaveLength(2)
+
+    // Rub the answer out and there is nothing left to say.
+    fireEvent.click(tileAt(state, blank))
+    fireEvent.click(screen.getByRole('button', { name: 'Rub out the square' }))
+    expect(screen.getByRole('status').textContent).toBe('')
+  })
+
+  it('lights nothing when the answer fits', () => {
+    const state = start(levels[0], 33)
+    const answer = solveGrid(state.givens, 4, 2, 2) as number[]
+    const blank = state.givens.indexOf(0)
+    const right = `Put the ${FRUIT_NAMES[answer[blank] - 1]} in the square`
+    render(createElement(Play, { from: state }))
+    fireEvent.click(tileAt(state, blank))
+    fireEvent.click(screen.getByRole('button', { name: right }))
+    expect(wearing(cues.highlight)).toHaveLength(0)
+    expect(wearing(cues.shake)).toHaveLength(0)
+    expect(screen.getByRole('status').textContent).toBe('')
+  })
+
+  it('takes the light off again, and leaves the sentence and the red ring standing', () => {
+    vi.useFakeTimers()
+    document.documentElement.style.setProperty('--dur-5', '900ms')
+    try {
+      const state = start(levels[0], 33)
+      const { blank, key, said } = rowClash(state)
+      render(createElement(Play, { from: state }))
+      fireEvent.click(tileAt(state, blank))
+      fireEvent.click(screen.getByRole('button', { name: key }))
+      expect(wearing(cues.highlight)).toHaveLength(state.n)
+
+      act(() => vi.advanceTimersByTime(900))
+      expect(wearing(cues.highlight)).toHaveLength(0)
+      expect(wearing(cues.shake)).toHaveLength(0)
+      // The louder layer has gone; the marking underneath it has not.
+      expect(tileAt(state, blank)).toHaveAttribute('data-conflict', 'true')
+      expect(screen.getByRole('status')).toHaveTextContent(said)
+    } finally {
+      vi.useRealTimers()
+      document.documentElement.removeAttribute('style')
+    }
   })
 
   it('stays quiet when nothing is wrong', () => {

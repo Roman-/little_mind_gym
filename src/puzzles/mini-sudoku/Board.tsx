@@ -1,11 +1,15 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { cues, useCue } from '../../lib/motion'
 import type { BoardProps } from '../../lib/types'
-import type { SudokuAction, SudokuState, SymbolSet } from './logic'
-import { FRUIT_NAMES, conflicts, symbolName } from './logic'
+import type { Clash, SudokuAction, SudokuState, SymbolSet } from './logic'
+import { FRUIT_NAMES, clashOf, conflicts, describeClash, symbolName } from './logic'
 import { ClearGlyph, FruitGlyph } from './glyphs'
 import s from './board.module.css'
 
 const noun = (symbols: SymbolSet) => (symbols === 'fruit' ? 'fruit' : 'number')
+
+/** A cue class comes and goes, so every className on the grid is joined the same way. */
+const cx = (...names: (string | false | undefined)[]) => names.filter(Boolean).join(' ')
 
 /** What a symbol key says to a screen reader, and what a keypress writes. */
 const keyLabel = (symbols: SymbolSet, value: number) =>
@@ -13,10 +17,10 @@ const keyLabel = (symbols: SymbolSet, value: number) =>
     ? `Put the ${FRUIT_NAMES[value - 1]} in the square`
     : `Put ${value} in the square`
 
-function Mark({ value, symbols }: { value: number; symbols: SymbolSet }) {
+function Mark({ value, symbols, cue }: { value: number; symbols: SymbolSet; cue?: string }) {
   if (value === 0) return null
-  if (symbols === 'fruit') return <FruitGlyph value={value} className={s.art} />
-  return <span className={s.digit}>{value}</span>
+  if (symbols === 'fruit') return <FruitGlyph value={value} className={cx(s.art, cue)} />
+  return <span className={cx(s.digit, cue)}>{value}</span>
 }
 
 const firstBlank = (givens: number[]) => Math.max(0, givens.indexOf(0))
@@ -53,10 +57,38 @@ export function Board({ state, dispatch, locked }: BoardProps<SudokuState, Sudok
   const repeats = wrong.reduce((count, w) => count + (w ? 1 : 0), 0)
   const values = useMemo(() => Array.from({ length: n }, (_, i) => i + 1), [n])
 
+  /**
+   * The unit a repeat has just broken, lit for one run of the cue. A red ring
+   * says which square is wrong but never what it is wrong with, so the whole
+   * row, column or box lights up and the two squares that hold the symbol
+   * shake at each other. It is decoration over a move the puzzle has already
+   * taken: nothing else reads it, and it takes itself off again.
+   */
+  const [lit, light] = useCue<Clash>('--dur-5')
+  const litUnit = useMemo(() => new Set(lit?.cells), [lit])
+  const litPair = useMemo(() => new Set(lit?.blamed), [lit])
+
+  /**
+   * The same mistake in words. It is deliberately not on the cue's timer:
+   * reduced motion collapses that to a millisecond, and this sentence is all
+   * that is left of the cue for anyone who cannot watch it. It stands until
+   * the board has no repeat left on it, and it is dropped during render rather
+   * than after paint so that a repeat made much later is never announced with
+   * the sentence for an older one.
+   */
+  const [said, setSaid] = useState<string | null>(null)
+  if (said !== null && repeats === 0) setSaid(null)
+
   const write = (index: number, value: number) => {
     // The board never sends a move it already knows is a no-op.
     if (locked || givens[index] !== 0 || entries[index] === value) return
+    // Worked out from the state the move is leaving, which is the only one the
+    // board has: the shell hands the next one back on the render after this.
+    const clash = clashOf(state, index, value)
     dispatch({ type: 'set', index, value })
+    if (clash === null) return
+    light(clash)
+    setSaid(describeClash(state, clash))
   }
 
   /** Both pieces of local state follow the focus, so they can never disagree. */
@@ -124,11 +156,11 @@ export function Board({ state, dispatch, locked }: BoardProps<SudokuState, Sudok
       return (
         <div className={s.cell} data-top={top} data-left={left} key={i}>
           <div
-            className={s.given}
+            className={cx(s.given, litUnit.has(i) && cues.highlight)}
             role="img"
             aria-label={`${where}, ${symbolName(symbols, given)}, printed`}
           >
-            <Mark value={given} symbols={symbols} />
+            <Mark value={given} symbols={symbols} cue={litPair.has(i) ? cues.shake : undefined} />
           </div>
         </div>
       )
@@ -140,7 +172,7 @@ export function Board({ state, dispatch, locked }: BoardProps<SudokuState, Sudok
       <div className={s.cell} data-top={top} data-left={left} key={i}>
         <button
           type="button"
-          className={`${s.tile} u-press`}
+          className={cx(s.tile, 'u-press', litUnit.has(i) && cues.highlight)}
           ref={(el) => {
             refs.current[i] = el
           }}
@@ -153,19 +185,23 @@ export function Board({ state, dispatch, locked }: BoardProps<SudokuState, Sudok
           onFocus={() => markCell(i)}
           onClick={() => focusCell(i)}
         >
-          <Mark value={value} symbols={symbols} />
+          <Mark value={value} symbols={symbols} cue={litPair.has(i) ? cues.shake : undefined} />
         </button>
       </div>
     )
   })
 
-  /* One line, and only ever one: what red means, or what to tap next. */
+  /* One line, and only ever one: the repeat that has just been made, what red
+     means, or what to tap next. The named repeat outranks the general
+     sentence — a child who has just put a second banana in a row is owed the
+     banana, not the rule. */
   const repeated = `Red means you have the same ${noun(symbols)} twice in a row, column or box.`
+  const brokenRule = repeats === 0 ? '' : (said ?? repeated)
 
   const note = locked
     ? ''
-    : repeats > 0
-      ? repeated
+    : brokenRule !== ''
+      ? brokenRule
       : selected === null
         ? `Tap a square, then tap a ${noun(symbols)}.`
         : `Now tap a ${noun(symbols)} for row ${Math.floor(selected / n) + 1}, column ${(selected % n) + 1}.`
@@ -223,7 +259,7 @@ export function Board({ state, dispatch, locked }: BoardProps<SudokuState, Sudok
       <p className={s.note}>{note}</p>
       {/* Only the broken rule is announced. Every arrow key would be noise. */}
       <p className="u-sr" role="status">
-        {locked || repeats === 0 ? '' : repeated}
+        {locked ? '' : brokenRule}
       </p>
     </div>
   )

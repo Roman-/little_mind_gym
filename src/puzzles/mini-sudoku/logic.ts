@@ -60,7 +60,10 @@ const peerCache = new Map<string, number[][]>()
 
 const shapeKey = (n: number, boxH: number, boxW: number) => `${n}:${boxH}:${boxW}`
 
-/** Every row, every column and every box, as lists of cell indices. */
+/**
+ * Every row, then every column, then every box, as lists of cell indices. That
+ * order is load-bearing: `clashOf` reads a unit's kind off its position here.
+ */
 export function unitsOf(n: number, boxH: number, boxW: number): number[][] {
   const key = shapeKey(n, boxH, boxW)
   const hit = unitCache.get(key)
@@ -392,6 +395,56 @@ export function conflicts(state: SudokuState): boolean[] {
   return values.map(
     (v, i) => state.givens[i] === 0 && v !== 0 && peers[i].some((p) => values[p] === v),
   )
+}
+
+/** What kind of unit a symbol has landed in twice. */
+export type UnitKind = 'row' | 'column' | 'box'
+
+/** One placement, and the unit it leaves holding the same symbol twice. */
+export interface Clash {
+  kind: UnitKind
+  /** Which row or column, counting from 1. A box is numbered too, and never said out loud. */
+  ordinal: number
+  /** Every square in that unit, so a board can light the whole of it. */
+  cells: number[]
+  /** The squares in it that hold the symbol: the one just written, and the one it repeats. */
+  blamed: number[]
+  /** The symbol that has landed twice. */
+  value: number
+}
+
+/** `unitsOf` lists rows, then columns, then boxes, so a unit's place in it names it. */
+function unitAt(u: number, n: number): { kind: UnitKind; ordinal: number } {
+  if (u < n) return { kind: 'row', ordinal: u + 1 }
+  if (u < 2 * n) return { kind: 'column', ordinal: u - n + 1 }
+  return { kind: 'box', ordinal: u - 2 * n + 1 }
+}
+
+/**
+ * The unit that writing `value` into `index` leaves holding that symbol twice,
+ * or null if the square takes it cleanly. One placement can break a row, a
+ * column and a box at once, and only the first is reported: three units lit
+ * together would say nothing about any of them, and the row is the line a
+ * child scans fastest.
+ */
+export function clashOf(state: SudokuState, index: number, value: number): Clash | null {
+  if (value === 0 || state.givens[index] !== 0) return null
+  const values = valuesOf(state)
+  values[index] = value
+  const units = unitsOf(state.n, state.boxH, state.boxW)
+  for (let u = 0; u < units.length; u++) {
+    const cells = units[u]
+    if (!cells.includes(index)) continue
+    const blamed = cells.filter((i) => values[i] === value)
+    if (blamed.length > 1) return { ...unitAt(u, state.n), cells, blamed, value }
+  }
+  return null
+}
+
+/** The broken rule in one sentence. The lit unit says where; this says what. */
+export function describeClash(state: SudokuState, clash: Clash): string {
+  const where = clash.kind === 'box' ? 'this box' : `${clash.kind} ${clash.ordinal}`
+  return `The ${symbolName(state.symbols, clash.value)} is already in ${where}.`
 }
 
 /** Squares still to fill. Each one costs exactly one move, so this is par. */

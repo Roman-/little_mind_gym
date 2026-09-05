@@ -126,11 +126,12 @@ Things slide and settle; nothing spins or wobbles to fill a wait.
 
 Two longer rungs are for motion that has to be *noticed* rather than only
 seen: `--dur-4` for a one-shot cue, `--dur-5` for a cue the eye has to follow
-or read. They are rationed to two moments — a move the puzzle refuses, and a
-level solved — and each one is a named cue in `src/styles/motion.module.css`:
-`.shake`, `.flash` (a red outline), `.no` (one shrink and back), and
-`.highlight` (a group of cells lit long enough to be read). A board writes no
-keyframes of its own; it fires one of these with `useCue()`.
+or read. They are rationed to two moments — a mistake the board has to point
+at, and a level solved — and each one is a named cue in
+`src/styles/motion.module.css`: `.shake`, `.flash` (a red outline), `.no` (one
+shrink and back), and `.highlight` (a group of cells lit long enough to be
+read). A board writes no keyframes of its own; it fires one of these with
+`useCue()`.
 
 ```tsx
 import { cues, useCue } from '../../lib/motion'
@@ -144,11 +145,21 @@ sayNo(item.id)
 A cue clears itself when its run is over: nobody has to remember to take the
 class off, and the element is left exactly as it was.
 
+One mistake can take two cues at once. When a repeated fruit breaks a row, the
+small square lights every square in that row with `.highlight` and shakes the
+two fruits at fault with `.shake`: the light says where the rule broke, the
+shake says which two squares broke it. Only one group is ever lit — a
+placement can break a row, a column and a box together, and three lit groups
+say nothing about any of them — and which group it is comes from the puzzle's
+own rules in `logic.ts`, never from the board working the rule out a second
+time.
+
 Reduced motion is already handled — the duration tokens collapse to 1ms — so
 just use the tokens and never hard-code a duration. That collapse is also why
 a cue is never the only thing that says what happened: the sentence under the
 board says it too, and the confetti is skipped outright, on
-`usePrefersReducedMotion`.
+`usePrefersReducedMotion`. A sentence that answers a cue is never put on the
+cue's timer, either — it stands until the mistake it names is off the board.
 
 There is no animation library, and that is a decision rather than an omission.
 All of the above is four sets of keyframes and one small hook, and what a
@@ -200,7 +211,8 @@ rounded-pill buttons, more than one accent colour on a screen, or a second
 display typeface. Nothing bounces, pulses or sparkles to fill a wait, to pull
 the eye towards a control, or to dress up a screen that was doing fine without
 it. The two exceptions are named under **Motion** above and are the whole
-list: a cue on a move the puzzle refuses, and the confetti on a solve.
+list: a cue on a mistake the board has to point at, and the confetti on a
+solve.
 
 Do not put an emoji in a *sentence*: a picture is a pictogram on a plate,
 never a character in running text a screen reader has to read out. Do not
