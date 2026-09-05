@@ -1,0 +1,203 @@
+/* A shallow stream with a line of stepping stones across it.
+
+   The frogs used to be discs the width of a fingernail with a pale line
+   drawing inside, which is what "the circles are not resembling the frogs at
+   all" was about. Now the frog IS the piece: OpenMoji artwork at nearly the
+   full width of its stone, green one way and blue the other. */
+
+.stage {
+  /* 48px is a floor, not a suggestion: below it the row keeps its size and the
+     stage scrolls, the way every other board here behaves. */
+  --cell: clamp(48px, 12vw, 116px);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+/* The setting. Water above and below the stones, so the row sits in a place
+   rather than floating in the middle of an empty panel. */
+.stream {
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-radius: var(--r-md);
+  border: var(--hair) solid var(--rule);
+  background: color-mix(in oklab, var(--p-teal) 14%, var(--surface-sunk));
+  padding: var(--s5) var(--s4);
+  display: grid;
+  place-items: center;
+  min-height: clamp(14rem, 40vh, 24rem);
+}
+
+.stream::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 23px,
+    color-mix(in oklab, var(--p-teal) 30%, transparent) 23px 24px
+  );
+  opacity: 0.32;
+}
+
+.row {
+  position: relative;
+  width: 100%;
+  min-width: calc(var(--seats) * 48px);
+  max-width: calc(var(--seats) * var(--cell));
+  /* One square per stone: the tap target is the whole square, not the frog. */
+  aspect-ratio: var(--seats);
+  margin-inline: auto;
+}
+
+/* The earth ledge the stones are set into, running a little past both ends. */
+.ledge {
+  position: absolute;
+  left: calc(var(--cell) * -0.2);
+  right: calc(var(--cell) * -0.2);
+  top: 64%;
+  height: clamp(7px, 1.8vw, 13px);
+  border-radius: var(--r-sm);
+  background: color-mix(in oklab, var(--p-clay) 26%, var(--surface-sunk));
+  border: var(--hair) solid color-mix(in oklab, var(--p-clay) 42%, var(--rule));
+}
+
+.stones {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--seats), 1fr);
+  align-items: center;
+}
+
+.stone {
+  justify-self: center;
+  width: 88%;
+  aspect-ratio: 1;
+  border-radius: var(--r-round);
+  background: color-mix(in oklab, var(--rule-strong) 55%, var(--surface));
+  border: var(--hair) solid color-mix(in oklab, var(--ink) 22%, var(--rule-strong));
+}
+
+/* The one stone with nobody on it is the whole puzzle, so it is drawn as a
+   place to land rather than as another grey circle. */
+.stone[data-free='true'] {
+  background: color-mix(in oklab, var(--amber-soft) 55%, var(--surface));
+  border-style: dashed;
+  border-color: var(--rule-strong);
+}
+
+/* --- the frogs ---------------------------------------------- */
+
+.frogs {
+  position: absolute;
+  inset: 0;
+}
+
+/* One seat wide, parked on its stone. The sideways half of a hop is this
+   transform. `linear` and not var(--ease): a jumping animal travels sideways
+   at a steady speed, and the arc in Board.tsx supplies the rise and fall. An
+   eased slide under a parabola reads as a frog falling early. */
+.slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: calc(100% / var(--seats));
+  display: grid;
+  place-items: center;
+  transform: translateX(calc(var(--pos) * 100%));
+  transition: transform var(--dur-3) linear;
+}
+
+.frog {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-round);
+  background: none;
+  box-shadow: none;
+}
+
+/* u-press puts a hard shadow on every touchable thing, but a shadow behind a
+   cut-out frog reads as a smudge. u-press still sinks it under the press. */
+
+.hop {
+  display: grid;
+  place-items: center;
+  width: 74%;
+  height: 74%;
+}
+
+.art {
+  width: 100%;
+  height: 100%;
+}
+
+/* One set of artwork, two teams. 140 degrees turns OpenMoji's yellow-green
+   frog a clean pond blue and leaves the black line work alone. */
+.frog[data-colour='blue'] .art {
+  filter: hue-rotate(140deg);
+}
+
+/* A frog with no move steps back rather than changing colour: an eight-year-old
+   reads a faded frog as "not this one", and a grey-green one as a sick frog. */
+.frog:disabled {
+  opacity: 0.5;
+}
+
+/* Keep the halo round under the global focus ring. */
+.frog:focus-visible {
+  border-radius: var(--r-round);
+}
+
+/* --- where each colour is heading --------------------------- */
+
+.ends {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s3);
+  width: 100%;
+}
+
+.end {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s1);
+  font-size: var(--t-sm);
+}
+
+.end svg {
+  width: 1.2em;
+  height: 1.2em;
+  flex-shrink: 0;
+}
+
+/* Which colour goes which way, said with the frog itself. */
+.end .endFrog {
+  width: 1.8em;
+  height: 1.8em;
+}
+
+.end .endBlue {
+  filter: hue-rotate(140deg);
+}
+
+.flip {
+  transform: scaleX(-1);
+}
+
+@media (max-width: 30rem) {
+  .stream {
+    padding: var(--s4) var(--s2);
+    min-height: 9rem;
+  }
+  .end {
+    font-size: var(--t-xs);
+  }
+}

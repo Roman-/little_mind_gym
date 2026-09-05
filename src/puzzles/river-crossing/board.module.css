@@ -1,0 +1,281 @@
+/* Two banks, full width, one above the other — and the river between them.
+
+   The old board stood the banks side by side with a narrow channel of water
+   down the middle, which gave the boat a column narrower than the shores it
+   was rowing between, and gave each bank about a tile and a half of room. Now
+   the shores get the whole width and the boat crosses up and down. */
+
+.board {
+  --tile: clamp(54px, 11vw, 78px);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--s3);
+  width: 100%;
+  min-height: clamp(21rem, 54vh, 34rem);
+}
+
+/* The one sentence a child has to understand to play the level. */
+.rule {
+  text-align: center;
+  color: var(--ink);
+  font-size: var(--t-body);
+  line-height: 1.4;
+  max-width: 46ch;
+  margin: 0 auto;
+}
+
+.scene {
+  display: grid;
+  /* The river needs a floor of its own. Without one the two banks grow to fit
+     their pieces and take the whole scene with them, and a loaded boat — a
+     50px hull with a passenger standing on it — is left with under 10px of
+     water to cross, which reads as a twitch rather than a crossing. */
+  grid-template-rows: auto minmax(13rem, 1.4fr) auto;
+  gap: var(--s2);
+  min-height: 0;
+}
+
+/* --- the two banks ------------------------------------------ */
+
+.bank {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  padding: var(--s3);
+  border-radius: var(--r-md);
+  border: var(--hair) solid var(--rule);
+  background: color-mix(in oklab, var(--p-ochre) 11%, var(--surface-sunk));
+}
+
+/* The far bank is at the top of the board, so its label sits above its row;
+   the near bank's sits below. Both labels end up at the outer edge, the way a
+   map names the land at its margins. */
+.bank[data-side='far'] {
+  flex-direction: column-reverse;
+}
+
+.bankLabel {
+  text-align: center;
+  color: var(--ink-muted);
+}
+
+.pieces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s3);
+  justify-content: center;
+  align-items: flex-end;
+  min-height: calc(var(--tile) + 1.5rem);
+}
+
+/* --- the river ---------------------------------------------- */
+
+.river {
+  position: relative;
+  border-radius: var(--r-md);
+  border: var(--hair) solid var(--rule);
+  background: color-mix(in oklab, var(--p-teal) 16%, var(--surface-sunk));
+  overflow: hidden;
+}
+
+.river::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 15px,
+    color-mix(in oklab, var(--p-teal) 32%, transparent) 15px 16px
+  );
+  opacity: 0.5;
+}
+
+.track {
+  position: absolute;
+  inset: var(--s2) 0;
+}
+
+.boat {
+  position: absolute;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transition:
+    top var(--dur-3) var(--ease),
+    transform var(--dur-3) var(--ease);
+}
+
+.boat[data-bank='near'] {
+  top: 100%;
+  transform: translate(-50%, -100%);
+}
+
+.boat[data-bank='far'] {
+  top: 0;
+  transform: translate(-50%, 0);
+}
+
+.cargo {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--s2);
+  min-height: 1.5rem;
+  /* Standing in the boat, not hovering over it: the hull comes after the
+     cargo in the DOM, so it paints over the passengers' feet. */
+  margin-bottom: -0.7rem;
+}
+
+/* The hull is the control: tap the boat and the boat goes.
+
+   A rounded belly rather than a clipped trapezoid, so u-press's offset shadow
+   follows the shape instead of hanging off the stern as a grey rectangle. */
+.hull {
+  position: relative;
+  width: clamp(11rem, 42vw, 17rem);
+  height: 3.1rem;
+  display: block;
+  background: color-mix(in oklab, var(--p-clay) 58%, var(--p-slate));
+  border: var(--hair) solid color-mix(in oklab, var(--ink) 45%, transparent);
+  border-radius: var(--r-sm) var(--r-sm) 46% 46% / var(--r-sm) var(--r-sm) 100% 100%;
+}
+
+/* The gunwale: the plank a passenger stands behind. */
+.hullBody {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 0.55rem;
+  border-bottom: var(--hair) solid color-mix(in oklab, var(--ink) 30%, transparent);
+  background: color-mix(in oklab, var(--p-clay) 40%, var(--p-slate));
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+}
+
+/* Amber is "your turn", so the arrow lights up the moment the load can float
+   and goes quiet when the boat has nobody to row it. */
+.arrow {
+  position: absolute;
+  right: 10%;
+  top: 50%;
+  width: 1.6rem;
+  height: 1.6rem;
+  transform: translateY(-50%);
+  padding: 2px;
+  border-radius: var(--r-round);
+  background: var(--amber);
+  color: var(--p-on-dark);
+  border: var(--hair) solid var(--ink);
+}
+
+.hull[data-dir='down'] .arrow {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+/* Nobody aboard can row, so the boat is not going anywhere yet. */
+.hull:disabled {
+  cursor: default;
+  filter: saturate(0.4);
+}
+
+.hull:disabled .arrow {
+  background: var(--surface-sunk);
+  color: var(--ink-faint);
+  border-color: var(--rule-strong);
+}
+
+.hull:focus-visible {
+  border-radius: var(--r-md) var(--r-md) 46% 46% / var(--r-md) var(--r-md) 100% 100%;
+}
+
+/* --- a piece ------------------------------------------------ */
+
+.piece {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border-radius: var(--r-lg);
+  background: none;
+}
+
+/* In the boat the pieces stand a little smaller and drop both their names and
+   their plates — there is no room on a hull for a caption, and a passenger
+   standing on a white tile reads as a box in the boat rather than as somebody
+   in it. */
+.piece[data-aboard='true'] {
+  --tile: clamp(44px, 9vw, 62px);
+  animation: aboard var(--dur-2) var(--ease-out);
+}
+
+.piece[data-aboard='true'] .name {
+  display: none;
+}
+
+.piece[data-aboard='true'] .plate {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* The plate is neutral. The picture says which animal it is; the plate is
+   free to say whether you can touch it. */
+.plate {
+  width: var(--tile);
+  height: var(--tile);
+  border-radius: var(--r-lg);
+  display: grid;
+  place-items: center;
+  padding: 8%;
+  background: var(--surface);
+  border: var(--hair) solid var(--rule-strong);
+}
+
+.piece:not([data-idle='true']):hover .plate {
+  border-color: var(--ink);
+  background: var(--amber-soft);
+}
+
+.art {
+  width: 100%;
+  height: 100%;
+}
+
+.name {
+  font-size: var(--t-sm);
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.piece[data-idle='true'] {
+  cursor: default;
+  box-shadow: var(--press-none);
+}
+
+@keyframes aboard {
+  from {
+    transform: translateY(-8px) scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* --- the one line of help ----------------------------------- */
+
+.note {
+  font-size: var(--t-sm);
+  color: var(--ink-muted);
+  min-height: 1.4em;
+  text-align: center;
+}
+
+@media (max-width: 30rem) {
+  .bank {
+    padding: var(--s2);
+  }
+  .pieces {
+    gap: var(--s2);
+  }
+  .rule {
+    font-size: var(--t-sm);
+  }
+}

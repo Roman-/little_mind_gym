@@ -1,0 +1,70 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s4);
+  padding: var(--s8) var(--s5);
+  text-align: center;
+}
+
+/* A pictogram brings its own colours, so "still shuffling" is a step back in
+   opacity rather than a step down in ink. */
+.window {
+  width: 112px;
+  height: 112px;
+  display: grid;
+  place-items: center;
+  color: var(--ink-muted);
+  opacity: 0.55;
+  transition: opacity var(--dur-2) var(--ease);
+}
+
+.window svg {
+  width: 76px;
+  height: 76px;
+  animation: deal var(--dur-2) var(--ease-out);
+}
+
+.window[data-settled='true'] {
+  color: var(--ink);
+  opacity: 1;
+}
+
+.name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--t-title);
+  letter-spacing: var(--track-tight);
+  min-height: 1.2em;
+}
+
+/* The only words on screen while a child waits, so they are a sentence
+   in the body voice, not a machine label. */
+.line {
+  font-size: var(--t-lg);
+  color: var(--ink);
+}
+
+.tape {
+  display: flex;
+  gap: var(--s1);
+}
+
+.pip {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--r-sm);
+  border: var(--hair) solid var(--rule-strong);
+}
+
+.pip[data-on='true'] {
+  background: var(--amber);
+  border-color: var(--amber);
+}
+
+@keyframes deal {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+}

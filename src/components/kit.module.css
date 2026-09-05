@@ -1,0 +1,73 @@
+.panel {
+  background: var(--surface);
+  border: var(--hair) solid var(--rule);
+  border-radius: var(--r-lg);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+  border-radius: var(--r-md);
+  border: var(--hair) solid transparent;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn svg {
+  width: 1.2em;
+  height: 1.2em;
+  flex: none;
+}
+
+.md {
+  padding: var(--s3) var(--s5);
+  min-height: var(--tap);
+  font-size: var(--t-body);
+}
+
+.sm {
+  padding: var(--s2) var(--s4);
+  min-height: var(--tap-sm);
+  font-size: var(--t-sm);
+}
+
+.primary {
+  background: var(--amber);
+  border-color: var(--ink);
+  color: var(--p-on-dark);
+}
+
+.secondary {
+  background: var(--surface);
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.secondary:hover:not(:disabled) {
+  background: var(--surface-sunk);
+}
+
+.quiet {
+  background: none;
+  color: var(--ink);
+  font-weight: 500;
+  box-shadow: none;
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+}
+
+.quiet:hover:not(:disabled) {
+  text-decoration-color: currentColor;
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  background: var(--surface-sunk);
+  border-color: var(--rule-strong);
+  color: var(--ink-faint);
+  cursor: default;
+}
+

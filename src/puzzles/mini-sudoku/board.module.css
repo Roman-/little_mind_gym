@@ -1,0 +1,276 @@
+/* The grid is engraved straight into the stage the shell provides — a second
+   sunk panel inside it would only draw a redundant box and eat the width a
+   six-wide grid needs on a phone.
+
+   The frame centres the grid and scrolls it. A square never drops below a
+   fingertip, so on the narrowest phone a six-wide board is allowed to be
+   wider than the stage and slide sideways. The padding keeps a focus ring
+   clear of the scroll edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the grid ------------------------------------------------ */
+
+.grid {
+  /* Lengths, not colours: the heavier rule that makes the boxes read at a
+     glance, the seat a written-in tile sits in, and how big a square is
+     allowed to get before it turns silly on a big monitor.
+
+     --cell-min and --cell-max are the pitch of a column, not the size of the
+     button in it. A column spends `2 * var(--seat)` on the seat and up to
+     `var(--thick)` on the rule down its left edge before the button starts,
+     and the grid spends `var(--thick)` a side on its own border before the
+     first column starts — every one of those lengths is inside the box,
+     because the app is border-box. So the floor is written as pitch, set
+     high enough that what is left over still takes a fingertip, and
+     min-width hands the grid's own border back rather than charging it to
+     the squares. */
+  --thick: 2px;
+  --seat: 3px;
+  --cell-min: 56px;
+  --cell-max: 104px;
+
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  width: 100%;
+  min-width: calc(var(--n) * var(--cell-min) + 2 * var(--thick));
+  max-width: calc(var(--n) * var(--cell-max) + 2 * var(--thick));
+  margin-inline: auto;
+  background: var(--surface-sunk);
+  border: var(--thick) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+/* Nine more squares to fit, so each one gives up a little. The pitch stops at
+   50px because every one of these squares is a button: take the thick box
+   rule off one edge and a seat off both, and the button is still 44px on the
+   narrowest phone. Below that the grid stops shrinking and slides sideways
+   inside .frame instead. */
+.grid[data-size='six'] {
+  --seat: 2px;
+  --cell-min: 50px;
+  --cell-max: 76px;
+}
+
+.cell {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: stretch;
+  padding: var(--seat);
+  border-top: 0;
+  border-left: 0;
+}
+
+.cell[data-top='hair'] {
+  border-top: var(--hair) solid var(--rule);
+}
+.cell[data-top='thick'] {
+  border-top: var(--thick) solid var(--ink-muted);
+}
+.cell[data-left='hair'] {
+  border-left: var(--hair) solid var(--rule);
+}
+.cell[data-left='thick'] {
+  border-left: var(--thick) solid var(--ink-muted);
+}
+
+/* One radius for the clue, the tile and the selection ring, stated once.
+   These squares are big enough to press, so they take the control radius. */
+.given,
+.tile {
+  --tile-r: var(--r-md);
+}
+
+/* A printed clue: flush with the board, nothing to press. */
+.given {
+  display: grid;
+  place-items: center;
+  background: var(--surface-sunk);
+  color: var(--ink);
+  border-radius: var(--tile-r);
+}
+
+/* A square you write in: a bone tile seated in the board. */
+.tile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  color: var(--ink);
+  border: var(--hair) solid var(--rule-strong);
+  border-radius: var(--tile-r);
+}
+
+/* Amber tells a child which square their next tap writes into. Clay says the
+   square repeats something. A fruit brings its own colours, so both signals
+   land on the plate under it — and clay also takes the numeral, which is our
+   own ink. A square that is chosen *and* repeating rings clay: the mistake is
+   the more urgent of the two, and a ring is still a ring. */
+.tile[data-selected='true'] {
+  background: var(--amber-soft);
+}
+
+.tile[data-selected='true']::after,
+.tile[data-conflict='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--tile-r);
+}
+
+.tile[data-selected='true']::after {
+  box-shadow: inset 0 0 0 4px var(--amber);
+}
+
+.tile[data-conflict='true'] {
+  background: var(--clay-soft);
+  border-color: var(--clay);
+  color: var(--clay);
+}
+
+.tile[data-conflict='true']::after {
+  box-shadow: inset 0 0 0 3px var(--clay);
+}
+
+.tile[data-conflict='true'][data-selected='true']::after {
+  box-shadow: inset 0 0 0 4px var(--clay);
+}
+
+.tile:disabled {
+  cursor: default;
+}
+
+/* A pictogram fills its square: at this size the fruit is the board. */
+.art {
+  width: 80%;
+  height: 80%;
+}
+
+.digit {
+  font-family: var(--font-mono);
+  font-size: 9cqw;
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* --- the keypad ---------------------------------------------- */
+
+.palette {
+  /* One number sets the whole row: the key, the picture on it and the
+     numeral on it all come off this. */
+  --key: clamp(60px, 16vw, 96px);
+
+  margin-top: var(--s5);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: var(--s2);
+}
+
+.palette[data-size='six'] {
+  --key: clamp(54px, 12vw, 78px);
+}
+
+.key {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s1);
+  width: var(--key);
+  min-height: var(--key);
+  padding: var(--s1) var(--s1) var(--s2);
+  background: var(--surface);
+  color: var(--ink);
+  border: var(--hair) solid var(--ink);
+  border-radius: var(--r-md);
+}
+
+.key:disabled {
+  background: var(--surface-sunk);
+  border-color: var(--rule-strong);
+  color: var(--ink-faint);
+}
+
+.keyArt {
+  width: calc(var(--key) * 0.62);
+  height: calc(var(--key) * 0.62);
+}
+
+/* A dead key should not offer a bright apple. */
+.key:disabled .keyArt {
+  opacity: 0.45;
+}
+
+.keyGlyph {
+  width: calc(var(--key) * 0.42);
+  height: calc(var(--key) * 0.42);
+}
+
+.keyDigit {
+  font-family: var(--font-mono);
+  font-size: calc(var(--key) * 0.44);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.keyCap {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono);
+  font-weight: 500;
+  letter-spacing: var(--track-mono);
+  line-height: 1;
+  color: var(--ink-muted);
+}
+
+.key:disabled .keyCap,
+.key:disabled .keyWord {
+  color: var(--ink-faint);
+}
+
+/* "Rub out" is a word, not a key value, so it does not take the instrument
+   voice — and it is wider than a digit, so its key is wider too. */
+.keyWord {
+  font-size: var(--t-xs);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ink-muted);
+}
+
+.eraser {
+  width: auto;
+  min-width: calc(var(--key) * 1.2);
+  padding-inline: var(--s3);
+  margin-left: var(--s3);
+}
+
+.note {
+  margin: var(--s4) auto 0;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-sm);
+  line-height: 1.4;
+  color: var(--ink-muted);
+  min-height: 2.8em;
+}
+
+@media (max-width: 30rem) {
+  .grid {
+    --seat: 2px;
+  }
+  .grid[data-size='six'] {
+    --seat: 1px;
+  }
+  .palette {
+    margin-top: var(--s4);
+    gap: var(--s1);
+  }
+  .eraser {
+    margin-left: var(--s2);
+  }
+}

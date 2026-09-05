@@ -1,0 +1,48 @@
+.figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.edge {
+  stroke: var(--rule-strong);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.node {
+  fill: var(--surface);
+  stroke: var(--rule-strong);
+  stroke-width: 1.5;
+}
+
+.node[data-end='true'] {
+  stroke: var(--ink-muted);
+  stroke-width: 2;
+}
+
+.walker {
+  fill: var(--amber);
+}
+
+.endLabel {
+  font-family: var(--font-body);
+  /* px inside the viewBox are user units, so this scales with the diagram. */
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+  fill: var(--ink-muted);
+}
+
+.caption {
+  font-size: var(--t-sm);
+  color: var(--ink-muted);
+  line-height: var(--lh-body);
+}
