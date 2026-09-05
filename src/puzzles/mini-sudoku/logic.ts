@@ -49,9 +49,11 @@ export type SudokuAction = { type: 'set'; index: number; value: number }
 /**
  * Value 1..4 is a fruit. A child can name all four on sight, and each one has
  * its own colour and its own outline, so two of them never blur together
- * across a grid.
+ * across a grid. That is why the fourth is a pear rather than a strawberry:
+ * OpenMoji draws the strawberry in the apple's red, and two red fruits on one
+ * board are two a child has to look at twice.
  */
-export const FRUIT_NAMES = ['apple', 'banana', 'grapes', 'strawberry'] as const
+export const FRUIT_NAMES = ['apple', 'banana', 'grapes', 'pear'] as const
 
 /* --- units and peers ---------------------------------------- */
 
