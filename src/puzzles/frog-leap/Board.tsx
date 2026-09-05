@@ -20,16 +20,29 @@ interface Frog {
  * colour from the left therefore gives every frog an identity that is a pure
  * function of the state — which is what lets one hop animate as one frog
  * travelling, and a rewind play it backwards.
+ *
+ * They come back in that identity order — every green, then every blue — and
+ * not in row order, which a jump changes by definition. React answers a
+ * reordered list by lifting the node that moved out of the document and
+ * putting it straight back, and a node that has left the document has no
+ * transform to travel from. The frog is standing on its landing stone before
+ * the arc over the frog it cleared has begun, and the browser has dropped the
+ * focus that node was holding. Identity order cannot change, so no node is
+ * ever lifted.
+ *
+ * The cost is that Tab visits the greens and then the blues rather than
+ * crossing the row from left to right. Every frog says which stone it is
+ * standing on, and it keeps its place in that order for the whole level.
  */
-function frogsInRow(seats: Seat[]): Frog[] {
-  const seen = { green: 0, blue: 0 }
-  const out: Frog[] = []
+function frogsByColour(seats: Seat[]): Frog[] {
+  const teams = { green: [] as Frog[], blue: [] as Frog[] }
   seats.forEach((seat, pos) => {
     if (seat === 0) return
     const colour = colourOf(seat)
-    out.push({ key: `${seats.length}-${colour}-${seen[colour]++}`, pos, dir: seat })
+    const team = teams[colour]
+    team.push({ key: `${seats.length}-${colour}-${team.length}`, pos, dir: seat })
   })
-  return out
+  return [...teams.green, ...teams.blue]
 }
 
 /**
@@ -93,7 +106,7 @@ function rowSummary(seats: Seat[]): string {
 
 export function Board({ state, dispatch, locked }: BoardProps<FrogState, FrogAction>) {
   const { seats } = state
-  const frogs = frogsInRow(seats)
+  const frogs = frogsByColour(seats)
 
   const slots = useRef(new Map<string, HTMLDivElement>())
   const wasAt = useRef(new Map<string, number>())
