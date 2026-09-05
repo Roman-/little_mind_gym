@@ -20,6 +20,7 @@ npm run build
 | `/puzzle/:id`  | One puzzle. `?level=<level-id>` opens a particular level.            |
 | `/random`      | **Picks a puzzle at random and opens it.** `/surprise` does the same. |
 | `/random_instantly` | The same pick, opened straight away. Unlisted — nothing in the app links to it. |
+| `/settings`    | Three settings, kept on this device. Reached from the navbar.        |
 
 `/random` leans towards puzzles that have not been played yet, opens the first
 level the player has not finished, and never hands back the puzzle they just
@@ -54,7 +55,7 @@ describe its own rules and draw its own pieces.
 src/
   lib/          the contract (types.ts), a seeded rng, a BFS over state graphs, the motion cues
   components/   the shell's furniture, including the move tape and the confetti
-  routes/       home, one puzzle, the random pick
+  routes/       home, one puzzle, the random pick, the settings
   puzzles/<id>/ logic.ts · Board.tsx · glyphs.tsx · board.module.css · index.ts · logic.test.ts
   styles/       tokens.css: every colour, size and duration. motion.module.css: the cues
 ```
@@ -69,7 +70,9 @@ explore a wrong idea all the way to its end and walk back out of it.
 
 Progress lives in `localStorage` under `little-mind-gym:progress:v1`. The old
 `puzzle-bench:progress:v1` is still read once, so nothing solved before the
-app was renamed is lost. There is no
+app was renamed is lost. The settings sit beside it under
+`little-mind-gym:settings:v1`, and a stored value that is missing, damaged or
+from another version falls back to the default rather than to off. There is no
 account, no network call and no analytics.
 
 ## Pictures

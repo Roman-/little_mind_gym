@@ -53,3 +53,18 @@ export const BrandMark = () => (
     <circle cx="19" cy="7" r="2.4" />
   </svg>
 )
+
+/** Two sliders. A gear says machinery; this says "things you can set". */
+export const SettingsIcon = () => (
+  <svg {...base}>
+    <path d="M4 8.5h6M14.5 8.5H20M4 15.5h3.5M12 15.5H20" />
+    <circle cx="12.25" cy="8.5" r="2.25" />
+    <circle cx="9.75" cy="15.5" r="2.25" />
+  </svg>
+)
+
+export const TickIcon = () => (
+  <svg {...base}>
+    <path d="M4.5 12.5 9.5 18 20 6" />
+  </svg>
+)

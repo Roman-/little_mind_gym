@@ -4,7 +4,7 @@ import { useProgress } from '../lib/progress'
 import { puzzleById } from '../puzzles'
 import { useTheme } from '../lib/theme'
 import { Button, ButtonLink } from './kit'
-import { BackIcon, BrandMark, ContrastIcon, ShuffleIcon } from './icons'
+import { BackIcon, BrandMark, ContrastIcon, SettingsIcon, ShuffleIcon } from './icons'
 import s from './Chrome.module.css'
 
 export function Header() {
@@ -37,6 +37,9 @@ export function Header() {
           <ButtonLink to="/random" size="sm">
             <ShuffleIcon />
             <span className={s.navWord}>Surprise me</span>
+          </ButtonLink>
+          <ButtonLink to="/settings" size="sm" className={s.iconBtn} aria-label="Settings">
+            <SettingsIcon />
           </ButtonLink>
           <Button
             size="sm"
