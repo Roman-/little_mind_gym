@@ -2,13 +2,25 @@ import { useEffect, useState } from 'react'
 import { Link, useMatch } from 'react-router-dom'
 import { useProgress } from '../lib/progress'
 import { puzzleById } from '../puzzles'
+import { useSettings } from '../lib/settings'
 import { useTheme } from '../lib/theme'
 import { Button, ButtonLink } from './kit'
-import { BackIcon, BrandMark, ContrastIcon, SettingsIcon, ShuffleIcon } from './icons'
+import {
+  BackIcon,
+  BrandMark,
+  ContrastIcon,
+  SettingsIcon,
+  ShuffleIcon,
+  SoundOffIcon,
+  SoundOnIcon,
+} from './icons'
 import s from './Chrome.module.css'
 
 export function Header() {
   const [theme, toggle] = useTheme()
+  // The same switch the settings page draws, not a second one beside it: a
+  // child who wants the room quiet should not have to find the page.
+  const { settings, set } = useSettings()
   // Only a puzzle that actually exists has a #board to skip to and a collection
   // to go back to. /puzzle/<unknown> renders NotFound, which carries its own way out.
   const onPuzzle = puzzleById(useMatch('/puzzle/:id')?.params.id) !== undefined
@@ -41,6 +53,14 @@ export function Header() {
           <ButtonLink to="/settings" size="sm" className={s.iconBtn} aria-label="Settings">
             <SettingsIcon />
           </ButtonLink>
+          <Button
+            size="sm"
+            className={s.iconBtn}
+            onClick={() => set('sound', !settings.sound)}
+            aria-label={settings.sound ? 'Turn the sounds off' : 'Turn the sounds on'}
+          >
+            {settings.sound ? <SoundOnIcon /> : <SoundOffIcon />}
+          </Button>
           <Button
             size="sm"
             className={s.iconBtn}

@@ -1,5 +1,6 @@
 import { useSettings } from './settings'
 import { cues, useCue } from './motion'
+import { playSound } from './sound'
 import { useEphemeral } from './ephemeral'
 
 /**
@@ -82,6 +83,7 @@ export function useRefusal<S>(state: S): Refusal<S> {
     refuse: (refused) => {
       fire({ from: state, refused })
       setSaid(refused.message)
+      playSound('wrong')
     },
   }
 }

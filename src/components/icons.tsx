@@ -68,3 +68,21 @@ export const TickIcon = () => (
     <path d="M4.5 12.5 9.5 18 20 6" />
   </svg>
 )
+
+/* A speaker, with the sound coming out of it or crossed out. The two are the
+   same drawing so the button does not jump when it is pressed. */
+const speaker = <path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4z" />
+
+export const SoundOnIcon = () => (
+  <svg {...base}>
+    {speaker}
+    <path d="M15.5 9.5a3.5 3.5 0 0 1 0 5M18 7a7 7 0 0 1 0 10" />
+  </svg>
+)
+
+export const SoundOffIcon = () => (
+  <svg {...base}>
+    {speaker}
+    <path d="m16 9.5 5 5M21 9.5l-5 5" />
+  </svg>
+)

@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { cues, cx, useCue } from '../../lib/motion'
+import { playSound } from '../../lib/sound'
 import type { BoardProps } from '../../lib/types'
 import type { Clash, SudokuAction, SudokuState, SymbolSet } from './logic'
 import { FRUIT_NAMES, clashOf, conflicts, describeClash, symbolName } from './logic'
@@ -85,6 +86,9 @@ export function Board({ state, dispatch, locked }: BoardProps<SudokuState, Sudok
     dispatch({ type: 'set', index, value })
     if (clash === null) return
     light(clash)
+    // The fruit really does go down here, so the shell's knock underneath is
+    // true and stays; this is the "no" over the top of it.
+    playSound('wrong')
     setSaid(describeClash(state, clash))
   }
 

@@ -8,6 +8,7 @@ import { useSettings } from '../lib/settings'
 import { usePageTitle } from '../lib/title'
 import { useEphemeral } from '../lib/ephemeral'
 import { useCue } from '../lib/motion'
+import { playSound } from '../lib/sound'
 import { usePrefersReducedMotion } from '../lib/theme'
 import type { PuzzleLevel, PuzzleMeta } from '../lib/types'
 import { Button, ButtonLink, Panel } from '../components/kit'
@@ -173,6 +174,22 @@ function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
   useEffect(() => {
     if (moves > 0) markTried(meta.id)
   }, [moves, markTried, meta.id])
+
+  /**
+   * One sound a move, and one only: the knock of the piece going down, or —
+   * where the move ended the level — what it ended it as. A dead end and a
+   * solve are the news, so the landing underneath them is not played as well.
+   *
+   * The ref is what keeps it to a move that has just been made. The tape
+   * rewinds, hints open and a solved level re-renders, and none of those are
+   * somebody putting a piece down.
+   */
+  const sounded = useRef(moves)
+  useEffect(() => {
+    const moved = moves > sounded.current
+    sounded.current = moves
+    if (moved) playSound(solved ? 'solve' : failure !== null ? 'wrong' : 'place')
+  }, [moves, solved, failure])
 
   /**
    * The two things that happen on the move that solves the level, and only on

@@ -190,6 +190,39 @@ library is good at — interruptible physics, gestures, layout transitions — i
 work this app does not have. Add one when that stops being true, and not to
 save writing `@keyframes`.
 
+## Sound
+
+Four sounds, and that is the whole list: a **tap** under every control, a
+**place** when a piece goes down, a **wrong** when a rule says no, and a
+**solve**. Each one is a fact about what has just happened, the way a colour is
+a state. There is no sound for arriving on a page, none for a hover, none to
+fill a wait, and no music under any of it.
+
+They are wooden and they are quiet. `src/lib/sound.ts` synthesises all four out
+of a struck bar's partials rather than shipping samples: nothing to fetch,
+nothing to decode, no second licence to carry beside OpenMoji's, and the whole
+vocabulary is one small table of frequencies that anybody can retune. Every cue
+is rendered into a buffer as the page loads, so the first knock a child hears
+costs exactly what the thousandth does. A browser will not start audio before
+somebody asks for it, so the context comes up suspended and the first tap
+starts it.
+
+Four rules keep it bearable in the tenth hour.
+
+- **One sound a move.** A move that ends the level says what it ended it as,
+  and the knock of the piece landing underneath is not played as well.
+- **A sound is never the only thing that says something**, exactly as a cue
+  never is. Turning it off loses nothing: the flash, the shake, the sentence
+  under the board and the notice all still say it.
+- **Nothing repeats.** One cue struck twice inside 40ms is one strike, and
+  every play is detuned a little, because a box that answers a hundred taps
+  with the identical click stops sounding like a box.
+- **Quiet.** Everything goes out through one gain at half, and the tap — the
+  sound a child hears most — is the quietest of the four.
+
+The speaker in the navbar and **Play sounds** under Settings are one setting
+and not two controls with their own ideas about it.
+
 ## A forbidden move is offered, not hidden
 
 A control that goes dead the moment a move would break a rule does the thinking

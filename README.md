@@ -53,7 +53,7 @@ own rules and draw its own pieces.
 
 ```
 src/
-  lib/          the contract (types.ts), a seeded rng, a BFS over state graphs, the motion cues, the refusals
+  lib/          the contract (types.ts), a seeded rng, a BFS over state graphs, the motion cues, the sounds, the refusals
   components/   the shell's furniture, including the move tape and the confetti
   routes/       home, one puzzle, the random pick, the settings
   puzzles/<id>/ logic.ts · Board.tsx · glyphs.tsx · board.module.css · index.ts · logic.test.ts
@@ -76,6 +76,13 @@ having to work it out. **Allow moves that break a rule** in the settings turns
 it off, and the controls go back to refusing up front. It changes the Tower of
 Hanoi, leapfrog and the balance scales; the other five disable nothing their
 rules forbid.
+
+**The app makes a small wooden sound when it is touched.** A click under every
+control, a knock when a piece goes down, two lower knocks when a rule says no,
+and three notes on a solve. There are no audio files in the repository: all
+four are synthesised in `src/lib/sound.ts` and rendered into buffers while the
+page loads, so the first one plays without a gap. The speaker in the navbar and
+**Play sounds** in the settings are the same switch, and off is silent.
 
 - Adding a puzzle: **[PUZZLE_CONTRACT.md](PUZZLE_CONTRACT.md)**
 - Changing how it looks: **[DESIGN.md](DESIGN.md)**
