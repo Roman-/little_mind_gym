@@ -13,9 +13,9 @@ const OPTIONS: { key: SettingKey; name: string; what: string }[] = [
     what: 'The board takes the move, shows you it was wrong, and undoes it straight away.',
   },
   {
-    key: 'showMoveCount',
-    name: 'Show the move count',
-    what: 'How many moves you have made is printed under the board.',
+    key: 'showMoves',
+    name: 'Show your moves',
+    what: 'A row of marks under the board, one for each move, with the count beside it. Tap a mark to go back to that moment.',
   },
   {
     key: 'sound',

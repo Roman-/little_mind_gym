@@ -202,6 +202,7 @@ describe('playing a puzzle', () => {
   })
 
   it('rewinds to any earlier move through the tape', () => {
+    turnOn('Show your moves') // the tape ships off
     open('/puzzle/river-crossing')
     click(/put the goat in the boat/i)
     click(/row across/i)
@@ -236,6 +237,9 @@ describe('a move that breaks a rule', () => {
   }
 
   it('is offered, taken, refused and undone, with nothing left behind', async () => {
+    // The tape ships off. Turn it on here: it is the one place on the page
+    // that shows what the history holds, which is what this is about.
+    turnOn('Show your moves')
     open('/puzzle/tower-of-hanoi?level=hanoi-3')
     click(/lift the small disc off peg a/i)
     click(/drop the small disc on peg c/i)
@@ -271,27 +275,45 @@ describe('a move that breaks a rule', () => {
   })
 })
 
-describe('the move count', () => {
+describe('the move tape', () => {
   const tape = () => screen.getByRole('group', { name: /move history/i })
   const head = () => screen.getByText('Moves').parentElement
 
-  it('is not printed while the puzzle is open, but the rail still is', () => {
+  it('is not on the page at all until it is asked for', () => {
     open('/puzzle/river-crossing')
     click(/put the goat in the boat/i)
     click(/row across/i)
+    expect(screen.queryByRole('group', { name: /move history/i })).not.toBeInTheDocument()
     expect(screen.queryByText('Moves')).not.toBeInTheDocument()
-    // The rail is the way back, not a counter, so it is here whatever the
-    // settings say: start + the one crossing made so far.
-    expect(within(tape()).getAllByRole('button')).toHaveLength(2)
+    // The way back out of a wrong idea is not behind the setting.
+    expect(screen.getByRole('button', { name: /step back/i })).toBeEnabled()
   })
 
-  it('counts up beside the rail once the setting is on', () => {
-    turnOn('Show the move count')
+  it('brings the marks and the count together once the setting is on', () => {
+    turnOn('Show your moves')
     open('/puzzle/river-crossing')
     expect(head()).toHaveTextContent(/^Moves0$/)
+    // The start, and nothing to step back to yet.
+    expect(within(tape()).getAllByRole('button')).toHaveLength(1)
+
     click(/put the goat in the boat/i)
     click(/row across/i)
     expect(head()).toHaveTextContent(/^Moves1$/)
+    expect(within(tape()).getAllByRole('button')).toHaveLength(2)
+  })
+
+  it('steps the board back to a moment on the tape', () => {
+    turnOn('Show your moves')
+    open('/puzzle/river-crossing')
+    click(/put the goat in the boat/i)
+    click(/row across/i)
+    click(/row back/i)
+    // Putting the goat in the boat is the board's own business; two crossings
+    // are what actually happened to the puzzle.
+    expect(head()).toHaveTextContent(/^Moves2$/)
+
+    fireEvent.click(screen.getByRole('button', { name: /go back to the start/i }))
+    expect(head()).toHaveTextContent(/^Moves0$/)
   })
 
   it('reports a finished puzzle the same way either way', () => {
@@ -301,7 +323,7 @@ describe('the move count', () => {
     expect(screen.getByText(/^Solved\. 7 moves/)).toBeInTheDocument()
     off.unmount()
 
-    turnOn('Show the move count')
+    turnOn('Show your moves')
     // The level has been solved by now, so ask for it by name: a returning
     // player is otherwise sent on to the level after it.
     open('/puzzle/river-crossing?level=wolf-goat-cabbage')
@@ -367,7 +389,7 @@ describe('the random route', () => {
     // that has gone. The tab still says which puzzle this is.
     const titles = PUZZLES.map((p) => `${p.title} \u00b7 Little Mind Gym`)
     expect(titles).toContain(document.title)
-    expect(screen.getByRole('group', { name: /move history/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^start over$/i })).toBeInTheDocument()
   })
 
   it('is reached from the front page, and no longer from the navbar', () => {
@@ -419,7 +441,7 @@ describe('immerse', () => {
 
     // The board, and everything a child plays with: still here.
     expect(screen.getByRole('button', { name: /put the goat in the boat/i })).toBeInTheDocument()
-    expect(screen.getByRole('group', { name: /move history/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^step back$/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^start over$/i })).toBeInTheDocument()
 
     // The room the three of them were using goes to the stage, and that is a
@@ -537,18 +559,18 @@ describe('the settings page', () => {
 
     expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument()
     expect(checkbox('Allow moves that break a rule')).toBeChecked()
-    expect(checkbox('Show the move count')).not.toBeChecked()
+    expect(checkbox('Show your moves')).not.toBeChecked()
     expect(checkbox('Play sounds')).toBeChecked()
   })
 
   it('keeps a change after the page has been left and opened again', () => {
     const view = open('/settings')
-    fireEvent.click(checkbox('Show the move count'))
+    fireEvent.click(checkbox('Show your moves'))
     fireEvent.click(checkbox('Play sounds'))
     view.unmount()
 
     open('/settings')
-    expect(checkbox('Show the move count')).toBeChecked()
+    expect(checkbox('Show your moves')).toBeChecked()
     expect(checkbox('Play sounds')).not.toBeChecked()
     expect(checkbox('Allow moves that break a rule')).toBeChecked()
   })

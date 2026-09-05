@@ -2,7 +2,7 @@
 
 A puzzle is a **pure state machine plus a presentational board**. The shell
 (`src/routes/PuzzlePage.tsx`) owns everything else: history, undo, rewind, the
-move tape, the move counter, hints, level switching, reset, the solved stamp
+move tape, hints, level switching, reset, the solved stamp
 and progress. You never write any of that.
 
 Read `src/puzzles/river-crossing/` first. It is the reference implementation
@@ -105,7 +105,7 @@ state too — just don't render it.
   are still lit — put it in your own `role="status"` element, mounted from the
   first render rather than created along with its text.
 - The board renders the pieces and the immediate controls for moving them.
-  It does **not** render the title, instructions, hints, move count, reset,
+  It does **not** render the title, instructions, hints, move tape, reset,
   level picker or any "you win" message. The shell does all of that.
 - The shell already sits your board on a stage. Do not wrap it in another
   `u-sunk` — one recess is the design; a recess inside a recess is a mistake.

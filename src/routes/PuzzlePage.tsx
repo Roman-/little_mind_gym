@@ -366,11 +366,11 @@ function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
         )}
 
         <div className={s.toolbar}>
-          <MoveTape
-            steps={history.slice(1).map((e) => e.note)}
-            onRewind={rewind}
-            showCount={settings.showMoveCount}
-          />
+          {/* Off unless asked for, and then it is the whole block: the marks
+              and the count together. */}
+          {settings.showMoves && (
+            <MoveTape steps={history.slice(1).map((e) => e.note)} onRewind={rewind} />
+          )}
           <div className={s.tools}>
             {/* The way out of the mode, and — where the browser turned the
                 screen down — the way into it. They come first because on a

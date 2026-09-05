@@ -69,12 +69,14 @@ src/
   styles/       tokens.css: every colour, size and duration. motion.module.css: the cues
 ```
 
-Because the state is pure and the board is a function of it, the **move tape**
-under every board can rewind to any earlier moment with one tap. A child can
-explore a wrong idea all the way to its end and walk back out of it. The tape
-keeps no score: how many moves have been made is printed only when **Show the
-move count** is turned on in the settings, and that setting starts off. What a
-finished puzzle took is in the solved notice either way.
+Because the state is pure and the board is a function of it, rewinding is
+free: a child can explore a wrong idea all the way to its end and walk back
+out of it. **Step back** and **Start over** sit under every board. The
+**move tape** — a mark per move, the count beside it, any mark a tap back to
+that moment — is the long way back, and it is off until **Show your moves**
+is turned on in the settings: a tally climbing while the puzzle is still open
+reads as a budget. What a finished puzzle took is in the solved notice either
+way.
 
 **A move that breaks a rule is offered, not hidden.** Tap it and it happens:
 the piece goes where you put it, the board flashes red, one sentence says what
