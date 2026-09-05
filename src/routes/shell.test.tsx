@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { App } from '../App'
 import { ProgressProvider } from '../lib/progress'
@@ -33,6 +33,28 @@ function solveTheRiver() {
   click(/put the goat in the boat/i)
   click(/row across/i)
 }
+
+/** Play the same taps as a reader who has asked the system to keep motion down. */
+function withReducedMotion(run: () => void) {
+  const real = window.matchMedia
+  window.matchMedia = (query: string) =>
+    ({
+      matches: query.includes('prefers-reduced-motion'),
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }) as unknown as MediaQueryList
+  try {
+    run()
+  } finally {
+    window.matchMedia = real
+  }
+}
+
+const confetti = (view: { container: HTMLElement }) =>
+  view.container.querySelector('[class*="confetti"]')
 
 beforeEach(() => {
   localStorage.clear()
@@ -124,6 +146,44 @@ describe('playing a puzzle', () => {
     expect(screen.queryByText('Hint 2')).not.toBeInTheDocument()
     click(/one more nudge/i)
     expect(screen.getByText('Hint 2')).toBeInTheDocument()
+  })
+})
+
+describe('solving a level', () => {
+  // jsdom loads no stylesheet, so --dur-5 reads as nothing and the burst is
+  // over on the next tick. What matters here is that it ends by itself.
+  beforeEach(() => vi.useFakeTimers())
+  afterEach(() => vi.useRealTimers())
+
+  it('throws a handful of paper, once', () => {
+    const view = open('/puzzle/river-crossing')
+    expect(confetti(view)).toBeNull()
+
+    solveTheRiver()
+    const paper = confetti(view)
+    expect(paper).not.toBeNull()
+    // Decoration and nothing else: nothing to read, nothing to tab to, and
+    // nothing that could swallow a tap meant for the board.
+    expect(paper).toHaveAttribute('aria-hidden', 'true')
+    expect(paper?.textContent).toBe('')
+    expect(paper?.querySelectorAll('a, button, input, [tabindex]')).toHaveLength(0)
+
+    // It falls once. A solved level re-renders every time a hint is opened or
+    // the tape is drawn, and none of those throw the paper again.
+    act(() => vi.advanceTimersByTime(1))
+    expect(confetti(view)).toBeNull()
+    click(/give me a nudge/i)
+    expect(screen.getByText('Hint 1')).toBeInTheDocument()
+    expect(confetti(view)).toBeNull()
+  })
+
+  it('throws none of it at a reader who has asked for less motion', () => {
+    withReducedMotion(() => {
+      const view = open('/puzzle/river-crossing')
+      solveTheRiver()
+      expect(screen.getByText('Solved')).toBeInTheDocument()
+      expect(confetti(view)).toBeNull()
+    })
   })
 })
 

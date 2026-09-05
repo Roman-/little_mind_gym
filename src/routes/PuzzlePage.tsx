@@ -6,8 +6,11 @@ import { makeRng } from '../lib/rng'
 import { useProgress } from '../lib/progress'
 import { usePageTitle } from '../lib/title'
 import { useEphemeral } from '../lib/ephemeral'
+import { useCue } from '../lib/motion'
+import { usePrefersReducedMotion } from '../lib/theme'
 import type { PuzzleLevel, PuzzleMeta } from '../lib/types'
 import { Button, ButtonLink, Panel } from '../components/kit'
+import { Confetti } from '../components/Confetti'
 import { ResetIcon, ShuffleIcon, UndoIcon } from '../components/icons'
 import { MoveTape } from '../components/MoveTape'
 import { Stamp } from '../components/Stamp'
@@ -169,6 +172,14 @@ function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
     if (moves > 0) markTried(meta.id)
   }, [moves, markTried, meta.id])
 
+  /**
+   * The two things that happen on the move that solves the level, and only on
+   * that move: the score is banked, and the paper is thrown. The ref is what
+   * keeps both out of every later render — the level stays solved, and a
+   * solved level re-renders every time a hint is opened or the tape is drawn.
+   */
+  const reduced = usePrefersReducedMotion()
+  const [confetti, celebrate] = useCue('--dur-5')
   const banked = useRef(false)
   useEffect(() => {
     if (!solved) {
@@ -178,7 +189,8 @@ function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
     if (banked.current) return
     banked.current = true
     markSolved(meta.id, level.id, moves)
-  }, [solved, markSolved, meta.id, level.id, moves])
+    if (!reduced) celebrate(true)
+  }, [solved, markSolved, meta.id, level.id, moves, reduced, celebrate])
 
   const Board = meta.engine.Board as ComponentType<{
     state: unknown
@@ -273,6 +285,8 @@ function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
             </div>
           </div>
         )}
+
+        {confetti && <Confetti />}
 
         {solved && (
           <div className={s.notice} data-tone="moss">

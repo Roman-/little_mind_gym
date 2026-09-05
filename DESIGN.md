@@ -24,6 +24,10 @@ list. A row in the collection is told apart by its picture, never by a colour
 of its own; the moment a puzzle had an identity colour, a moss tile would sit
 on the same card as a moss "Solved".
 
+The confetti on a solve is the one exception, and it lasts under a second. It
+is paper, so it takes the enamel palette — the one set of colours here that is
+not a signal — and it is gone before it can be read as one.
+
 Where a picture already says which thing this is, the plate under it goes
 neutral. Identity has been paid for by the picture, so the plate is free to
 carry state, and that is the whole reason pictograms are worth their colours.
@@ -118,9 +122,39 @@ Three faces, and only three. The body face does two jobs.
 
 Fast and certain: `--dur-1` for presses, `--dur-2` for state changes,
 `--dur-3` for a piece travelling across the board. Always `var(--ease)`.
-Things slide and settle; nothing bounces, spins, sparkles or wobbles.
-Reduced motion is already handled — the duration tokens collapse to 1ms —
-so just use the tokens and never hard-code a duration.
+Things slide and settle; nothing spins or wobbles to fill a wait.
+
+Two longer rungs are for motion that has to be *noticed* rather than only
+seen: `--dur-4` for a one-shot cue, `--dur-5` for a cue the eye has to follow
+or read. They are rationed to two moments — a move the puzzle refuses, and a
+level solved — and each one is a named cue in `src/styles/motion.module.css`:
+`.shake`, `.flash` (a red outline), `.no` (one shrink and back), and
+`.highlight` (a group of cells lit long enough to be read). A board writes no
+keyframes of its own; it fires one of these with `useCue()`.
+
+```tsx
+import { cues, useCue } from '../../lib/motion'
+
+const [wrong, sayNo] = useCue<string>()
+...
+sayNo(item.id)
+<span className={wrong === item.id ? cues.shake : undefined} />
+```
+
+A cue clears itself when its run is over: nobody has to remember to take the
+class off, and the element is left exactly as it was.
+
+Reduced motion is already handled — the duration tokens collapse to 1ms — so
+just use the tokens and never hard-code a duration. That collapse is also why
+a cue is never the only thing that says what happened: the sentence under the
+board says it too, and the confetti is skipped outright, on
+`usePrefersReducedMotion`.
+
+There is no animation library, and that is a decision rather than an omission.
+All of the above is four sets of keyframes and one small hook, and what a
+library is good at — interruptible physics, gestures, layout transitions — is
+work this app does not have. Add one when that stops being true, and not to
+save writing `@keyframes`.
 
 ## Words
 
@@ -161,13 +195,17 @@ The longer catalogue these came from is
 
 ## What not to do
 
-Do not add: gradients, glassmorphism, neon, confetti, drop shadows with blur,
-rounded-pill buttons, more than one accent colour on a screen, bouncing or
-pulsing animations, or a second display typeface. Do not put an emoji in a
-*sentence*: a picture is a pictogram on a plate, never a character in running
-text a screen reader has to read out. Do not hard-code a colour,
-radius, duration, or font family anywhere — use the tokens in
-`src/styles/tokens.css` so dark mode keeps working.
+Do not add: gradients, glassmorphism, neon, drop shadows with blur,
+rounded-pill buttons, more than one accent colour on a screen, or a second
+display typeface. Nothing bounces, pulses or sparkles to fill a wait, to pull
+the eye towards a control, or to dress up a screen that was doing fine without
+it. The two exceptions are named under **Motion** above and are the whole
+list: a cue on a move the puzzle refuses, and the confetti on a solve.
+
+Do not put an emoji in a *sentence*: a picture is a pictogram on a plate,
+never a character in running text a screen reader has to read out. Do not
+hard-code a colour, radius, duration, or font family anywhere — use the tokens
+in `src/styles/tokens.css` so dark mode keeps working.
 
 **And do not print metadata a child cannot act on.** No time estimates, no
 skill taxonomies, no par counting down while the puzzle is still open, and no

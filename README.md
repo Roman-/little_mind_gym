@@ -52,11 +52,11 @@ describe its own rules and draw its own pieces.
 
 ```
 src/
-  lib/          the contract (types.ts), a seeded rng, and a BFS over state graphs
-  components/   the shell's furniture, including the move tape
+  lib/          the contract (types.ts), a seeded rng, a BFS over state graphs, the motion cues
+  components/   the shell's furniture, including the move tape and the confetti
   routes/       home, one puzzle, the random pick
   puzzles/<id>/ logic.ts · Board.tsx · glyphs.tsx · board.module.css · index.ts · logic.test.ts
-  styles/       tokens.css is the single source of every colour, size and duration
+  styles/       tokens.css: every colour, size and duration. motion.module.css: the cues
 ```
 
 Because the state is pure and the board is a function of it, the **move tape**

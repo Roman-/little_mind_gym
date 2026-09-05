@@ -105,6 +105,11 @@
   --dur-1: 120ms;
   --dur-2: 200ms;
   --dur-3: 340ms;
+  /* Two longer rungs, for motion that has to be *noticed* rather than just
+     seen: --dur-4 for a one-shot cue (a shake, a red flash, a "no"), --dur-5
+     for one the eye has to follow or read (a held highlight, the confetti). */
+  --dur-4: 480ms;
+  --dur-5: 900ms;
 
   --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--amber);
   --focus-ring-desk: 0 0 0 2px var(--desk), 0 0 0 4px var(--amber);
@@ -153,5 +158,7 @@
     --dur-1: 1ms;
     --dur-2: 1ms;
     --dur-3: 1ms;
+    --dur-4: 1ms;
+    --dur-5: 1ms;
   }
 }

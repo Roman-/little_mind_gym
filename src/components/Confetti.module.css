@@ -1,0 +1,64 @@
+/* The one place in the app where colour is decoration rather than state, and
+   the only motion longer than half a second. Both are deliberate: a level
+   solved is worth a second of paper. */
+
+.confetti {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  /* It falls over the page and takes nothing from it: no tap, no scroll, no
+     room. The header sits at z-index 10, so the paper passes in front of it. */
+  pointer-events: none;
+  z-index: 20;
+}
+
+.bit {
+  position: absolute;
+  top: -5vh;
+  left: var(--x);
+  width: var(--s2);
+  height: var(--s3);
+  border-radius: 1px;
+  background: var(--tint);
+  /* Each piece falls at its own rate, so a burst scatters instead of raining
+     in one line. --speed is a fraction of --dur-5, never more, so the whole
+     burst is over by the time the shell unmounts it. */
+  animation: fall calc(var(--dur-5) * var(--speed)) var(--ease) both;
+}
+
+/* The enamel piece palette — the one palette in the app that is not a signal. */
+.bit:nth-child(6n + 1) {
+  --tint: var(--p-ochre);
+}
+.bit:nth-child(6n + 2) {
+  --tint: var(--p-moss);
+}
+.bit:nth-child(6n + 3) {
+  --tint: var(--p-indigo);
+}
+.bit:nth-child(6n + 4) {
+  --tint: var(--p-clay);
+}
+.bit:nth-child(6n + 5) {
+  --tint: var(--p-plum);
+}
+.bit:nth-child(6n) {
+  --tint: var(--p-teal);
+}
+
+@keyframes fall {
+  from {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(var(--drift), 105vh, 0) rotate(var(--spin));
+    opacity: 0;
+  }
+}
