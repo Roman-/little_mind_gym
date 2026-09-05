@@ -312,6 +312,33 @@ describe('the random route', () => {
   })
 })
 
+describe('the sound switch', () => {
+  const box = () => screen.getByRole('checkbox', { name: 'Play sounds' })
+
+  it('is one switch, wherever it is pressed', () => {
+    open('/settings')
+    expect(box()).toBeChecked()
+
+    // The navbar button and the tick on the settings page are the same
+    // setting, so neither can be left saying the opposite of the other.
+    click(/turn the sounds off/i)
+    expect(box()).not.toBeChecked()
+
+    fireEvent.click(box())
+    expect(screen.getByRole('button', { name: /turn the sounds off/i })).toBeInTheDocument()
+  })
+
+  it('keeps the room quiet on the next visit', () => {
+    const view = open('/')
+    click(/turn the sounds off/i)
+    view.unmount()
+
+    open('/settings')
+    expect(box()).not.toBeChecked()
+    expect(screen.getByRole('button', { name: /turn the sounds on/i })).toBeInTheDocument()
+  })
+})
+
 describe('the settings page', () => {
   const checkbox = (name: string) => screen.getByRole('checkbox', { name })
 

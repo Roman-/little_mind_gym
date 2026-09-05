@@ -122,15 +122,24 @@
   .main {
     padding: var(--s5) var(--s3) var(--s6);
   }
+  /* Four controls and a way out do not always fit on one line at this width.
+     The row is allowed to fold rather than push the page sideways, and the
+     nav keeps to the right whether it folds or not. */
   .inner {
     padding: var(--s3);
+    flex-wrap: wrap;
+    row-gap: var(--s2);
+  }
+  .nav {
+    gap: var(--s1);
+    margin-left: auto;
   }
   .brandWord {
     display: none;
   }
-  /* Three controls do not fit at this width. "All puzzles" keeps its words —
-     a child who wants out needs them — and "Surprise me" clips to its icon,
-     clipped rather than hidden so it keeps its name for a screen reader. */
+  /* "All puzzles" keeps its words — a child who wants out needs them — and
+     "Surprise me" clips to its icon, clipped rather than hidden so it keeps
+     its name for a screen reader. */
   .navWord {
     position: absolute;
     width: 1px;
