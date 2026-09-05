@@ -72,6 +72,13 @@
   padding: var(--s6) var(--s4) var(--s7);
 }
 
+/* Immersed, there is no header above the board and no drawer below it, so the
+   room the page was keeping for them goes to the board as well. */
+:global(html[data-immersed]) .main {
+  padding-top: var(--s3);
+  padding-bottom: var(--s3);
+}
+
 .footer {
   border-top: var(--hair) solid var(--desk-edge);
   margin-top: auto;
@@ -122,7 +129,7 @@
   .main {
     padding: var(--s5) var(--s3) var(--s6);
   }
-  /* Four controls and a way out do not always fit on one line at this width.
+  /* Five controls and a way out do not always fit on one line at this width.
      The row is allowed to fold rather than push the page sideways, and the
      nav keeps to the right whether it folds or not. */
   .inner {
@@ -138,8 +145,8 @@
     display: none;
   }
   /* "All puzzles" keeps its words — a child who wants out needs them — and
-     "Surprise me" clips to its icon, clipped rather than hidden so it keeps
-     its name for a screen reader. */
+     "Immerse" clips to its icon, clipped rather than hidden so it keeps its
+     name for a screen reader. */
   .navWord {
     position: absolute;
     width: 1px;

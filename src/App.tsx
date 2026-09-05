@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
 import { useSoundEffects } from './lib/sound'
+import { ImmersionProvider } from './lib/immersion'
 import { Footer, Header } from './components/Chrome'
 import { Home } from './routes/Home'
 import { PuzzlePage } from './routes/PuzzlePage'
@@ -15,7 +16,10 @@ export function App() {
   useSoundEffects()
 
   return (
-    <>
+    // Immerse takes the chrome away and gives the board the screen. It is a
+    // mode of the whole shell rather than of one route, so it sits above the
+    // header and the page that both answer to it.
+    <ImmersionProvider>
       <Header />
       <main className={s.main}>
         <Routes>
@@ -31,6 +35,6 @@ export function App() {
         </Routes>
       </main>
       <Footer />
-    </>
+    </ImmersionProvider>
   )
 }

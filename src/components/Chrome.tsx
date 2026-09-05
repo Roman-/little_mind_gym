@@ -3,14 +3,15 @@ import { Link, useMatch } from 'react-router-dom'
 import { useProgress } from '../lib/progress'
 import { puzzleById } from '../puzzles'
 import { useSettings } from '../lib/settings'
+import { useImmersion } from '../lib/immersion'
 import { useTheme } from '../lib/theme'
 import { Button, ButtonLink } from './kit'
 import {
   BackIcon,
   BrandMark,
   ContrastIcon,
+  ExpandIcon,
   SettingsIcon,
-  ShuffleIcon,
   SoundOffIcon,
   SoundOnIcon,
 } from './icons'
@@ -24,6 +25,18 @@ export function Header() {
   // Only a puzzle that actually exists has a #board to skip to and a collection
   // to go back to. /puzzle/<unknown> renders NotFound, which carries its own way out.
   const onPuzzle = puzzleById(useMatch('/puzzle/:id')?.params.id) !== undefined
+  const { immersed, enter, leave } = useImmersion()
+
+  // Immersion belongs to a puzzle. Following "Another puzzle" or "All puzzles"
+  // out of one hands the screen back, rather than dropping a child on the
+  // collection with no navbar to leave it by.
+  useEffect(() => {
+    if (immersed && !onPuzzle) leave()
+  }, [immersed, onPuzzle, leave])
+
+  // The whole point of the mode: the board keeps the room this row was using.
+  if (immersed) return null
+
   return (
     <header className={s.header}>
       {onPuzzle && (
@@ -46,10 +59,12 @@ export function Header() {
           </Link>
         )}
         <nav className={s.nav}>
-          <ButtonLink to="/random" size="sm">
-            <ShuffleIcon />
-            <span className={s.navWord}>Surprise me</span>
-          </ButtonLink>
+          {onPuzzle && (
+            <Button size="sm" onClick={enter}>
+              <ExpandIcon />
+              <span className={s.navWord}>Immerse</span>
+            </Button>
+          )}
           <ButtonLink to="/settings" size="sm" className={s.iconBtn} aria-label="Settings">
             <SettingsIcon />
           </ButtonLink>

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { ComponentType } from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'
+import { useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { puzzleById } from '../puzzles'
 import { makeRng } from '../lib/rng'
 import { useProgress } from '../lib/progress'
 import { useSettings } from '../lib/settings'
+import { useImmersion } from '../lib/immersion'
 import { usePageTitle } from '../lib/title'
 import { useEphemeral } from '../lib/ephemeral'
 import { useCue } from '../lib/motion'
@@ -13,7 +14,7 @@ import { usePrefersReducedMotion } from '../lib/theme'
 import type { PuzzleLevel, PuzzleMeta } from '../lib/types'
 import { Button, ButtonLink, Panel } from '../components/kit'
 import { Confetti } from '../components/Confetti'
-import { ResetIcon, ShuffleIcon, UndoIcon } from '../components/icons'
+import { ExpandIcon, ResetIcon, ShrinkIcon, ShuffleIcon, UndoIcon } from '../components/icons'
 import { MoveTape } from '../components/MoveTape'
 import { Stamp } from '../components/Stamp'
 import { NotFound } from './NotFound'
@@ -75,6 +76,7 @@ export function PuzzlePage() {
 function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
   const { get, markTried, markSolved } = useProgress()
   const { settings } = useSettings()
+  const { immersed, fullscreen, canFullscreen, enter, leave } = useImmersion()
   const record = get(meta.id)
   const [params, setParams] = useSearchParams()
 
@@ -152,6 +154,26 @@ function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
     stage.addEventListener('focusout', caught)
     return () => stage.removeEventListener('focusout', caught)
   }, [])
+
+  /**
+   * /random_instantly asks for its puzzle already immersed. The request travels
+   * as history state rather than in the address, so /puzzle/<id> keeps meaning
+   * one thing wherever it is typed.
+   */
+  const asked = (useLocation().state as { immerse?: boolean } | null)?.immerse === true
+  useEffect(() => {
+    if (asked) enter()
+  }, [asked, enter])
+
+  /**
+   * Immerse unmounts the button that was pressed, which drops focus on <body>
+   * the same way a board replacing its own controls does. Put it on the board.
+   * A page that arrives immersed had no press to lose: a ring around a stage
+   * nobody has touched yet says nothing.
+   */
+  useEffect(() => {
+    if (immersed && !asked && document.activeElement === document.body) stageRef.current?.focus()
+  }, [immersed, asked])
 
   const rewind = useCallback(
     (keep: number) => {
@@ -244,29 +266,32 @@ function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
   return (
     <>
       {/* Title and levels share one line. The board is what a child came for,
-          so everything above it is one row tall and then gets out of the way. */}
-      <header className={s.head}>
-        <h1 className={s.title}>
-          <span className={s.titleMark} aria-hidden="true">
-            <meta.Icon />
-          </span>
-          {meta.title}
-        </h1>
-        <div className={s.levels} role="group" aria-label="Choose a level">
-          {meta.levels.map((l, i) => (
-            <button
-              key={l.id}
-              type="button"
-              className={`${s.level} u-press`}
-              aria-pressed={i === levelIndex}
-              onClick={() => chooseLevel(i)}
-            >
-              {l.label}
-              {record.solved.includes(l.id) && <Tick />}
-            </button>
-          ))}
-        </div>
-      </header>
+          so everything above it is one row tall and then gets out of the way —
+          and immersed, it goes altogether. */}
+      {!immersed && (
+        <header className={s.head}>
+          <h1 className={s.title}>
+            <span className={s.titleMark} aria-hidden="true">
+              <meta.Icon />
+            </span>
+            {meta.title}
+          </h1>
+          <div className={s.levels} role="group" aria-label="Choose a level">
+            {meta.levels.map((l, i) => (
+              <button
+                key={l.id}
+                type="button"
+                className={`${s.level} u-press`}
+                aria-pressed={i === levelIndex}
+                onClick={() => chooseLevel(i)}
+              >
+                {l.label}
+                {record.solved.includes(l.id) && <Tick />}
+              </button>
+            ))}
+          </div>
+        </header>
+      )}
 
       <Panel className={s.main} id="board">
         <div className={`u-sunk ${s.stage}`} ref={stageRef} tabIndex={-1}>
@@ -347,6 +372,25 @@ function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
             showCount={settings.showMoveCount}
           />
           <div className={s.tools}>
+            {/* The way out of the mode, and — where the browser turned the
+                screen down — the way into it. They come first because on a
+                narrow screen this row wraps, and while the chrome is gone the
+                way out is the one control that cannot be the one to fall off
+                the bottom. */}
+            {immersed && (
+              <>
+                {canFullscreen && !fullscreen && (
+                  <Button size="sm" variant="primary" onClick={enter}>
+                    <ExpandIcon />
+                    Full screen
+                  </Button>
+                )}
+                <Button size="sm" onClick={leave}>
+                  <ShrinkIcon />
+                  Leave immerse
+                </Button>
+              </>
+            )}
             {!noticeShowing && (
               <>
                 <Button size="sm" onClick={() => rewind(moves - 1)} disabled={moves === 0}>
@@ -370,56 +414,58 @@ function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
 
       {/* One drawer under the board holds everything the app has to say: the
           rules, and the hints. Both were cards taking up more room than the
-          board they explained. */}
-      <details className={s.help} open={helpOpen}>
-        <summary className={s.helpTop}>
-          How to play
-          <Chevron />
-        </summary>
-        <div className={s.helpBody}>
-          <div>
-            <p className={s.helpIntro}>{meta.tagline}</p>
-            <ol className={s.steps}>
-              {meta.instructions.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ol>
-          </div>
-
-          <div className={s.hints}>
-            <p className={`u-label ${s.hintsTitle}`}>Stuck?</p>
-            {/* A revealed hint appears above the button that revealed it, so
-                without this it arrives silently and out of reading order. */}
-            <div className={s.hintList} role="status">
-              {level.hints.slice(0, hintsShown).map((hint, i) => (
-                <p key={hint} className={s.hint}>
-                  <span className={`u-label ${s.hintNum}`}>Hint {i + 1}</span>
-                  {hint}
-                </p>
-              ))}
+          board they explained, and immersed, both wait outside. */}
+      {!immersed && (
+        <details className={s.help} open={helpOpen}>
+          <summary className={s.helpTop}>
+            How to play
+            <Chevron />
+          </summary>
+          <div className={s.helpBody}>
+            <div>
+              <p className={s.helpIntro}>{meta.tagline}</p>
+              <ol className={s.steps}>
+                {meta.instructions.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ol>
             </div>
-            {/* Disabled on the last hint rather than replaced by a sentence:
-                unmounting the button a child has just pressed drops their
-                keyboard focus on the floor. */}
-            <Button
-              size="sm"
-              aria-disabled={hintsShown >= level.hints.length || undefined}
-              onClick={() => {
-                if (hintsShown < level.hints.length) setHintsShown((n) => n + 1)
-              }}
-            >
-              {hintsShown === 0 ? 'Give me a nudge' : 'One more nudge'}
-            </Button>
-            <p className={s.hintIntro}>
-              {hintsShown >= level.hints.length
-                ? 'That is every hint there is.'
-                : hintsShown === 0
-                  ? 'No hint gives the answer away.'
-                  : ''}
-            </p>
+
+            <div className={s.hints}>
+              <p className={`u-label ${s.hintsTitle}`}>Stuck?</p>
+              {/* A revealed hint appears above the button that revealed it, so
+                  without this it arrives silently and out of reading order. */}
+              <div className={s.hintList} role="status">
+                {level.hints.slice(0, hintsShown).map((hint, i) => (
+                  <p key={hint} className={s.hint}>
+                    <span className={`u-label ${s.hintNum}`}>Hint {i + 1}</span>
+                    {hint}
+                  </p>
+                ))}
+              </div>
+              {/* Disabled on the last hint rather than replaced by a sentence:
+                  unmounting the button a child has just pressed drops their
+                  keyboard focus on the floor. */}
+              <Button
+                size="sm"
+                aria-disabled={hintsShown >= level.hints.length || undefined}
+                onClick={() => {
+                  if (hintsShown < level.hints.length) setHintsShown((n) => n + 1)
+                }}
+              >
+                {hintsShown === 0 ? 'Give me a nudge' : 'One more nudge'}
+              </Button>
+              <p className={s.hintIntro}>
+                {hintsShown >= level.hints.length
+                  ? 'That is every hint there is.'
+                  : hintsShown === 0
+                    ? 'No hint gives the answer away.'
+                    : ''}
+              </p>
+            </div>
           </div>
-        </div>
-      </details>
+        </details>
+      )}
     </>
   )
 }

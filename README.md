@@ -19,7 +19,7 @@ npm run build
 | `/`            | The collection, with what has been tried and what has been solved.   |
 | `/puzzle/:id`  | One puzzle. `?level=<level-id>` opens a particular level.            |
 | `/random`      | **Picks a puzzle at random and opens it.** `/surprise` does the same. |
-| `/random_instantly` | The same pick, opened straight away. Unlisted — nothing in the app links to it. |
+| `/random_instantly` | The same pick, opened straight away and already immersed. Unlisted — nothing in the app links to it. |
 | `/settings`    | Three settings, kept on this device. Reached from the navbar.        |
 
 The front page opens with a carousel of the eight puzzles — a picture, a name
@@ -29,8 +29,12 @@ either arrow, and it holds still for a reader who has asked for less motion.
 `/random` leans towards puzzles that have not been played yet, opens the first
 level the player has not finished, and never hands back the puzzle they just
 came from. It spends about a second on a reel of icons before it lands;
-`/random_instantly` makes the same choice and skips that, for a bookmark or a
-launcher shortcut that wants the puzzle and not the ceremony.
+`/random_instantly` makes the same choice, skips that, and lands immersed, for
+a bookmark or a launcher shortcut that wants the puzzle and not the ceremony.
+A fullscreen request has to be able to point at a tap that asked for it, and
+the tap that opened a bookmark does not survive the navigation it started — so
+that route arrives with the page already quiet and **Full screen** on the
+toolbar, one tap from the screen.
 
 ## The collection
 
@@ -57,7 +61,7 @@ own rules and draw its own pieces.
 
 ```
 src/
-  lib/          the contract (types.ts), a seeded rng, a BFS over state graphs, the motion cues, the sounds, the refusals
+  lib/          the contract (types.ts), a seeded rng, a BFS over state graphs, the motion cues, the sounds, the refusals, the immerse mode
   components/   the shell's furniture: the move tape, the confetti, the hero carousel
   routes/       home, one puzzle, the random pick, the settings
   puzzles/<id>/ logic.ts · Board.tsx · glyphs.tsx · board.module.css · index.ts · logic.test.ts
@@ -80,6 +84,16 @@ having to work it out. **Allow moves that break a rule** in the settings turns
 it off, and the controls go back to refusing up front. It changes the Tower of
 Hanoi, leapfrog and the balance scales; the other five disable nothing their
 rules forbid.
+
+**Immerse gives the whole window to the board.** The button is in the navbar
+on a puzzle page. It asks the browser for the screen and takes away the navbar,
+the title-and-levels row and the How to play drawer, leaving the board, the
+move tape and the controls a child plays with — and the stage grows into the
+room all three gave back. Fullscreen is the source of truth: Escape, F11 and
+the browser's own control all bring the page back, because the mode watches
+`fullscreenchange` rather than remembering what it asked for. Where a browser
+will not give the screen at all, the page goes quiet anyway and **Leave
+immerse** under the board is still the way out.
 
 **The app makes a small wooden sound when it is touched.** A click under every
 control, a knock when a piece goes down, two lower knocks when a rule says no,

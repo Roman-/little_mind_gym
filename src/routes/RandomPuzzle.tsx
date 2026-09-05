@@ -33,9 +33,9 @@ const STEPS = 9
 const TICK = 105
 
 /**
- * `instant` is the unlisted /random_instantly door: same pick, no reel. Nothing
- * links to it — it exists for a bookmark or a shortcut that wants the puzzle
- * and not the ceremony.
+ * `instant` is the unlisted /random_instantly door: same pick, no reel, and the
+ * puzzle already immersed. Nothing links to it — it exists for a bookmark or a
+ * shortcut that wants the puzzle and not the ceremony.
  */
 export function RandomPuzzle({ instant = false }: { instant?: boolean }) {
   const navigate = useNavigate()
@@ -68,7 +68,11 @@ export function RandomPuzzle({ instant = false }: { instant?: boolean }) {
     } catch {
       /* a session without storage just repeats itself sometimes */
     }
-    navigate(destination, { replace: true })
+    // A bookmark's own tap does not survive the navigation, so the puzzle page
+    // asks for the screen on arrival and is turned down; it hides the chrome
+    // and offers the way in. The mode travels in history state rather than the
+    // address: /puzzle/<id> means the same thing wherever it is typed.
+    navigate(destination, { replace: true, state: instant ? { immerse: true } : null })
   }
 
   useEffect(() => {

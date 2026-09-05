@@ -63,6 +63,50 @@ function withReducedMotion(run: () => void) {
   }
 }
 
+/**
+ * A browser with a screen to give. `refuse` is the answer that matters most
+ * here: a request that cannot point at a tap of its own is turned down, and a
+ * bookmark's tap does not survive the navigation it starts.
+ */
+function withFullscreen(
+  run: (browser: { dropped: () => void; grant: () => void }) => void,
+  { refuse = false } = {},
+) {
+  let held: Element | null = null
+  const announce = () => document.dispatchEvent(new Event('fullscreenchange'))
+  Object.defineProperty(document, 'fullscreenEnabled', { configurable: true, value: true })
+  Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: () => held })
+  document.exitFullscreen = () => {
+    held = null
+    announce()
+    return Promise.resolve()
+  }
+  document.documentElement.requestFullscreen = () => {
+    if (refuse) return Promise.reject(new Error('a fullscreen request needs a gesture'))
+    held = document.documentElement
+    announce()
+    return Promise.resolve()
+  }
+  try {
+    run({
+      /** Escape, F11, or the browser's own control: the screen goes without us. */
+      dropped: () =>
+        act(() => {
+          held = null
+          announce()
+        }),
+      grant: () => {
+        refuse = false
+      },
+    })
+  } finally {
+    for (const key of ['fullscreenEnabled', 'fullscreenElement', 'exitFullscreen'] as const) {
+      Reflect.deleteProperty(document, key)
+    }
+    Reflect.deleteProperty(document.documentElement, 'requestFullscreen')
+  }
+}
+
 const confetti = (view: { container: HTMLElement }) =>
   view.container.querySelector('[class*="confetti"]')
 
@@ -362,9 +406,22 @@ describe('the random route', () => {
   it('opens one straight away at the unlisted instant route', () => {
     open('/random_instantly')
     expect(screen.queryByText(/picking one for you/i)).not.toBeInTheDocument()
-    const titles = PUZZLES.map((p) => p.title)
-    const heading = screen.getByRole('heading', { level: 1 })
-    expect(titles).toContain(heading.textContent)
+    // It lands immersed, so the puzzle's own title row is one of the things
+    // that has gone. The tab still says which puzzle this is.
+    const titles = PUZZLES.map((p) => `${p.title} \u00b7 Little Mind Gym`)
+    expect(titles).toContain(document.title)
+    expect(screen.getByRole('group', { name: /move history/i })).toBeInTheDocument()
+  })
+
+  it('is reached from the front page, and no longer from the navbar', () => {
+    const home = open('/')
+    const hero = screen.getByRole('link', { name: /surprise me/i })
+    expect(hero).toHaveAttribute('href', '/random')
+    expect(hero.closest('header')).toBeNull()
+    home.unmount()
+
+    open('/puzzle/river-crossing')
+    expect(screen.queryByRole('link', { name: /surprise me/i })).not.toBeInTheDocument()
   })
 
   it('keeps the instant route out of the UI', () => {
@@ -373,6 +430,117 @@ describe('the random route', () => {
       .getAllByRole('link')
       .map((a) => a.getAttribute('href') ?? '')
     expect(hrefs.some((h) => h.includes('random_instantly'))).toBe(false)
+  })
+})
+
+describe('immerse', () => {
+  const wayOut = () => screen.queryByRole('link', { name: /all puzzles/i })
+  const immerse = () => click('Immerse')
+
+  it('is offered on a puzzle page, and nowhere else', () => {
+    const puzzle = open('/puzzle/river-crossing')
+    expect(screen.getByRole('button', { name: 'Immerse' })).toBeInTheDocument()
+    puzzle.unmount()
+
+    const home = open('/')
+    expect(screen.queryByRole('button', { name: 'Immerse' })).not.toBeInTheDocument()
+    home.unmount()
+
+    open('/settings')
+    expect(screen.queryByRole('button', { name: 'Immerse' })).not.toBeInTheDocument()
+  })
+
+  it('takes the page away from around the board, and puts it back', () => {
+    open('/puzzle/river-crossing')
+    immerse()
+
+    // The navbar, the title-and-levels row and the drawer: all gone.
+    expect(wayOut()).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: /choose a level/i })).not.toBeInTheDocument()
+    expect(screen.queryByText('How to play')).not.toBeInTheDocument()
+
+    // The board, and everything a child plays with: still here.
+    expect(screen.getByRole('button', { name: /put the goat in the boat/i })).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: /move history/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^start over$/i })).toBeInTheDocument()
+
+    // The room the three of them were using goes to the stage, and that is a
+    // stylesheet's job: it reads the mode off the root element.
+    expect(document.documentElement).toHaveAttribute('data-immersed')
+
+    click(/leave immerse/i)
+    expect(document.documentElement).not.toHaveAttribute('data-immersed')
+    expect(wayOut()).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    expect(screen.getByText('How to play')).toBeInTheDocument()
+  })
+
+  it('asks for the screen, and hands it back through the button', () => {
+    withFullscreen(() => {
+      open('/puzzle/river-crossing')
+      immerse()
+      expect(document.fullscreenElement).toBe(document.documentElement)
+
+      click(/leave immerse/i)
+      expect(document.fullscreenElement).toBeNull()
+      expect(wayOut()).toBeInTheDocument()
+    })
+  })
+
+  it('gives everything back the moment the screen goes, however it went', () => {
+    withFullscreen((browser) => {
+      open('/puzzle/river-crossing')
+      immerse()
+      expect(wayOut()).not.toBeInTheDocument()
+
+      // Escape, F11, or the browser's own control. None of them tell us
+      // anything except that the screen has gone.
+      browser.dropped()
+      expect(wayOut()).toBeInTheDocument()
+      expect(screen.getByText('How to play')).toBeInTheDocument()
+    })
+  })
+
+  it('hides the chrome anyway where the browser will not give the screen', () => {
+    // jsdom has no fullscreen at all, which is the answer an iframe without
+    // the permission gives: the mode is on, and nothing offers a screen that
+    // cannot be had.
+    open('/puzzle/river-crossing')
+    immerse()
+    expect(wayOut()).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /full screen/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /leave immerse/i })).toBeInTheDocument()
+  })
+
+  it('lands the instant route immersed, with one way into the screen', () => {
+    withFullscreen(
+      (browser) => {
+        open('/random_instantly')
+        expect(wayOut()).not.toBeInTheDocument()
+        expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument()
+        // Turned down: the tap that opened the bookmark is not one this
+        // request can point at.
+        expect(document.fullscreenElement).toBeNull()
+
+        // So the toolbar offers the tap, and that one is granted.
+        browser.grant()
+        click(/full screen/i)
+        expect(document.fullscreenElement).toBe(document.documentElement)
+        expect(screen.queryByRole('button', { name: /full screen/i })).not.toBeInTheDocument()
+      },
+      { refuse: true },
+    )
+  })
+
+  it('ends when the puzzle it belongs to is left', () => {
+    open('/puzzle/river-crossing')
+    immerse()
+    solveTheRiver()
+    fireEvent.click(screen.getByRole('link', { name: /another puzzle/i }))
+
+    expect(screen.getByText(/picking one for you/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Settings' })).toBeInTheDocument()
   })
 })
 
