@@ -91,6 +91,17 @@ to fill the stage, not to fit around the furniture.** Size pieces in `clamp()`
 against the viewport, with a floor no smaller than a fingertip (`--tap-sm`) and
 a ceiling that keeps a 27" monitor sane.
 
+**Immerse is the same rule taken to the end of the page.** The navbar, the
+title-and-levels row and the drawer all go, the browser is asked for the
+screen, and the stage takes what the three of them were using. What stays is
+the board, the move tape, the controls under it and the credit in the footer —
+everything a child touches while playing, and nothing else. The screen itself
+is the source of truth, so Escape, F11 and the browser's own control all put
+the page back without the app being told; where a browser will not give the
+screen, the page goes quiet anyway and the toolbar carries both the way in and
+the way out. The button belongs on a puzzle page: there is nothing to immerse
+on the collection or the settings.
+
 **A place stays a place.** When a piece leaves its row — into the boat, onto a
 pan — the row does not close up behind it. The place stays where it was, drawn
 as an empty outline, and every other piece keeps its position. A row that

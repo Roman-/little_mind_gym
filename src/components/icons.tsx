@@ -98,3 +98,17 @@ export const NextIcon = () => (
     <g transform="translate(24 0) scale(-1 1)">{chevron}</g>
   </svg>
 )
+
+/* Four corners opening outwards, and the same four folding back in. One gesture
+   drawn twice, so the button keeps its shape when the screen changes under it. */
+export const ExpandIcon = () => (
+  <svg {...base}>
+    <path d="M9 4H4v5M15 4h5v5M15 20h5v-5M9 20H4v-5" />
+  </svg>
+)
+
+export const ShrinkIcon = () => (
+  <svg {...base}>
+    <path d="M4 9h5V4M20 9h-5V4M20 15h-5v5M4 15h5v5" />
+  </svg>
+)

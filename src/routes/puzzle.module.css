@@ -94,6 +94,13 @@
   width: 100%;
 }
 
+/* Immersed, the title row and the drawer are gone and the window is the whole
+   screen, so the same rule pays out again: a board is built to fill the stage,
+   and the stage takes everything the page is no longer using. */
+:global(html[data-immersed]) .stage {
+  min-height: clamp(20rem, 72vh, 56rem);
+}
+
 .notice {
   margin-top: var(--s3);
   padding: var(--s4);
@@ -282,6 +289,12 @@
   .stage {
     min-height: clamp(18rem, 52vh, 30rem);
     padding: var(--s4) var(--s3);
+  }
+  /* A phone's toolbar wraps onto three rows, so the stage takes a smaller
+     share of a small screen: the board still grows, and the controls under it
+     stay where a thumb can reach them without scrolling. */
+  :global(html[data-immersed]) .stage {
+    min-height: clamp(18rem, 58vh, 40rem);
   }
   .head {
     gap: var(--s2);
