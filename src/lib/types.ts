@@ -39,6 +39,10 @@ export interface PuzzleEngine<S, A> {
    * Non-null when the player has walked into a dead end they must step back
    * from (e.g. "The goat ate the cabbage."). One short sentence, plus one
    * short sentence of what to do. Optional.
+   *
+   * The shell shows the sentence and nothing else. A board that has to point
+   * at whatever broke the rule asks its own logic.ts for that — see
+   * `failureOf` in the river crossing — rather than widening this.
    */
   failure?(state: S): string | null
   /** Past-tense summary of the move that produced `next`. Used by the move tape and screen readers. */

@@ -2,10 +2,11 @@ import { createElement } from 'react'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { shortestSolution } from '../../lib/search'
+import { cues } from '../../lib/motion'
 import { riverCrossing } from './index'
 import { Board } from './Board'
 import type { RiverAction, RiverState } from './logic'
-import { failure, init, isSolved, legalMoves, reduce } from './logic'
+import { failure, failureOf, init, isSolved, legalMoves, reduce } from './logic'
 
 const solve = (state: RiverState) =>
   shortestSolution<RiverState, RiverAction>({
@@ -55,6 +56,18 @@ describe('river crossing', () => {
   it('keeps the peace while the guardian is on the bank', () => {
     const level = riverCrossing.levels[0]
     expect(failure(init(level))).toBeNull()
+    expect(failureOf(init(level))).toBeNull()
+  })
+
+  it('names the pieces its sentence is about, so nobody has to read the sentence', () => {
+    const level = riverCrossing.levels[0]
+    const after = reduce(init(level), { type: 'cross', passengers: [0, 1] })
+    expect(failureOf(after)).toEqual({
+      message: 'The goat ate the cabbage.',
+      blamed: ['goat', 'cabbage'],
+    })
+    // The shell is handed the sentence and nothing else, as it always was.
+    expect(failure(after)).toBe('The goat ate the cabbage.')
   })
 
   it('scatters the mice when cats outnumber them', () => {
@@ -63,6 +76,9 @@ describe('river crossing', () => {
     // items: 0..2 mice, 3..5 cats. Send two mice across, leaving 1 mouse with 3 cats.
     const after = reduce(start, { type: 'cross', passengers: [0, 1] })
     expect(failure(after)).toMatch(/more cats than mice/)
+    // Everyone the sentence counts stands on the bank that broke the count.
+    // The two mice that got away are not blamed for it.
+    expect(failureOf(after)?.blamed).toEqual(['cat-0', 'cat-1', 'cat-2', 'mouse-2'])
   })
 
   it('never counts a no-op as a move', () => {
@@ -128,6 +144,35 @@ describe('river crossing board', () => {
       fireEvent.click(b)
     }
     expect(dispatch).not.toHaveBeenCalled()
+  })
+
+  const shaking = () =>
+    [...document.querySelectorAll('[class]')]
+      .filter((el) => el.classList.contains(cues.shake))
+      .map((el) => el.closest('button')?.getAttribute('aria-label'))
+
+  it('shakes the two animals the dead end names, and nobody else', () => {
+    // The wolf goes across, and the goat is left standing with the cabbage.
+    const dead = reduce(init(classic), { type: 'cross', passengers: [0, 1] })
+    paint(dead, true)
+    expect(shaking()).toEqual(['Goat, this side', 'Cabbage, this side'])
+  })
+
+  it('shakes every cat and mouse on the bank that broke the count', () => {
+    const level = riverCrossing.levels[2]
+    const dead = reduce(init(level), { type: 'cross', passengers: [0, 1] })
+    paint(dead, true)
+    expect(shaking().sort()).toEqual([
+      'Bo, this side',
+      'Kit, this side',
+      'Tom, this side',
+      'Tuck, this side',
+    ])
+  })
+
+  it('shakes nothing while both banks are safe', () => {
+    paint(reduce(init(classic), { type: 'cross', passengers: [0, 2] }))
+    expect(shaking()).toEqual([])
   })
 
   it('leaves the title, hints, move count and win message to the shell', () => {
