@@ -86,3 +86,15 @@ export const SoundOffIcon = () => (
     <path d="m16 9.5 5 5M21 9.5l-5 5" />
   </svg>
 )
+
+/* The two carousel arrows. One chevron, mirrored for the other way, so neither
+   arrow can drift a pixel from the one it faces. */
+const chevron = <path d="M14.5 6 8.5 12l6 6" />
+
+export const PrevIcon = () => <svg {...base}>{chevron}</svg>
+
+export const NextIcon = () => (
+  <svg {...base}>
+    <g transform="translate(24 0) scale(-1 1)">{chevron}</g>
+  </svg>
+)

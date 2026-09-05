@@ -78,11 +78,19 @@ describe('the collection page', () => {
     const list = screen.getByRole('list')
     expect(within(list).getAllByRole('listitem')).toHaveLength(PUZZLES.length)
     for (const puzzle of PUZZLES) {
-      expect(screen.getByText(puzzle.title)).toBeInTheDocument()
+      // Scoped to the list: the carousel in the hero prints a title too.
+      expect(within(list).getByText(puzzle.title)).toBeInTheDocument()
     }
     // A row carries a status word only once it has one to carry. Eight rows
     // stamped "Not tried" is eight repetitions of nothing.
     expect(screen.queryByText('Not tried')).not.toBeInTheDocument()
+  })
+
+  it('keeps no tally of what has been solved, and no link down the page', () => {
+    open('/')
+    expect(screen.queryByText(/or pick one below/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/no puzzles solved yet/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/you have solved/i)).not.toBeInTheDocument()
   })
 
   it('sends an unknown puzzle to the not-found page', () => {
@@ -92,6 +100,62 @@ describe('the collection page', () => {
     // exists, so this page keeps its identity and offers exactly one way out.
     expect(screen.getAllByRole('link', { name: /all puzzles/i })).toHaveLength(1)
     expect(screen.getByText('Little Mind Gym')).toBeInTheDocument()
+  })
+})
+
+describe('the carousel in the hero', () => {
+  /** The Start button names the puzzle on show, so it says where we are. */
+  const onShow = () => screen.getByRole('link', { name: /^start/i })
+  const steer = (name: RegExp) => fireEvent.click(screen.getByRole('button', { name }))
+  const next = () => steer(/show the next puzzle/i)
+  const back = () => steer(/show the puzzle before/i)
+
+  it('shows one puzzle, and starts the one it is showing', () => {
+    open('/')
+    expect(onShow()).toHaveAccessibleName(`Start ${PUZZLES[0].title}`)
+    expect(onShow()).toHaveAttribute('href', `/puzzle/${PUZZLES[0].id}`)
+
+    next()
+    expect(onShow()).toHaveAccessibleName(`Start ${PUZZLES[1].title}`)
+    expect(onShow()).toHaveAttribute('href', `/puzzle/${PUZZLES[1].id}`)
+  })
+
+  it('goes round in both directions', () => {
+    open('/')
+    back()
+    expect(onShow()).toHaveAccessibleName(`Start ${PUZZLES[PUZZLES.length - 1].title}`)
+    next()
+    expect(onShow()).toHaveAccessibleName(`Start ${PUZZLES[0].title}`)
+  })
+
+  describe('left alone', () => {
+    beforeEach(() => vi.useFakeTimers())
+    afterEach(() => vi.useRealTimers())
+
+    // Long enough for several turns, whatever the dwell is set to.
+    const wait = () => act(() => vi.advanceTimersByTime(30_000))
+
+    it('moves on by itself', () => {
+      open('/')
+      wait()
+      expect(onShow()).not.toHaveAccessibleName(`Start ${PUZZLES[0].title}`)
+    })
+
+    it('stops for good once a child has touched it', () => {
+      open('/')
+      next()
+      const held = String(onShow().getAttribute('href'))
+      wait()
+      expect(onShow()).toHaveAttribute('href', held)
+    })
+
+    it('holds still for a reader who has asked for less motion', () => {
+      withReducedMotion(() => {
+        open('/')
+        wait()
+        expect(onShow()).toHaveAccessibleName(`Start ${PUZZLES[0].title}`)
+      })
+    })
   })
 })
 

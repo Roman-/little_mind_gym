@@ -7,7 +7,7 @@ import type { Status } from '../lib/progress'
 import type { PuzzleMeta } from '../lib/types'
 import { ButtonLink, Panel } from '../components/kit'
 import { ShuffleIcon } from '../components/icons'
-import { StateDiagram } from '../components/StateDiagram'
+import { PuzzleCarousel } from '../components/PuzzleCarousel'
 import s from './home.module.css'
 
 type Filter = 'all' | 'unsolved' | 'new'
@@ -58,7 +58,6 @@ export function Home() {
     return { meta, record, status: statusOf(record, meta) }
   })
   const shown = rows.filter((r) => keep(filter, r.status))
-  const solvedCount = rows.filter((r) => r.status === 'solved' || r.status === 'complete').length
 
   return (
     <>
@@ -68,24 +67,12 @@ export function Home() {
           <p className={s.lede}>
             You can work every one out by thinking. None of them need quick fingers.
           </p>
-          <div className={s.actions}>
-            <ButtonLink to="/random" variant="primary">
-              <ShuffleIcon />
-              Surprise me
-            </ButtonLink>
-            <a className={s.jump} href="#index">
-              or pick one below
-            </a>
-          </div>
-          <div className={s.summary}>
-            <p className="u-label u-label-desk">
-              {solvedCount === 0
-                ? 'No puzzles solved yet'
-                : `You have solved ${solvedCount} of ${PUZZLES.length}`}
-            </p>
-          </div>
+          <ButtonLink to="/random" variant="primary">
+            <ShuffleIcon />
+            Surprise me
+          </ButtonLink>
         </div>
-        <StateDiagram />
+        <PuzzleCarousel />
       </Panel>
 
       <section id="index">
