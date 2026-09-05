@@ -73,8 +73,9 @@ state too — just don't render it.
 - **Motion that answers a move comes from the shared cues.** A shake, a red
   flash, a "no", a group of cells lit for a moment: `src/styles/motion.module.css`
   holds all four, and `useCue()` from `src/lib/motion.ts` puts one on and takes
-  it off again. Write no keyframes of your own for these — a move the puzzle
-  refuses should look the same in every puzzle. See DESIGN.md, **Motion**.
+  it off again. Write no keyframes of your own for these — a mistake should
+  look the same in every puzzle, and one mistake may fire two of them at once.
+  See DESIGN.md, **Motion**.
 - **You do not have to manage focus.** Boards routinely replace the very button
   that was pressed — a piece moves into the boat, a ball moves onto a pan, a
   Fill button greys out — which drops focus onto `<body>`. The shell listens
