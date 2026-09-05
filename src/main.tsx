@@ -4,6 +4,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { ProgressProvider } from './lib/progress'
+import { SettingsProvider } from './lib/settings'
 import { App } from './App'
 
 createRoot(document.getElementById('root') as HTMLElement).render(
@@ -12,7 +13,9 @@ createRoot(document.getElementById('root') as HTMLElement).render(
         site to another folder stays a one-line change. */}
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <ProgressProvider>
-        <App />
+        <SettingsProvider>
+          <App />
+        </SettingsProvider>
       </ProgressProvider>
     </BrowserRouter>
   </StrictMode>,

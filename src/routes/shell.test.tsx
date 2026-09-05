@@ -3,13 +3,16 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { MemoryRouter } from 'react-router-dom'
 import { App } from '../App'
 import { ProgressProvider } from '../lib/progress'
+import { SettingsProvider } from '../lib/settings'
 import { PUZZLES } from '../puzzles'
 
 function open(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <ProgressProvider>
-        <App />
+        <SettingsProvider>
+          <App />
+        </SettingsProvider>
       </ProgressProvider>
     </MemoryRouter>,
   )
@@ -211,5 +214,31 @@ describe('the random route', () => {
       .getAllByRole('link')
       .map((a) => a.getAttribute('href') ?? '')
     expect(hrefs.some((h) => h.includes('random_instantly'))).toBe(false)
+  })
+})
+
+describe('the settings page', () => {
+  const checkbox = (name: string) => screen.getByRole('checkbox', { name })
+
+  it('opens from the navbar, with every setting where it starts out', () => {
+    open('/')
+    fireEvent.click(screen.getByRole('link', { name: 'Settings' }))
+
+    expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument()
+    expect(checkbox('Allow moves that break a rule')).toBeChecked()
+    expect(checkbox('Show the move count')).not.toBeChecked()
+    expect(checkbox('Play sounds')).toBeChecked()
+  })
+
+  it('keeps a change after the page has been left and opened again', () => {
+    const view = open('/settings')
+    fireEvent.click(checkbox('Show the move count'))
+    fireEvent.click(checkbox('Play sounds'))
+    view.unmount()
+
+    open('/settings')
+    expect(checkbox('Show the move count')).toBeChecked()
+    expect(checkbox('Play sounds')).not.toBeChecked()
+    expect(checkbox('Allow moves that break a rule')).toBeChecked()
   })
 })
