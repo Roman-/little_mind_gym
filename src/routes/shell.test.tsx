@@ -117,17 +117,30 @@ beforeEach(() => {
 afterEach(cleanup)
 
 describe('the collection page', () => {
-  it('lists every puzzle with its status', () => {
+  it('lists every puzzle with its status, and opens the one you pick', () => {
     open('/')
     const list = screen.getByRole('list')
     expect(within(list).getAllByRole('listitem')).toHaveLength(PUZZLES.length)
     for (const puzzle of PUZZLES) {
-      // Scoped to the list: the carousel in the hero prints a title too.
-      expect(within(list).getByText(puzzle.title)).toBeInTheDocument()
+      expect(within(list).getByRole('link', { name: new RegExp(puzzle.title, 'i') })).toHaveAttribute(
+        'href',
+        `/puzzle/${puzzle.id}`,
+      )
     }
-    // A row carries a status word only once it has one to carry. Eight rows
+    // A card carries a status word only once it has one to carry. Eight cards
     // stamped "Not tried" is eight repetitions of nothing.
     expect(screen.queryByText('Not tried')).not.toBeInTheDocument()
+  })
+
+  it('shows every puzzle once, and only in the collection', () => {
+    open('/')
+    // The page used to open with a carousel that carried the same eight
+    // pictures and names past one at a time, above the list that already had
+    // them. One puzzle, one place on the page.
+    for (const puzzle of PUZZLES) {
+      expect(screen.getAllByRole('link', { name: new RegExp(puzzle.title, 'i') })).toHaveLength(1)
+    }
+    expect(screen.queryByRole('button', { name: /show the next puzzle/i })).not.toBeInTheDocument()
   })
 
   it('keeps no tally of what has been solved, and no link down the page', () => {
@@ -144,62 +157,6 @@ describe('the collection page', () => {
     // exists, so this page keeps its identity and offers exactly one way out.
     expect(screen.getAllByRole('link', { name: /all puzzles/i })).toHaveLength(1)
     expect(screen.getByText('Little Mind Gym')).toBeInTheDocument()
-  })
-})
-
-describe('the carousel in the hero', () => {
-  /** The Start button names the puzzle on show, so it says where we are. */
-  const onShow = () => screen.getByRole('link', { name: /^start/i })
-  const steer = (name: RegExp) => fireEvent.click(screen.getByRole('button', { name }))
-  const next = () => steer(/show the next puzzle/i)
-  const back = () => steer(/show the puzzle before/i)
-
-  it('shows one puzzle, and starts the one it is showing', () => {
-    open('/')
-    expect(onShow()).toHaveAccessibleName(`Start ${PUZZLES[0].title}`)
-    expect(onShow()).toHaveAttribute('href', `/puzzle/${PUZZLES[0].id}`)
-
-    next()
-    expect(onShow()).toHaveAccessibleName(`Start ${PUZZLES[1].title}`)
-    expect(onShow()).toHaveAttribute('href', `/puzzle/${PUZZLES[1].id}`)
-  })
-
-  it('goes round in both directions', () => {
-    open('/')
-    back()
-    expect(onShow()).toHaveAccessibleName(`Start ${PUZZLES[PUZZLES.length - 1].title}`)
-    next()
-    expect(onShow()).toHaveAccessibleName(`Start ${PUZZLES[0].title}`)
-  })
-
-  describe('left alone', () => {
-    beforeEach(() => vi.useFakeTimers())
-    afterEach(() => vi.useRealTimers())
-
-    // Long enough for several turns, whatever the dwell is set to.
-    const wait = () => act(() => vi.advanceTimersByTime(30_000))
-
-    it('moves on by itself', () => {
-      open('/')
-      wait()
-      expect(onShow()).not.toHaveAccessibleName(`Start ${PUZZLES[0].title}`)
-    })
-
-    it('stops for good once a child has touched it', () => {
-      open('/')
-      next()
-      const held = String(onShow().getAttribute('href'))
-      wait()
-      expect(onShow()).toHaveAttribute('href', held)
-    })
-
-    it('holds still for a reader who has asked for less motion', () => {
-      withReducedMotion(() => {
-        open('/')
-        wait()
-        expect(onShow()).toHaveAccessibleName(`Start ${PUZZLES[0].title}`)
-      })
-    })
   })
 })
 

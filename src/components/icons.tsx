@@ -87,18 +87,6 @@ export const SoundOffIcon = () => (
   </svg>
 )
 
-/* The two carousel arrows. One chevron, mirrored for the other way, so neither
-   arrow can drift a pixel from the one it faces. */
-const chevron = <path d="M14.5 6 8.5 12l6 6" />
-
-export const PrevIcon = () => <svg {...base}>{chevron}</svg>
-
-export const NextIcon = () => (
-  <svg {...base}>
-    <g transform="translate(24 0) scale(-1 1)">{chevron}</g>
-  </svg>
-)
-
 /* Four corners opening outwards, and the same four folding back in. One gesture
    drawn twice, so the button keeps its shape when the screen changes under it. */
 export const ExpandIcon = () => (

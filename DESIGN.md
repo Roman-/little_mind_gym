@@ -20,7 +20,7 @@ saying one of those things, it is either a piece colour (`--p-*`) identifying a
 *thing*, or it belongs to a pictogram (rule 3), which brings its own. Nothing
 is coloured to be pretty. A `--p-*` names something you can see on the board —
 a disc, a jug of water, one team of frogs against the other — not a puzzle in a
-list. A row in the collection is told apart by its picture, never by a colour
+list. A card in the collection is told apart by its picture, never by a colour
 of its own; the moment a puzzle had an identity colour, a moss tile would sit
 on the same card as a moss "Solved".
 
@@ -195,17 +195,16 @@ board says it too, and the confetti is skipped outright, on
 `usePrefersReducedMotion`. A sentence that answers a cue is never put on the
 cue's timer, either — it stands until the mistake it names is off the board.
 
-**The carousel in the hero moves without being asked, and it is the only
-thing here that does.** It carries the eight puzzles past one at a time, a
-picture and a name each, so a child who cannot yet read the list below still
-sees a boat, a frog and a pair of scales go by. It buys that by handing the
-movement straight back. A touch stops it for good, either arrow stops it for
-good, keyboard focus reaching Start stops it for good, and a pointer resting
-on it pauses it meanwhile; under reduced motion it never starts at all, and
-the arrows are then the only way through. A card that slid out from under a
-finger already reaching for Start would be worse than no carousel. What moves
-is content rather than decoration, and it is never the only way to any of it:
-every puzzle it shows is also a row in the collection underneath.
+**Nothing moves until somebody asks it to.** The front page carried a
+carousel of the eight puzzles for a while, and it was the one thing here that
+moved on its own: a picture and a name at a time, for a child who cannot yet
+read a list. It was paying for its movement with a card that could slide out
+from under a finger already reaching for Start, and it was paying for a
+picture the collection under it was already showing — all eight of them, at
+once, and each one big enough to name across a table. A page that shows
+everything it has does not need to take turns. Motion a child did not ask for
+has to beat that, and only two things ever have: a mistake the board points
+at, and a level solved.
 
 There is no animation library, and that is a decision rather than an omission.
 All of the above is four sets of keyframes and one small hook, and what a
@@ -323,10 +322,9 @@ Do not add: gradients, glassmorphism, neon, drop shadows with blur,
 rounded-pill buttons, more than one accent colour on a screen, or a second
 display typeface. Nothing bounces, pulses or sparkles to fill a wait, to pull
 the eye towards a control, or to dress up a screen that was doing fine without
-it. The three exceptions are named under **Motion** above and are the whole
-list: a cue on a mistake the board has to point at, the confetti on a solve,
-and the carousel in the hero, which carries content rather than decoration and
-stops the moment it is touched.
+it. The two exceptions are named under **Motion** above and are the whole
+list: a cue on a mistake the board has to point at, and the confetti on a
+solve.
 
 Do not put an emoji in a *sentence*: a picture is a pictogram on a plate,
 never a character in running text a screen reader has to read out. Do not
