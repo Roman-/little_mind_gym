@@ -132,6 +132,16 @@ Fast and certain: `--dur-1` for presses, `--dur-2` for state changes,
 `--dur-3` for a piece travelling across the board. Always `var(--ease)`.
 Things slide and settle; nothing spins or wobbles to fill a wait.
 
+**A piece keeps its node.** When a board draws its pieces as a list, that list
+takes an order that the puzzle's own state cannot change. The leapfrog board
+draws every green frog and then every blue one, and not in row order: a jump
+crosses two frogs, so row order is the one thing a move is certain to change.
+React answers a reordered list by lifting the node that moved out of the
+document and putting it straight back. A node that has left the document has
+no transform to travel from, so the piece a child has just tapped lands on its
+square instantly while the rest of the board slides. Key by the piece, and
+order by the piece too.
+
 Two longer rungs are for motion that has to be *noticed* rather than only
 seen: `--dur-4` for a one-shot cue, `--dur-5` for a cue the eye has to follow
 or read. They are rationed to two moments — a mistake the board has to point

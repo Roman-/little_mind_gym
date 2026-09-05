@@ -581,11 +581,13 @@ describe('leapfrog board', () => {
     const b = paint(read('GBG_B'))
     expect(b.buttons().map((x) => x.getAttribute('aria-label'))).toEqual(labels)
     // ...and re-rendering with a new state redraws from that state alone.
+    // The frogs are drawn every green and then every blue, never in row order;
+    // the test below says why.
     b.view.rerender(createElement(Board, { state: read('GBGB_'), dispatch: vi.fn(), locked: false }))
     expect(screen.getAllByRole('button').map((x) => x.getAttribute('aria-label'))).toEqual([
       'Green frog on stone 1, blocked',
-      'Blue frog on stone 2, blocked',
       'Green frog on stone 3, jump it over the blue frog to stone 5',
+      'Blue frog on stone 2, blocked',
       'Blue frog on stone 4, blocked',
     ])
   })
@@ -595,7 +597,33 @@ describe('leapfrog board', () => {
     const stage = document.querySelector('[style*="--seats"]') as HTMLElement
     expect(stage.style.getPropertyValue('--seats')).toBe('5')
     const slots = [...document.querySelectorAll('[style*="--pos"]')] as HTMLElement[]
-    expect(slots.map((el) => el.style.getPropertyValue('--pos'))).toEqual(['0', '1', '2', '4'])
+    // Greens first, so stone 3 before stone 2: a slot is placed by --pos alone
+    // and owes nothing to where it sits among its siblings.
+    expect(slots.map((el) => el.style.getPropertyValue('--pos'))).toEqual(['0', '2', '1', '4'])
+  })
+
+  /**
+   * The frogs were once drawn in row order, which a jump changes by definition.
+   * React answers a reordered list by lifting the node that moved out of the
+   * document and putting it straight back, and a node that has left the
+   * document has no transform to travel from — so a step, and then a jump over
+   * the frog that had just stepped, put the jumper on its landing stone before
+   * the arc had begun.
+   */
+  it('keeps every frog in the node it started in, so a jump travels', () => {
+    const b = paint(read('GG_BB'))
+    const slots = () => [...document.querySelectorAll('[style*="--pos"]')] as HTMLElement[]
+    slots().forEach((el, i) => (el.dataset.frog = String(i)))
+    const replay = (row: string) => {
+      b.view.rerender(createElement(Board, { state: read(row), dispatch: vi.fn(), locked: false }))
+      return slots().map((el) => el.dataset.frog)
+    }
+    // The blue frog steps, and then the green frog jumps over it.
+    expect(replay('GGB_B')).toEqual(['0', '1', '2', '3'])
+    expect(replay('G_BGB')).toEqual(['0', '1', '2', '3'])
+    // ...and the same again backwards, the way the move tape replays it.
+    expect(replay('GGB_B')).toEqual(['0', '1', '2', '3'])
+    expect(replay('GG_BB')).toEqual(['0', '1', '2', '3'])
   })
 
   it('reads the whole row out for anyone who cannot see it', () => {
