@@ -1,4 +1,5 @@
-import { Pictogram } from '../../components/Pictogram'
+import { Piece, Scene } from '../../components/scene'
+import s from './board.module.css'
 
 const strokes = {
   fill: 'none',
@@ -11,8 +12,8 @@ const strokes = {
 /**
  * The frogs are OpenMoji artwork now — the hand-drawn crouching frog read as a
  * pale blob at the size a stone allows, which is exactly the complaint that
- * started this. What is left here are marks: the arrow every frog wears, and
- * the two end labels' arrows.
+ * started this. What is drawn here are marks: the arrow every frog wears and
+ * the two end labels' arrows, and then the card at the bottom of the file.
  */
 
 /** Points left. Flip it with CSS for the other end of the row. */
@@ -43,7 +44,43 @@ export function WayArrow({ className }: { className?: string }) {
   )
 }
 
-/** Index row: the frog itself. */
+/** A stepping stone: the same pale grey the board sets its row in. */
+const STONE = {
+  fill: 'var(--rule-strong)',
+  fillOpacity: 0.6,
+  stroke: 'var(--ink)',
+  strokeOpacity: 0.28,
+  strokeWidth: 1,
+} as const
+
+/**
+ * The card: the row, cut down to the three stones that matter. A green frog
+ * facing a blue one across the one free stone is the whole shape of this
+ * puzzle — the only way past a frog of the other colour is over it, and the
+ * empty stone is the only place there is to land.
+ *
+ * The free stone is drawn the way the board draws it, warm and dashed, so the
+ * place a child has to look for is already marked on the card.
+ */
 export function FrogLeapIcon({ className }: { className?: string }) {
-  return <Pictogram name="frog" className={className} />
+  return (
+    <Scene className={className}>
+      <rect x="1.6" y="19.4" width="28.8" height="5.4" rx="1" fill="var(--p-clay)" fillOpacity={0.3} />
+      <circle cx={6.5} cy={15.2} r={5.1} {...STONE} />
+      <circle
+        cx={16}
+        cy={15.2}
+        r={5.1}
+        fill="var(--amber)"
+        fillOpacity={0.18}
+        stroke="var(--amber)"
+        strokeOpacity={0.75}
+        strokeWidth={1.1}
+        strokeDasharray="2.2 1.9"
+      />
+      <circle cx={25.5} cy={15.2} r={5.1} {...STONE} />
+      <Piece name="frog" x={6.5} y={14.4} size={9.4} />
+      <Piece name="frog" x={25.5} y={14.4} size={9.4} className={s.blue} />
+    </Scene>
+  )
 }

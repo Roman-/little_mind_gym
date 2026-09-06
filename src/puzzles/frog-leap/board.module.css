@@ -177,8 +177,10 @@
 }
 
 /* One set of artwork, two teams. 140 degrees turns OpenMoji's yellow-green
-   frog a clean pond blue and leaves the black line work alone. */
-.frog[data-colour='blue'] .art {
+   frog a clean pond blue and leaves the black line work alone. Every blue frog
+   in this puzzle wears this — on a stone, beside a label, and on the card in
+   the collection — so the turn is written down once. */
+.blue {
   filter: hue-rotate(140deg);
 }
 
@@ -219,10 +221,6 @@
 .end .endFrog {
   width: 1.8em;
   height: 1.8em;
-}
-
-.end .endBlue {
-  filter: hue-rotate(140deg);
 }
 
 .flip {

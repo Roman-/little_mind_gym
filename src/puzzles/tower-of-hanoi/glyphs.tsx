@@ -1,4 +1,4 @@
-import { Pictogram } from '../../components/Pictogram'
+import { Scene, edge } from '../../components/scene'
 
 const svgProps = {
   viewBox: '0 0 24 24',
@@ -10,13 +10,45 @@ const svgProps = {
   'aria-hidden': true,
 } as const
 
+/** Three discs, in the first three of the five enamels the board deals by size. */
+const DISCS = [
+  { w: 6.4, y: 15.1, colour: 'var(--p-ochre)' },
+  { w: 9.4, y: 18.6, colour: 'var(--p-clay)' },
+  { w: 12.4, y: 22.1, colour: 'var(--p-moss)' },
+]
+
 /**
- * The index-row mark. An abacus: beads threaded on rods, which is the picture a
- * child already owns for "things that slide up and down a stick". The three
- * bare lines we drew before needed a caption to be read at all.
+ * The card: the board at the start. The whole stack on peg A and two bare pegs
+ * standing beside it, which is the puzzle in one look — everything is here,
+ * and it all has to be over there.
+ *
+ * No picture can stand in for this one. An abacus was the closest thing in the
+ * set and it still had to be explained, because beads on a rod are not discs
+ * that may never sit on a smaller disc.
  */
 export function HanoiIcon({ className }: { className?: string }) {
-  return <Pictogram name="abacus" className={className} />
+  return (
+    <Scene className={className}>
+      <g fill="var(--p-slate)">
+        <rect x="7.1" y="8.2" width="1.8" height="17.6" rx=".9" />
+        <rect x="15.1" y="8.2" width="1.8" height="17.6" rx=".9" />
+        <rect x="23.1" y="8.2" width="1.8" height="17.6" rx=".9" />
+        <rect x="2.5" y="25.6" width="27" height="3.2" rx="1.2" />
+      </g>
+      {DISCS.map((d) => (
+        <rect
+          key={d.w}
+          x={8 - d.w / 2}
+          y={d.y}
+          width={d.w}
+          height={3.5}
+          rx={1}
+          fill={d.colour}
+          {...edge}
+        />
+      ))}
+    </Scene>
+  )
 }
 
 /**

@@ -15,7 +15,7 @@ src/puzzles/<id>/
   logic.ts          state, actions, and the pure functions. No React.
   Board.tsx         renders state, dispatches actions. No game rules.
   board.module.css  styles, tokens only.
-  glyphs.tsx        the puzzle's own stroke marks + the index-row Icon.
+  glyphs.tsx        the puzzle's own stroke marks + the picture on its card.
   index.ts          the PuzzleMeta: title, levels, hints, engine.
   logic.test.ts     proves every level is solvable and every `par` is right.
 ```
@@ -68,6 +68,39 @@ state too — just don't render it.
   glyphs in `glyphs.tsx`. Adding a picture means adding it to
   `scripts/fetch-openmoji.mjs` and to the `PictoName` union in
   `src/components/pictogram-art.ts`, then running the script. See DESIGN.md rule 3.
+
+## The picture on the card
+
+`Icon` is what the collection, the random reel and the row above the board all
+draw. It is a **small picture of your own board**, built with `Scene` from
+`src/components/scene.tsx`:
+
+```tsx
+import { Piece, Scene, edge } from '../../components/scene'
+
+export function FrogLeapIcon({ className }: { className?: string }) {
+  return (
+    <Scene className={className}>
+      <circle cx={6.5} cy={15.2} r={5.1} fill="var(--p-slate)" {...edge} />
+      <Piece name="frog" x={6.5} y={14.4} size={9.4} />
+    </Scene>
+  )
+}
+```
+
+Four rules, and `src/components/scene.test.tsx` holds you to the first two.
+
+1. **The box is 32 units.** Our 1.5 stroke is 2 here and our hairline is 1.
+2. **Put nothing inheritable on the frame.** A `Piece` is a nested svg, so a
+   fill or a stroke on `Scene` would land on artwork that brought its own
+   colours. Every shape declares what it is drawn in.
+3. **Use the board's own materials.** A thing a child can name is a `Piece`; a
+   disc, a water level, a weighing ball or a lit cell is flat enamel under
+   `edge`, exactly as the board draws it. Nothing appears on the card that is
+   not on the stage behind it.
+4. **Three or four big shapes.** The plate on the collection card gives the
+   scene about 68px and the row above a puzzle gives it 28. It has to read as
+   a silhouette at the smaller of those.
 - Every touchable thing is a real `<button type="button">` with the `u-press`
   class and a useful `aria-label`. Keyboard and screen readers must work.
 - **Motion that answers a move comes from the shared cues.** A shake, a red

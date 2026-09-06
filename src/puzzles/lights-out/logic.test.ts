@@ -551,7 +551,7 @@ describe('lights out — the board', () => {
     expect(screen.getByText('Every lamp is off.')).toBeInTheDocument()
   })
 
-  it('draws every lamp as the bulb pictogram, and the index mark with it', () => {
+  it('draws every lamp as the bulb pictogram, and lights one on the card', () => {
     const state = start(levels[0], SEEDS[0])
     const { view } = mount(state, false)
     // OpenMoji artwork is 72x72; the glyphs we drew by hand were 24x24.
@@ -560,8 +560,14 @@ describe('lights out — the board', () => {
     expect(view.container.querySelectorAll('svg')).toHaveLength(9)
     for (const bulb of bulbs) expect(bulb.getAttribute('aria-hidden')).toBe('true')
     cleanup()
+    // The card is a scene in the 32-unit box: nine cells, the five of a press
+    // lit, and the same OpenMoji bulb nested in the middle of them.
     const icon = render(createElement(lightsOut.Icon))
-    expect(icon.container.querySelector('svg')?.getAttribute('viewBox')).toBe('0 0 72 72')
+    const scene = icon.container.querySelector('svg')
+    expect(scene?.getAttribute('viewBox')).toBe('0 0 32 32')
+    expect(scene?.querySelectorAll('rect')).toHaveLength(9)
+    expect(scene?.querySelectorAll('rect[stroke="var(--amber)"]')).toHaveLength(5)
+    expect(scene?.querySelector('svg[viewBox="0 0 72 72"]')).not.toBeNull()
   })
 
   it('dispatches exactly one press per tap, and nothing else', () => {
