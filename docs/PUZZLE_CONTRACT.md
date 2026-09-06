@@ -67,7 +67,7 @@ state too — just don't render it.
   `src/components/Pictogram.tsx`; arrows, ticks and drop markers stay stroke
   glyphs in `glyphs.tsx`. Adding a picture means adding it to
   `scripts/fetch-openmoji.mjs` and to the `PictoName` union in
-  `src/components/pictogram-art.ts`, then running the script. See DESIGN.md rule 3.
+  `src/components/pictogram-art.ts`, then running the script. See docs/DESIGN.md rule 3.
 
 ## The picture on the card
 
@@ -110,7 +110,7 @@ Four rules, and `src/components/scene.test.tsx` holds you to the first two.
   look the same in every puzzle, and one mistake may fire two of them at once.
   A cue that points at a piece asks `logic.ts` which piece — `clashOf` in the
   sudoku, `failureOf` in the river crossing — so the board never works a rule
-  out a second time. See DESIGN.md, **Motion**.
+  out a second time. See docs/DESIGN.md, **Motion**.
 - **A move your rules forbid is offered, not disabled.** With **Allow moves
   that break a rule** on — the default — a control that would break a rule
   stays live and is answered afterwards. `useRefusal(state)` from
@@ -124,7 +124,7 @@ Four rules, and `src/components/scene.test.tsx` holds you to the first two.
   reference, so the history, the move tape and `isSolved` never see a forbidden
   position. A control that is dead because the move would *change nothing* —
   filling a full jug, writing the digit that is already there — stays dead.
-  See DESIGN.md, **A forbidden move is offered, not hidden**.
+  See docs/DESIGN.md, **A forbidden move is offered, not hidden**.
 - **You do not have to manage focus.** Boards routinely replace the very button
   that was pressed — a piece moves into the boat, a ball moves onto a pan, a
   Fill button greys out — which drops focus onto `<body>`. The shell listens
@@ -142,7 +142,7 @@ Four rules, and `src/components/scene.test.tsx` holds you to the first two.
   level picker or any "you win" message. The shell does all of that.
 - The shell already sits your board on a stage. Do not wrap it in another
   `u-sunk` — one recess is the design; a recess inside a recess is a mistake.
-- Read `DESIGN.md` before writing a single line of CSS.
+- Read `docs/DESIGN.md` before writing a single line of CSS.
 
 ## Levels
 

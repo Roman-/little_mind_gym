@@ -117,8 +117,8 @@ four are synthesised in `src/lib/sound.ts` and rendered into buffers while the
 page loads, so the first one plays without a gap. The speaker in the navbar and
 **Play sounds** in the settings are the same switch, and off is silent.
 
-- Adding a puzzle: **[PUZZLE_CONTRACT.md](PUZZLE_CONTRACT.md)**
-- Changing how it looks: **[DESIGN.md](DESIGN.md)**
+- Adding a puzzle: **[PUZZLE_CONTRACT.md](docs/PUZZLE_CONTRACT.md)**
+- Changing how it looks: **[DESIGN.md](docs/DESIGN.md)**
 - Publishing it: **[AGENTS.md](AGENTS.md)**
 
 Progress lives in `localStorage` under `little-mind-gym:progress:v1`. The old
