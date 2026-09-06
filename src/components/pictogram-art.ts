@@ -11,7 +11,7 @@
  * point for each name; `pictogram.test.ts` fails if a name here has no file.
  *
  * Pictograms name a *thing*. They never carry state: amber, moss and clay stay
- * on the plate under the picture, exactly as DESIGN.md says.
+ * on the plate under the picture, exactly as docs/DESIGN.md says.
  */
 
 /**

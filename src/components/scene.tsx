@@ -11,7 +11,7 @@ import type { PictoName } from './pictogram-art'
  * carries a **small picture of its own board** instead — the pieces it is
  * played with, arranged the way they are arranged on the stage.
  *
- * That keeps rule 3 of DESIGN.md rather than bending it. A scene is built out
+ * That keeps rule 3 of docs/DESIGN.md rather than bending it. A scene is built out
  * of the same two materials the board is: a thing a child can point at and
  * name is an OpenMoji `Piece`, and an abstract piece — a disc, a jug of water,
  * a weighing ball, a lit cell — is flat enamel under a hairline, exactly as
