@@ -49,12 +49,6 @@ const MANIFEST = {
   'child-boy': '1F466',
   'child-red': '1F9D1-200D-1F9B0',
   'child-curly': '1F9D1-200D-1F9B1',
-  // index marks
-  scales: '2696',
-  jug: '1FAD7',
-  abacus: '1F9EE',
-  numbers: '1F522',
-  clipboard: '1F4CB',
 }
 
 mkdirSync(OUT, { recursive: true })

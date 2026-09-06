@@ -24,8 +24,10 @@ npm run build
 
 The front page is a title page and then the collection: two columns of cards,
 each with the puzzle's picture, its name, one line about it, and — once there
-is something to say — how far the player has got with it. The choice is made
-by looking rather than by scrolling. Nothing on the page moves.
+is something to say — how far the player has got with it. The picture is a
+small drawing of that puzzle's own board, so a child who cannot read the names
+yet still knows which card is the tower and which is the river. The choice is
+made by looking rather than by scrolling. Nothing on the page moves.
 
 `/random` leans towards puzzles that have not been played yet, opens the first
 level the player has not finished, and never hands back the puzzle they just
@@ -64,7 +66,7 @@ own rules and draw its own pieces.
 ```
 src/
   lib/          the contract (types.ts), a seeded rng, a BFS over state graphs, the motion cues, the sounds, the refusals, the immerse mode
-  components/   the shell's furniture: the move tape, the confetti, the pictograms
+  components/   the shell's furniture: the move tape, the confetti, the pictograms, the frame a card's picture is drawn in
   routes/       home, one puzzle, the random pick, the settings
   puzzles/<id>/ logic.ts · Board.tsx · glyphs.tsx · board.module.css · index.ts · logic.test.ts
   styles/       tokens.css: every colour, size and duration. motion.module.css: the cues
@@ -138,3 +140,14 @@ the `PictoName` union in `src/components/pictogram-art.ts`, and running it.
 Our own drawings are still in each puzzle's `glyphs.tsx`, and they are marks
 rather than pictures: arrows, ticks, crosses, a rubber, a drop marker. The line
 between the two is one question — could a child point at it and name it?
+
+**A puzzle fails that question, so its card is not an emoji.** Nothing in the
+set means "Tower of Hanoi": an abacus was the closest thing and a child still
+had to be told what it stood for. Each puzzle draws a **scene** instead — a
+small picture of its own board, three or four shapes big enough to read across
+a table, made of the same materials the board is. Three discs on the first of
+three pegs. A boat out on the water with the goat still waiting on the bank.
+Two jugs of different heights, one of them part full. A balance holding two
+against two and still not level. `Scene` in `src/components/scene.tsx` is the
+frame all nine are drawn in, and each puzzle's is at the bottom of its
+`glyphs.tsx`.

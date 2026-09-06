@@ -1,12 +1,15 @@
 import type { ReactNode } from 'react'
-import { Pictogram } from '../../components/Pictogram'
+import { Scene } from '../../components/scene'
 
 export type GlyphName = 'tap' | 'drain' | 'pour'
 
 /**
  * Three affordances, not three pictures. A tap, a drain and a pour arrow only
- * mean anything inside this board, so they stay our own stroked marks; the
- * thing a child can point at and name — a jug — is a pictogram.
+ * mean anything inside this board, so they stay our own stroked marks.
+ *
+ * Nothing in this puzzle is a picture. A jug of water is abstract by nature —
+ * the level in it is the whole state — so `Vessel` in `Board.tsx` draws the
+ * glass and fills it with flat enamel, and the card does the same.
  */
 const paths: Record<GlyphName, ReactNode> = {
   /** A tap with a drop under the spout — "fill it right up". */
@@ -53,7 +56,35 @@ export function Glyph({ name, className }: { name: GlyphName; className?: string
   )
 }
 
-/** The picture in the puzzle list: a jug, drawn the way every other picture is. */
+/**
+ * The card: the two jugs the board draws, at the two sizes that make a level.
+ * One jug is a jug; two jugs of different heights, one part filled, is the
+ * question — how do you measure an exact amount with vessels that have no
+ * marks on the side?
+ *
+ * The glass is the same open-topped shape `Vessel` draws, and the water is the
+ * same flat `--p-teal`, because a water level is abstract by nature and stays
+ * enamel rather than taking a picture.
+ */
 export function WaterJugsIcon({ className }: { className?: string }) {
-  return <Pictogram name="jug" className={className} />
+  return (
+    <Scene className={className}>
+      <path
+        d="M4.2 5.4V25.6a3 3 0 0 0 3 3h5.2a3 3 0 0 0 3-3V5.4"
+        fill="none"
+        stroke="var(--ink-muted)"
+        strokeWidth={1.6}
+        strokeLinecap="round"
+      />
+      <path d="M5.2 19.4v6.1a2.1 2.1 0 0 0 2.1 2.1h5a2.1 2.1 0 0 0 2.1-2.1v-6.1Z" fill="var(--p-teal)" />
+      <path
+        d="M20 13.5V26a2.6 2.6 0 0 0 2.6 2.6h3.2A2.6 2.6 0 0 0 28.4 26V13.5"
+        fill="none"
+        stroke="var(--ink-muted)"
+        strokeWidth={1.6}
+        strokeLinecap="round"
+      />
+      <path d="M21 15.3v10.6a1.7 1.7 0 0 0 1.7 1.7h3a1.7 1.7 0 0 0 1.7-1.7V15.3Z" fill="var(--p-teal)" />
+    </Scene>
+  )
 }

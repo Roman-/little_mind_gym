@@ -113,7 +113,10 @@
   color: var(--ink);
 }
 
-.plate svg {
+/* The picture, and only the picture: a scene places its pictograms as nested
+   svgs, and a descendant rule here would stretch every one of them to the
+   plate. */
+.plate > svg {
   width: 100%;
   height: 100%;
 }

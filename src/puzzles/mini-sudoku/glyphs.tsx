@@ -1,4 +1,5 @@
 import { Pictogram } from '../../components/Pictogram'
+import { Piece, Scene } from '../../components/scene'
 import { FRUIT_NAMES } from './logic'
 
 /**
@@ -37,7 +38,50 @@ export function ClearGlyph({ className }: { className?: string }) {
   )
 }
 
-/** The index-row mark: a square split in four, holding 1, 2, 3 and 4. */
+/* The card is drawn on a four by four, which is the smallest board here. */
+const EDGE = 3.5
+const CELL = 6.25
+/** The middle of column or row `i`. */
+const at = (i: number) => EDGE + CELL * i + CELL / 2
+
+/**
+ * The card: a small square with its four boxes ruled off, and one fruit
+ * standing in each of them. Four boxes and four fruits is the rule the whole
+ * puzzle runs on — one of each in every box — said without a word.
+ *
+ * The heavy line is `--ink-muted` and the light one is `--rule`, the same two
+ * weights the board rules its boxes and its cells with.
+ */
 export function SudokuIcon({ className }: { className?: string }) {
-  return <Pictogram name="numbers" className={className} />
+  return (
+    <Scene className={className}>
+      <rect
+        x={EDGE}
+        y={EDGE}
+        width={CELL * 4}
+        height={CELL * 4}
+        rx={1.6}
+        fill="var(--surface)"
+        stroke="var(--ink-muted)"
+        strokeWidth={1.5}
+      />
+      {[1, 3].map((i) => (
+        <path
+          key={i}
+          d={`M${EDGE + CELL * i} ${EDGE}v${CELL * 4}M${EDGE} ${EDGE + CELL * i}h${CELL * 4}`}
+          stroke="var(--rule)"
+          strokeWidth={0.9}
+        />
+      ))}
+      <path
+        d={`M${EDGE + CELL * 2} ${EDGE}v${CELL * 4}M${EDGE} ${EDGE + CELL * 2}h${CELL * 4}`}
+        stroke="var(--ink-muted)"
+        strokeWidth={1.5}
+      />
+      <Piece name="apple" x={at(0)} y={at(0)} size={6} />
+      <Piece name="grapes" x={at(3)} y={at(1)} size={6} />
+      <Piece name="banana" x={at(2)} y={at(2)} size={6} />
+      <Piece name="pear" x={at(1)} y={at(3)} size={6} />
+    </Scene>
+  )
 }

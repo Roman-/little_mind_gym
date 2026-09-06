@@ -19,7 +19,8 @@
   transition: opacity var(--dur-2) var(--ease);
 }
 
-.window svg {
+/* The scene itself — never the pictograms it places inside itself. */
+.window > svg {
   width: 76px;
   height: 76px;
   animation: deal var(--dur-2) var(--ease-out);

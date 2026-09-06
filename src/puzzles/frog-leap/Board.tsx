@@ -189,7 +189,7 @@ export function Board({ state, dispatch, locked }: BoardProps<FrogState, FrogAct
                         inside it: one element runs one animation, and these
                         two say different halves of the same refusal. */}
                     <span className={cx(s.hop, refusal.shake(frog.key))} data-hop="">
-                      <Pictogram name="frog" className={s.art} />
+                      <Pictogram name="frog" className={cx(s.art, colour === 'blue' && s.blue)} />
                       {/* Which way this frog goes, on the frog. The labels at
                           the ends say it for a colour; a child looking at one
                           frog should not have to find its colour in a label
@@ -208,7 +208,7 @@ export function Board({ state, dispatch, locked }: BoardProps<FrogState, FrogAct
       <div className={s.ends}>
         <span className={`u-label ${s.end}`}>
           <EndArrow />
-          <Pictogram name="frog" className={`${s.endFrog} ${s.endBlue}`} />
+          <Pictogram name="frog" className={`${s.endFrog} ${s.blue}`} />
           Blue frogs end up here
         </span>
         <span className={`u-label ${s.end}`}>

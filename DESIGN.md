@@ -22,7 +22,9 @@ is coloured to be pretty. A `--p-*` names something you can see on the board —
 a disc, a jug of water, one team of frogs against the other — not a puzzle in a
 list. A card in the collection is told apart by its picture, never by a colour
 of its own; the moment a puzzle had an identity colour, a moss tile would sit
-on the same card as a moss "Solved".
+on the same card as a moss "Solved". The colours in that picture are its
+board's — the Hanoi discs are ochre, clay and moss on the card because they are
+ochre, clay and moss on the peg — and no puzzle picks a colour to be known by.
 
 The confetti on a solve is the one exception. It is paper, so it takes the
 enamel palette — the one set of colours here that is not a signal — and it
@@ -62,6 +64,20 @@ Where a shape is abstract by nature — a Hanoi disc, an identical weighing ball
 a water level, a sudoku cell — it stays abstract, in **flat enamel**: a solid
 `--p-*` fill, a hairline dark border, and no picture stapled on top. No
 gradients, no glow, no drop shadows other than the press shadow.
+
+**A puzzle is not a thing, so no one picture names one.** The card in the
+collection carries a small picture of the board instead — a **scene**, drawn
+with `Scene` from `src/components/scene.tsx` and built out of the same two
+materials the board is: a `Piece` for anything a child can name, flat enamel
+for anything abstract. Three discs stacked on the first of three pegs is a
+Tower of Hanoi; an abacus is a picture of an abacus, and a child had to be told
+what it stood for. Two jugs of different heights with one of them part full is
+the water jugs; a single jug is a jug. A scene is 32 units square, holds three
+or four big shapes rather than a dozen small ones, and shows only what is on
+the stage behind it — its own pieces, in their own colours, in an arrangement
+the puzzle really takes. **Nothing inheritable goes on the frame**: a picture
+inside a scene is a nested svg, and a fill or a stroke set on the outside would
+run down into artwork that arrived with its own colours.
 
 The pictograms are CC BY-SA 4.0 and the app credits OpenMoji in its footer.
 `scripts/fetch-openmoji.mjs` vendors them; nothing is fetched at run time.

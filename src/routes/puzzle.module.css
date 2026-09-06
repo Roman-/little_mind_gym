@@ -31,7 +31,8 @@
   color: var(--ink);
 }
 
-.titleMark svg {
+/* The scene itself. Its own nested pictograms keep the sizes it gave them. */
+.titleMark > svg {
   width: 100%;
   height: 100%;
 }
