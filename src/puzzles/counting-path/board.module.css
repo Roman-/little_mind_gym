@@ -1,0 +1,274 @@
+/* The grid is engraved straight into the stage the shell provides — a second
+   sunk panel inside it would only draw a redundant box and eat the width a
+   six-wide grid needs on a phone.
+
+   Two materials and nothing else. A printed number sits on a bone enamel
+   plate; a square you write in is the paper of the sheet. That is identity,
+   and it never moves. State is the amber ring on the square the pen is
+   growing out of, and the clay flash on a number the board will not keep.
+
+   No hairline lattice between the squares. Every other grid in the app rules
+   one, because a wash or a clue needs a seam to sit inside; here the seat
+   between two seated tiles already draws the grid, and the one line that
+   matters is the chain crossing it. */
+
+/* The stage is a grid, and a grid item will not shrink below its own content
+   unless it is told it may. Without this the six-wide board pushes the whole
+   page sideways on a narrow phone instead of sliding inside its own frame. */
+.wrap {
+  min-width: 0;
+}
+
+/* The frame centres the grid and scrolls it. A square never drops below a
+   fingertip, so on the narrowest phone a six-wide board is allowed to be
+   wider than the stage and slide sideways. The padding keeps a focus ring
+   clear of the scroll edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the grid ------------------------------------------------ */
+
+.grid {
+  /* Lengths, not colours: the board's own rule, the seat a square sits in,
+     and how big a square may get before it turns silly on a big monitor.
+
+     --cell-min and --cell-max are the pitch of a column, not the size of the
+     button in it: a column spends 2 * var(--seat) on the seat before the
+     button starts, and the grid spends var(--edge) a side on its own border
+     before the first column does — every one of those lengths is inside the
+     box, because the app is border-box. So the floor is written as pitch, set
+     high enough that what is left over still takes a fingertip, and min-width
+     hands the grid's own border back rather than charging it to the squares. */
+  --edge: 3px;
+  --seat: 3px;
+  --cell-min: 60px;
+  --cell-max: 120px;
+  --numeral: 9cqw;
+
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  width: 100%;
+  min-width: calc(var(--n) * var(--cell-min) + 2 * var(--edge));
+  max-width: calc(var(--n) * var(--cell-max) + 2 * var(--edge));
+  margin-inline: auto;
+  background: var(--surface-sunk);
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+/* More squares to fit, so each one gives up a little. The pitch stops where
+   the button inside it is still 42px on the narrowest phone; below that the
+   grid stops shrinking and slides sideways inside .frame instead. Two digits
+   in --font-mono at 5.6cqw measure about half a square, which is why the
+   numeral shrinks faster than the square does. */
+.grid[data-size='5'] {
+  --cell-min: 54px;
+  --cell-max: 96px;
+  --numeral: 7cqw;
+}
+
+.grid[data-size='6'] {
+  --seat: 2px;
+  --cell-min: 48px;
+  --cell-max: 78px;
+  --numeral: 5.6cqw;
+}
+
+.cell {
+  position: relative;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: stretch;
+  padding: var(--seat);
+}
+
+/* --- the chain ------------------------------------------------ */
+
+/* One bar across the seam wherever two squares beside each other hold two
+   numbers in a row. It pokes a fifth of a square into each of them, which
+   clears the numeral in the middle and still reads as one line running
+   through both. Slate, not amber: a finished run is not "in progress", and
+   amber is spoken for by the square the pen is on. */
+.link {
+  position: absolute;
+  z-index: 1;
+  background: var(--p-slate);
+  opacity: 0.72;
+  border-radius: var(--r-sm);
+  pointer-events: none;
+}
+
+.link[data-dir='right'] {
+  top: 50%;
+  left: 80%;
+  width: 40%;
+  height: 13%;
+  transform: translateY(-50%);
+}
+
+.link[data-dir='down'] {
+  left: 50%;
+  top: 80%;
+  height: 40%;
+  width: 13%;
+  transform: translateX(-50%);
+}
+
+/* --- the squares ---------------------------------------------- */
+
+/* A square you write in: a sheet-coloured tile seated in the board. Every
+   square is a button, printed ones included — tapping a number is how the pen
+   is picked up. */
+.tile {
+  --tile-r: var(--r-md);
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  color: var(--ink);
+  border: var(--hair) solid var(--rule-strong);
+  border-radius: var(--tile-r);
+}
+
+/* A printed number: flat enamel under a hairline, the same material a Hanoi
+   disc and a weighing ball are drawn in. It never changes, and it never wants
+   rubbing out. */
+.tile[data-given='true'] {
+  background: var(--p-bone);
+  color: var(--p-on-light);
+  border-color: color-mix(in oklab, var(--ink) 40%, transparent);
+}
+
+/* Amber says where the pen is. It is a ring and not a wash, so the plate
+   underneath goes on saying whether the number was printed or written. */
+.tile[data-anchor='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--tile-r);
+  box-shadow: inset 0 0 0 4px var(--amber);
+}
+
+.tile:disabled {
+  cursor: default;
+}
+
+.numeral {
+  font-family: var(--font-mono);
+  font-size: var(--numeral);
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* --- the pen and the rubber ----------------------------------- */
+
+.tools {
+  /* One number sets the row: the chip, the numeral on it and the rubber
+     beside it all come off this. */
+  --key: clamp(56px, 14vw, 84px);
+
+  margin-top: var(--s5);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: var(--s3);
+}
+
+/* The number the next tap writes, on a plate of its own. Tapping it turns the
+   pen round; when only one way is open there is nothing to turn, and the
+   plate goes honestly dead. */
+.pen {
+  display: grid;
+  place-items: center;
+  width: var(--key);
+  min-height: var(--key);
+  background: var(--p-bone);
+  color: var(--p-on-light);
+  border: var(--hair) solid color-mix(in oklab, var(--ink) 40%, transparent);
+  border-radius: var(--r-md);
+}
+
+.penDigit {
+  font-family: var(--font-mono);
+  font-size: calc(var(--key) * 0.4);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.rub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s1);
+  min-width: calc(var(--key) * 1.3);
+  min-height: var(--key);
+  padding: var(--s1) var(--s3) var(--s2);
+  background: var(--surface);
+  color: var(--ink);
+  border: var(--hair) solid var(--ink);
+  border-radius: var(--r-md);
+}
+
+.rub:disabled,
+.rub[aria-disabled='true'] {
+  background: var(--surface-sunk);
+  border-color: var(--rule-strong);
+  color: var(--ink-faint);
+  cursor: default;
+}
+
+/* u-press only knows about the real disabled attribute, so the sink under the
+   press has to be taken off the other kind by hand. */
+.rub[aria-disabled='true'],
+.rub[aria-disabled='true']:active {
+  transform: none;
+  box-shadow: var(--press-none);
+}
+
+.rubGlyph {
+  width: calc(var(--key) * 0.4);
+  height: calc(var(--key) * 0.4);
+}
+
+/* "Rub out" is a word, not a key value, so it does not take the instrument
+   voice. */
+.rubWord {
+  font-size: var(--t-xs);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ink-muted);
+}
+
+.rub:disabled .rubWord,
+.rub[aria-disabled='true'] .rubWord {
+  color: var(--ink-faint);
+}
+
+/* What is left to do, or the number the board would not keep. */
+.note {
+  margin: var(--s4) auto 0;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-body);
+  color: var(--ink);
+  min-height: 2.8em;
+}
+
+@media (max-width: 30rem) {
+  .grid {
+    --seat: 2px;
+  }
+  .grid[data-size='6'] {
+    --seat: 1px;
+  }
+  .tools {
+    margin-top: var(--s4);
+    gap: var(--s2);
+  }
+}
