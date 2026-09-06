@@ -1,0 +1,145 @@
+/* A map of gardens, engraved straight into the stage the shell provides — a
+   second sunk panel inside it would only draw a redundant box and eat the
+   width a seven-wide grid needs on a phone.
+
+   Every square carries two things at once: which garden it is in, and whether
+   a cat is sitting on it. The garden is the wash of colour under the square
+   and the heavy line where one garden meets the next; the cat is the picture
+   on top. State — a cat that breaks a rule — is a clay ring, and never the
+   wash, so identity and state can never be mistaken for one another. */
+
+/* The stage is a grid, and a grid item will not shrink below its own content
+   unless it is told it may. Without this the seven-wide board pushes the whole
+   page sideways on a narrow phone instead of sliding inside its own frame. */
+.wrap {
+  min-width: 0;
+}
+
+/* The frame centres the grid and scrolls it. A square never drops below a
+   fingertip, so on the narrowest phone a seven-wide board is allowed to be
+   wider than the stage and slide sideways. The padding keeps a focus ring
+   clear of the scroll edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the grid ------------------------------------------------ */
+
+.grid {
+  /* Lengths, not colours: the heavy rule that makes a garden read at a glance,
+     the seat a square sits in, and how big a square may get before it turns
+     silly on a big monitor.
+
+     --cell-min and --cell-max are the pitch of a column, not the size of the
+     button in it: a column spends 2 * var(--seat) on the seat and up to
+     var(--edge) on the rule down its left side before the button starts. The
+     floor is written as pitch, set high enough that what is left over still
+     takes a fingertip, and min-width hands the grid's own border back rather
+     than charging it to the squares. */
+  --edge: 3px;
+  --seat: 2px;
+  --cell-min: 56px;
+  --cell-max: 104px;
+
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  width: 100%;
+  min-width: calc(var(--n) * var(--cell-min) + 2 * var(--edge));
+  max-width: calc(var(--n) * var(--cell-max) + 2 * var(--edge));
+  margin-inline: auto;
+  background: var(--surface-sunk);
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+/* More squares to fit, so each one gives up a little. The pitch stops where
+   the button inside it is still 44px on the narrowest phone; below that the
+   grid stops shrinking and slides sideways inside .frame instead. */
+.grid[data-size='6'] {
+  --cell-min: 52px;
+  --cell-max: 84px;
+}
+
+.grid[data-size='7'] {
+  --edge: 2px;
+  --cell-min: 44px;
+  --cell-max: 72px;
+}
+
+.cell {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: stretch;
+  padding: var(--seat);
+  border-top: 0;
+  border-left: 0;
+}
+
+.cell[data-top='hair'] {
+  border-top: var(--hair) solid var(--rule);
+}
+.cell[data-top='edge'] {
+  border-top: var(--edge) solid var(--ink-muted);
+}
+.cell[data-left='hair'] {
+  border-left: var(--hair) solid var(--rule);
+}
+.cell[data-left='edge'] {
+  border-left: var(--edge) solid var(--ink-muted);
+}
+
+/* One square of one garden. --patch is the enamel colour the board hands in;
+   the wash is weak enough to sit a picture on and strong enough that seven of
+   them are seven colours. These squares are big enough to press, so they take
+   the control radius. */
+.tile {
+  --tile-r: var(--r-md);
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: color-mix(in oklab, var(--patch) 45%, var(--surface));
+  border: var(--hair) solid color-mix(in oklab, var(--patch) 60%, var(--rule-strong));
+  border-radius: var(--tile-r);
+}
+
+/* A cat that breaks a rule. The wash under it belongs to the garden and stays
+   put, so the mistake is said in clay on top of it: a solid ring, the border,
+   and the shake the board fires at the same time. */
+.tile[data-conflict='true'] {
+  border-color: var(--clay);
+}
+
+.tile[data-conflict='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--tile-r);
+  box-shadow: inset 0 0 0 3px var(--clay);
+}
+
+.tile:disabled {
+  cursor: default;
+}
+
+/* The cat fills its square: at this size the picture is the board. */
+.art {
+  width: 78%;
+  height: 78%;
+}
+
+/* What is left to do, or the rule that has just been broken. */
+.note {
+  margin: var(--s4) auto 0;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-lg);
+  color: var(--ink);
+  min-height: 1.4em;
+}
+
+@media (max-width: 30rem) {
+  .grid {
+    --seat: 1px;
+  }
+}

@@ -47,6 +47,7 @@ toolbar, one tap from the screen.
 | Leapfrog            | Sequence                 |
 | The water jugs      | Arithmetic               |
 | The small square    | Logic                    |
+| The garden cats     | Elimination              |
 | The heavier one     | Evidence                 |
 | Who has what        | Deduction                |
 
@@ -85,7 +86,7 @@ nothing in the history, so a forbidden position is drawn and never played from.
 A dead button would have said which moves are legal without the child ever
 having to work it out. **Allow moves that break a rule** in the settings turns
 it off, and the controls go back to refusing up front. It changes the Tower of
-Hanoi, leapfrog and the balance scales; the other five disable nothing their
+Hanoi, leapfrog and the balance scales; the other six disable nothing their
 rules forbid.
 
 **Immerse gives the whole window to the board.** The button is in the navbar
