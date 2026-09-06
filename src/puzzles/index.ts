@@ -9,6 +9,7 @@ import { gardenCats } from './garden-cats'
 import { balanceScales } from './balance-scales'
 import { logicGrid } from './logic-grid'
 import { countingPath } from './counting-path'
+import { lightUp } from './light-up'
 
 /** Roughly in order of how quickly a newcomer gets a foothold. */
 export const PUZZLES: PuzzleMeta[] = [
@@ -22,6 +23,7 @@ export const PUZZLES: PuzzleMeta[] = [
   balanceScales,
   logicGrid,
   countingPath,
+  lightUp,
 ]
 
 export function puzzleById(id: string | undefined): PuzzleMeta | undefined {
