@@ -53,6 +53,7 @@ toolbar, one tap from the screen.
 | The heavier one     | Evidence                 |
 | Who has what        | Deduction                |
 | The counting path   | Paths                    |
+| The candles         | Counting                 |
 
 Each has three levels, three hints that nudge rather than tell, and — where the
 question has an answer — the fewest moves it can possibly be done in.
@@ -151,5 +152,5 @@ a table, made of the same materials the board is. Three discs on the first of
 three pegs. A boat out on the water with the goat still waiting on the bank.
 Two jugs of different heights, one of them part full. A balance holding two
 against two and still not level. `Scene` in `src/components/scene.tsx` is the
-frame all ten are drawn in, and each puzzle's is at the bottom of its
+frame all eleven are drawn in, and each puzzle's is at the bottom of its
 `glyphs.tsx`.

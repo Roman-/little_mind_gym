@@ -1,0 +1,186 @@
+/* A board of walls and candles, engraved straight into the stage the shell
+   provides — a second sunk panel inside it would only draw a redundant box and
+   eat the width a seven-wide grid needs on a phone.
+
+   Two materials and nothing else. A wall is a flat slate slab with its number
+   printed on it, and it is not a control: no shadow, no press, no button. An
+   open square is a bone tile you can press, washed in the candle's own colour
+   wherever a candle reaches it.
+
+   That wash is why this board has no pencil marks. The paper game is played
+   with a dot on every square that cannot hold a candle, and here the light
+   already says it: a lit square is precisely a square no candle may stand on,
+   so the annotation is drawn for free and costs no move.
+
+   Two strengths of light, and only two — the square a candle stands on, and
+   the squares it reaches. Both stay weak. A lit square is a square that is
+   done *for* the child, not one they chose, and if the wash ever got strong
+   enough to read as amber they would take the light for a selection. State —
+   a candle breaking a rule — is a clay ring on top of the wash, never instead
+   of it. */
+
+/* The stage is a grid, and a grid item will not shrink below its own content
+   unless it is told it may. Without this the seven-wide board pushes the whole
+   page sideways on a narrow phone instead of sliding inside its own frame. */
+.wrap {
+  min-width: 0;
+}
+
+/* The frame centres the grid and scrolls it. A square never drops below a
+   fingertip, so on the narrowest phone a seven-wide board is allowed to be
+   wider than the stage and slide sideways. The padding keeps a focus ring
+   clear of the scroll edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the grid ------------------------------------------------ */
+
+.grid {
+  /* Lengths, not colours: the heavy rule round the board, the seat a square
+     sits in, and how big a square may get before it turns silly on a big
+     monitor.
+
+     --cell-min and --cell-max are the pitch of a column, not the size of the
+     button in it: a column spends 2 * var(--seat) on the seat before the
+     button starts. The floor is written as pitch, set high enough that what is
+     left over still takes a fingertip. */
+  --edge: 3px;
+  --seat: 2px;
+  --cell-min: 56px;
+  --cell-max: 104px;
+
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  /* Fill the stage: never wider than --cell-max a square, never narrower than
+     a fingertip. Below that the width stands still and .frame scrolls. */
+  width: clamp(
+    calc(var(--n) * var(--cell-min) + 2 * var(--edge)),
+    100%,
+    calc(var(--n) * var(--cell-max) + 2 * var(--edge))
+  );
+  margin-inline: auto;
+  background: var(--surface-sunk);
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+/* More squares to fit, so each one gives up a little. The pitch stops where
+   the button inside it is still 44px on the narrowest phone. */
+.grid[data-size='6'] {
+  --cell-min: 52px;
+  --cell-max: 84px;
+}
+
+.grid[data-size='7'] {
+  --edge: 2px;
+  --cell-min: 44px;
+  --cell-max: 72px;
+}
+
+.cell {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: stretch;
+  padding: var(--seat);
+}
+
+/* A wall takes the whole of its square, so two walls side by side butt up into
+   one slab — which is what a wall looks like. */
+.cell[data-wall='true'] {
+  padding: 0;
+}
+
+/* --- a wall --------------------------------------------------- */
+
+.wall {
+  display: grid;
+  place-items: center;
+  background: var(--p-slate);
+  /* A lattice cell, not a control: the small radius, and no press shadow. */
+  border-radius: var(--r-sm);
+}
+
+/* The clue number. docs/DESIGN.md rations mono to values and names a clue
+   number as one of them, so this is the instrument voice rather than an
+   exception to it — sized for the slab it is printed on rather than for a
+   caption, which is why it is not the .u-mono utility. */
+.num {
+  font-family: var(--font-mono);
+  font-size: clamp(1rem, 4.2vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--p-on-dark);
+}
+
+/* --- an open square ------------------------------------------- */
+
+.tile {
+  --tile-r: var(--r-md);
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  border: var(--hair) solid var(--rule-strong);
+  border-radius: var(--tile-r);
+  transition:
+    background-color var(--dur-2) var(--ease),
+    border-color var(--dur-2) var(--ease);
+}
+
+/* A square some candle reaches. */
+.tile[data-lit='true'] {
+  background: color-mix(in oklab, var(--p-ochre) 20%, var(--surface));
+  border-color: color-mix(in oklab, var(--p-ochre) 40%, var(--rule-strong));
+}
+
+/* The square the light comes from: the strongest wash on the board, and the
+   plate the candle stands on. The picture is tall and narrow, so the square
+   under it is what carries the silhouette. */
+.tile[data-candle='true'] {
+  background: color-mix(in oklab, var(--p-ochre) 42%, var(--surface));
+  border-color: color-mix(in oklab, var(--p-ochre) 60%, var(--rule-strong));
+}
+
+/* A candle breaking a rule. The wash under it belongs to the light and stays
+   put, so the mistake is said in clay on top of it: a solid ring, the border,
+   and the shake the board fires at the same time. */
+.tile[data-conflict='true'] {
+  border-color: var(--clay);
+}
+
+.tile[data-conflict='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--tile-r);
+  box-shadow: inset 0 0 0 3px var(--clay);
+}
+
+.tile:disabled {
+  cursor: default;
+}
+
+/* The candle takes the whole tile: the artwork is a fifth of its box wide and
+   four fifths tall, so anything less reads as a scratch. */
+.art {
+  width: 96%;
+  height: 96%;
+}
+
+/* What is left to do, or the rule that has just been broken. */
+.note {
+  margin: var(--s4) auto 0;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-lg);
+  color: var(--ink);
+  min-height: 1.4em;
+}
+
+@media (max-width: 30rem) {
+  .grid {
+    --seat: 1px;
+  }
+}

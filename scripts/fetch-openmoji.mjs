@@ -31,6 +31,8 @@ const MANIFEST = {
   frog: '1F438',
   // lights out
   bulb: '1F4A1',
+  // the candles
+  candle: '1F56F',
   // the small square
   apple: '1F34E',
   banana: '1F34C',
