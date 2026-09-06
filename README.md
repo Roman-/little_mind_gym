@@ -118,6 +118,7 @@ page loads, so the first one plays without a gap. The speaker in the navbar and
 **Play sounds** in the settings are the same switch, and off is silent.
 
 - Adding a puzzle: **[PUZZLE_CONTRACT.md](docs/PUZZLE_CONTRACT.md)**
+- Choosing what to add next: **[PUZZLE_CANDIDATES.md](docs/PUZZLE_CANDIDATES.md)**
 - Changing how it looks: **[DESIGN.md](docs/DESIGN.md)**
 - Publishing it: **[AGENTS.md](AGENTS.md)**
 
