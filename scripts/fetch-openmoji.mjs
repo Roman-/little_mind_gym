@@ -51,6 +51,8 @@ const MANIFEST = {
   'child-boy': '1F466',
   'child-red': '1F9D1-200D-1F9B0',
   'child-curly': '1F9D1-200D-1F9B1',
+  // the four horses
+  horse: '1F40E',
 }
 
 mkdirSync(OUT, { recursive: true })

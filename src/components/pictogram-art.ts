@@ -48,6 +48,7 @@ export const PICTO_NAMES = [
   'child-boy',
   'child-red',
   'child-curly',
+  'horse',
 ] as const
 
 export type PictoName = (typeof PICTO_NAMES)[number]

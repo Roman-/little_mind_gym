@@ -1,0 +1,234 @@
+/* Nine squares engraved straight into the stage the shell provides — a second
+   sunk panel inside it would only draw a redundant box.
+
+   Every square carries at most three things: the mat that says which team ends
+   up here, the horse standing on it, and — while a horse is in the air — the
+   mark that says "let go here". Identity is the horse's own colouring and the
+   mat's enamel; state is amber for the square a horse has been lifted off and
+   clay for a move the rule will not keep, and the two never share a surface.
+
+   One deliberate omission: nothing travels. A jump in an L is a jump, not a
+   slide, and two horses of one team are the same thing in the state, so there
+   is no piece identity to key a transition on. The lift and the refusal are the
+   only motion on this board. */
+
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  /* A grid item will not shrink below its own content unless it is told it
+     may, and without this the board pushes the page sideways on a phone
+     instead of sliding inside its own frame. */
+  min-width: 0;
+}
+
+/* Centres the grid and scrolls it, and keeps a focus ring clear of the edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the grid ------------------------------------------------ */
+
+.grid {
+  /* Lengths, not colours. --cell-min and --cell-max are the pitch of a column:
+     the floor keeps every square more than twice --tap-sm on the narrowest
+     phone, and the ceiling follows the stage's own height so a short, wide
+     window never gets a board taller than the window. */
+  --edge: 3px;
+  --seat: 3px;
+  --cell-min: 88px;
+  --cell-max: clamp(96px, 15vh, 152px);
+
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: 100%;
+  min-width: calc(3 * var(--cell-min) + 2 * var(--edge));
+  max-width: calc(3 * var(--cell-max) + 2 * var(--edge));
+  margin-inline: auto;
+  background: var(--surface-sunk);
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+.cell {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: stretch;
+  padding: var(--seat);
+}
+
+/* A hairline seam between neighbours, and none along the outer border, which
+   the grid draws once for all nine. */
+.cell:not(:nth-child(-n + 3)) {
+  border-top: var(--hair) solid var(--rule);
+}
+
+.cell:not(:nth-child(3n + 1)) {
+  border-left: var(--hair) solid var(--rule);
+}
+
+/* --- one square ---------------------------------------------- */
+
+/* Bone in both themes. OpenMoji draws its horses with black line work, and a
+   dark ground would swallow it. */
+.square {
+  position: relative;
+  display: grid;
+  place-items: center;
+  /* The horse is centred in what is left after the mat, so it stands above its
+     mat rather than on top of it. */
+  padding: 0 0 var(--s3);
+  background: color-mix(in oklab, var(--p-bone) 82%, var(--surface));
+  border: var(--hair) solid var(--rule-strong);
+  border-radius: var(--r-md);
+}
+
+/* The square a horse has been lifted off. Amber means chosen, here as
+   everywhere. */
+.square[data-armed='true'] {
+  border-color: var(--amber);
+  background: color-mix(in oklab, var(--amber) 16%, var(--surface));
+}
+
+/* The middle: not a plate but a hole in the board, drawn as the sunk ground
+   showing through a broken outline. No jump in an L reaches it, and that fact
+   is half the puzzle, so it is stated in the drawing rather than only in
+   words. */
+.square[data-middle='true'] {
+  background: color-mix(in oklab, var(--ink) 9%, var(--surface-sunk));
+  border-style: dashed;
+  border-color: var(--rule-strong);
+}
+
+/* Dead because the tap would change nothing — an empty square with no horse in
+   hand — rather than because a rule forbids it. It keeps its place in the
+   arrow keys' walk, so it is aria-disabled and never disabled: a disabled
+   button cannot take focus, and the roving tab stop would break in silence.
+   What it drops is the shadow that promises something will happen. */
+.square[data-dead='true'] {
+  box-shadow: var(--press-none);
+  cursor: default;
+}
+
+.square[data-dead='true']:active:not(:disabled) {
+  transform: none;
+}
+
+.square:disabled {
+  cursor: default;
+}
+
+/* --- the mat: which team ends up on this square --------------- */
+
+/* A bar along the bottom, rather than a ring round the square, so it cannot be
+   mistaken for the amber that means "chosen" — and so it reads as a stall a
+   horse stands in. */
+.mat {
+  position: absolute;
+  inset: auto var(--s3) var(--s2) var(--s3);
+  height: clamp(5px, 1.2vh, 10px);
+  border-radius: var(--r-sm);
+  background: var(--mat);
+  border: var(--hair) solid color-mix(in oklab, var(--ink) 40%, transparent);
+}
+
+/* --- "let go here" ------------------------------------------- */
+
+/* On every empty square while a horse is in the air, including the middle.
+   Never on only the squares an L reaches: a mark that appears exactly where a
+   move is allowed is a dead button in another coat, and it would hand over the
+   one thing this puzzle asks a child to work out. */
+.mark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: 42%;
+  height: 42%;
+  color: var(--ink-faint);
+  opacity: 0;
+  transition: opacity var(--dur-2) var(--ease);
+}
+
+.mark[data-show='true'] {
+  opacity: 1;
+}
+
+.mark svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* --- the horse ----------------------------------------------- */
+
+.seat {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 74%;
+  height: 74%;
+  transition: translate var(--dur-2) var(--ease);
+}
+
+/* Picked up, not highlighted: the horse itself rises off its square. */
+.seat[data-lifted='true'] {
+  translate: 0 -12%;
+}
+
+.art {
+  width: 100%;
+  height: 100%;
+}
+
+/* One set of artwork, two teams — frog-leap's trick with a different turn.
+   Full desaturation gives a dapple grey, which is a horse a child has seen; a
+   hue turn would give a horse a vet should see. The brightness lifts the coat
+   back off the bone ground the desaturation dropped it towards. */
+.grey {
+  filter: grayscale(1) brightness(1.05);
+}
+
+/* --- the rule, drawn once, under the board -------------------- */
+
+.legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+  margin: 0;
+  text-align: left;
+}
+
+.legendMark {
+  flex: none;
+  display: block;
+  width: clamp(30px, 4.6vh, 42px);
+  height: clamp(30px, 4.6vh, 42px);
+  color: var(--ink-muted);
+}
+
+.legendMark svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* What is left to do, or the rule a tap has just broken. */
+.note {
+  margin: 0 auto;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-lg);
+  color: var(--ink);
+  min-height: 1.4em;
+}
+
+@media (max-width: 30rem) {
+  .grid {
+    --seat: 2px;
+  }
+
+  .mat {
+    inset: auto var(--s2) var(--s1) var(--s2);
+  }
+}
