@@ -8,6 +8,7 @@ import { miniSudoku } from './mini-sudoku'
 import { gardenCats } from './garden-cats'
 import { balanceScales } from './balance-scales'
 import { logicGrid } from './logic-grid'
+import { countingPath } from './counting-path'
 
 /** Roughly in order of how quickly a newcomer gets a foothold. */
 export const PUZZLES: PuzzleMeta[] = [
@@ -20,6 +21,7 @@ export const PUZZLES: PuzzleMeta[] = [
   gardenCats,
   balanceScales,
   logicGrid,
+  countingPath,
 ]
 
 export function puzzleById(id: string | undefined): PuzzleMeta | undefined {
