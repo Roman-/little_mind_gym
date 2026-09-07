@@ -5,6 +5,7 @@ import { lightsOut } from './lights-out'
 import { frogLeap } from './frog-leap'
 import { waterJugs } from './water-jugs'
 import { miniSudoku } from './mini-sudoku'
+import { shikaku } from './shikaku'
 import { gardenCats } from './garden-cats'
 import { balanceScales } from './balance-scales'
 import { logicGrid } from './logic-grid'
@@ -20,6 +21,7 @@ export const PUZZLES: PuzzleMeta[] = [
   frogLeap,
   waterJugs,
   miniSudoku,
+  shikaku,
   gardenCats,
   balanceScales,
   logicGrid,

@@ -49,6 +49,7 @@ toolbar, one tap from the screen.
 | Leapfrog            | Sequence                 |
 | The water jugs      | Arithmetic               |
 | The small square    | Logic                    |
+| The chocolate bar   | Area                     |
 | The garden cats     | Elimination              |
 | The heavier one     | Evidence                 |
 | Who has what        | Deduction                |
