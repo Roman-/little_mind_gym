@@ -1,0 +1,199 @@
+/* A bar of chocolate, engraved straight into the stage the shell provides — a
+   second sunk panel inside it would only draw a redundant box and eat the
+   width a seven-wide bar needs on a phone.
+
+   There is one material here and two states of it: a square still on the
+   unbroken bar, and a piece that has been snapped off. They are told apart by
+   depth, by radius and by the grooves — a run of little squares with grooves
+   between them reads as chocolate, and a piece that has come away is one
+   unbroken slab with no grooves inside it at all.
+
+   No piece is ever coloured to say which piece it is. Colouring the pieces a
+   child has already put down would re-tint them as their neighbours land, and
+   colouring them from the answer would say "these two touching pieces match,
+   so one of them is wrong" — a correctness oracle in a coat. Colour here says
+   state and nothing else: amber for the corner that is marked, clay for a
+   piece that breaks a rule. */
+
+/* The stage is a grid, and a grid item will not shrink below its own content
+   unless it is told it may. Without this the seven-wide bar pushes the whole
+   page sideways on a narrow phone instead of sliding inside its own frame. */
+.wrap {
+  min-width: 0;
+}
+
+/* The frame centres the bar and scrolls it. A square never drops below a
+   fingertip, so on the narrowest phone a seven-wide bar is allowed to be wider
+   than the stage and slide sideways. The padding keeps a focus ring clear of
+   the scroll edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the bar ------------------------------------------------- */
+
+.grid {
+  /* Lengths, not colours: the bar's own rim, the groove between two squares of
+     it, and how big a square may get before it turns silly on a big monitor.
+
+     --cell-min and --cell-max are the pitch of a column, groove included. The
+     floor is set high enough that what is left over after the grooves and the
+     rim is still a fingertip: seven across at 48px of pitch leaves a 44px
+     square on the narrowest phone, and below that the bar stops shrinking and
+     slides sideways inside .frame instead. */
+  --edge: 3px;
+  --groove: 4px;
+  --cell-min: 60px;
+  --cell-max: 108px;
+
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  /* The rows hold nothing that could size them — a bar of nothing but slabs
+     has no content in any row at all — so the bar states that it is square. */
+  grid-template-rows: repeat(var(--n), 1fr);
+  aspect-ratio: 1;
+  gap: var(--groove);
+  width: 100%;
+  min-width: calc(var(--n) * var(--cell-min) + 2 * var(--edge));
+  max-width: calc(var(--n) * var(--cell-max) + 2 * var(--edge));
+  margin-inline: auto;
+  padding: var(--groove);
+  background: var(--surface-sunk);
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+/* More squares to fit, so each one gives up a little. */
+.grid[data-size='6'] {
+  --cell-min: 56px;
+  --cell-max: 88px;
+}
+
+.grid[data-size='7'] {
+  --edge: 2px;
+  --cell-min: 48px;
+  --cell-max: 76px;
+}
+
+/* --- a square still on the bar -------------------------------- */
+
+.square,
+.slab {
+  position: relative;
+  display: grid;
+  place-items: center;
+  /* A grid item will not go below its own content either. */
+  min-width: 0;
+  min-height: 0;
+  color: var(--ink);
+}
+
+/* Chocolate that has not been snapped yet: a weak wash, a lattice radius, and
+   a groove on every side of it. */
+.square {
+  background: color-mix(in oklab, var(--p-ochre) 20%, var(--surface));
+  border: var(--hair) solid color-mix(in oklab, var(--p-ochre) 45%, var(--rule-strong));
+  border-radius: var(--r-sm);
+}
+
+/* The corner a child has marked. Amber, because it is the move in progress. */
+.square[data-marked='true'] {
+  background: var(--amber-soft);
+}
+
+.square[data-marked='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-sm);
+  box-shadow: inset 0 0 0 4px var(--amber);
+}
+
+/* --- a piece broken off --------------------------------------- */
+
+/* One element for the whole rectangle, however many squares it covers: one
+   offset shadow, one radius, one continuous field and no grooves inside it. A
+   piece of six squares is one thing you can press, not six things pretending.
+   The nested grid is only there to stand each number on its own square. */
+.slab {
+  display: grid;
+  grid-template-columns: repeat(var(--w), 1fr);
+  grid-template-rows: repeat(var(--h), 1fr);
+  background: color-mix(in oklab, var(--p-ochre) 52%, var(--surface));
+  border: var(--hair) solid color-mix(in oklab, var(--p-ochre) 70%, var(--rule-strong));
+  border-radius: var(--r-md);
+}
+
+/* A piece that breaks one of the three rules. The wash under it is the
+   chocolate and stays put, so the mistake is said in clay on top of it: a
+   solid ring drawn on ::after, where it cannot overwrite the press shadow, and
+   it stands until the piece is taken back off. */
+.slab[data-fault='true'] {
+  border-color: var(--clay);
+}
+
+.slab[data-fault='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-md);
+  box-shadow: inset 0 0 0 3px var(--clay);
+}
+
+.square:disabled,
+.slab:disabled {
+  cursor: default;
+}
+
+/* --- the numbers ---------------------------------------------- */
+
+/* The one thing mono is for: a value. Sized off the bar's own width so a
+   number is the same size on a phone and on a monitor. */
+.number {
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  line-height: 1;
+  font-size: clamp(1rem, 9.2cqw, 2.25rem);
+}
+
+.grid[data-size='6'] .number {
+  font-size: clamp(0.95rem, 7.7cqw, 2rem);
+}
+
+.grid[data-size='7'] .number {
+  font-size: clamp(0.9rem, 6.6cqw, 1.75rem);
+}
+
+/* --- the piece before it lands -------------------------------- */
+
+/* The rectangle the second tap would break off, outlined from the marked
+   corner. It carries no count of its squares: counting the squares is the
+   puzzle. Positioned so it draws over the pieces it may be crossing, and deaf
+   to the pointer so the square underneath still takes the tap. */
+.preview {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+  border: 2px dashed var(--amber);
+  border-radius: var(--r-md);
+}
+
+/* What is left to do, or the rule that has just been broken. */
+.note {
+  margin: var(--s4) auto 0;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-lg);
+  color: var(--ink);
+  min-height: 1.4em;
+}
+
+@media (max-width: 30rem) {
+  .grid {
+    --groove: 3px;
+  }
+}
