@@ -12,6 +12,7 @@ import { logicGrid } from './logic-grid'
 import { countingPath } from './counting-path'
 import { lightUp } from './light-up'
 import { knightSwap } from './knight-swap'
+import { hedgeMaze } from './hedge-maze'
 
 /** Roughly in order of how quickly a newcomer gets a foothold. */
 export const PUZZLES: PuzzleMeta[] = [
@@ -28,6 +29,7 @@ export const PUZZLES: PuzzleMeta[] = [
   countingPath,
   lightUp,
   knightSwap,
+  hedgeMaze,
 ]
 
 export function puzzleById(id: string | undefined): PuzzleMeta | undefined {
