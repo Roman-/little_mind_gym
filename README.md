@@ -56,6 +56,7 @@ toolbar, one tap from the screen.
 | The counting path   | Paths                    |
 | The candles         | Counting                 |
 | The four horses     | Structure                |
+| The hedge maze      | Prediction               |
 
 Each has three levels, three hints that nudge rather than tell, and — where the
 question has an answer — the fewest moves it can possibly be done in.

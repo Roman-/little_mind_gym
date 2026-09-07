@@ -1,0 +1,337 @@
+/* A hedge maze cut straight into the stage the shell provides — a second sunk
+   panel inside it would only draw a redundant box and eat the width an
+   eight-wide board needs on a phone.
+
+   Five layers, and each one says exactly one thing: the squares are the
+   ground, the moss bars are the hedges, the two animals are the pieces, the
+   heavy outline is the wall with one gap in it, and the amber marks are the
+   five moves. Colour is state throughout — amber for the turn that is yours,
+   clay for a hedge that will not take a step — and the only identity colour on
+   the board is the moss a hedge is made of. */
+
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  /* A grid item will not shrink below its own content unless it is told it
+     may, and without this an eight-wide maze pushes the whole page sideways on
+     a narrow phone instead of sliding inside its own frame. */
+  min-width: 0;
+}
+
+/* The one rule a child has to hold in a head, kept on the board rather than in
+   the drawer that shuts on a second visit. */
+.goal {
+  margin: 0;
+  text-align: center;
+  color: var(--ink);
+}
+
+/* Centres the maze and scrolls it. A square never drops below a fingertip, so
+   on the narrowest phone an eight-wide board is allowed to be wider than the
+   stage and slide sideways. The padding keeps a focus ring off the scroll
+   edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the grid ------------------------------------------------------------ */
+
+.grid {
+  /* Lengths, not colours: the outer wall, how thick a hedge is, and the pitch
+     of one column — a floor that keeps every square a fingertip wide and a
+     ceiling that follows the stage's own height, so a short wide window never
+     gets a maze taller than the window. */
+  --edge: 3px;
+  --bar: clamp(6px, 1.1vh, 9px);
+  --cell-min: 44px;
+  --cell-max: clamp(56px, 9.5vh, 88px);
+
+  /* Three of these stay at nothing. The gap's own side gets a lane outside the
+     wall, for the word Out and for the step that takes it. */
+  --lane-top: 0px;
+  --lane-right: 0px;
+  --lane-bottom: 0px;
+  --lane-left: 0px;
+
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--lane-left) repeat(var(--n), 1fr) var(--lane-right);
+  grid-template-rows: var(--lane-top) repeat(var(--n), auto) var(--lane-bottom);
+  width: 100%;
+  min-width: calc(var(--n) * var(--cell-min) + var(--lane-left) + var(--lane-right));
+  max-width: calc(var(--n) * var(--cell-max) + var(--lane-left) + var(--lane-right));
+  margin-inline: auto;
+}
+
+.grid[data-door='up'] {
+  --lane-top: var(--tap-sm);
+}
+.grid[data-door='right'] {
+  --lane-right: var(--tap-sm);
+}
+.grid[data-door='down'] {
+  --lane-bottom: var(--tap-sm);
+}
+.grid[data-door='left'] {
+  --lane-left: var(--tap-sm);
+}
+
+/* More squares to fit, so each one gives up a little. */
+.grid[data-size='7'] {
+  --cell-min: 42px;
+  --cell-max: clamp(50px, 8.5vh, 76px);
+}
+
+.grid[data-size='8'] {
+  --cell-min: 40px;
+  --cell-max: clamp(46px, 7.5vh, 66px);
+}
+
+/* One square of ground. Flat enamel and two hairlines, so the lattice reads
+   without competing with the hedges standing on it. */
+.cell {
+  position: relative;
+  z-index: 0;
+  aspect-ratio: 1;
+  background: color-mix(in oklab, var(--p-bone) 8%, var(--surface));
+  border-top: var(--hair) solid var(--rule);
+  border-left: var(--hair) solid var(--rule);
+}
+
+/* --- the three layers over the squares ----------------------------------- */
+
+.hedges,
+.pieces,
+.walls {
+  position: relative;
+  grid-row: 2 / span var(--n);
+  grid-column: 2 / span var(--n);
+  pointer-events: none;
+}
+
+/* Clipped to the maze, because a hedge runs half a bar past each end so that
+   two of them meeting at a corner join up. That overhang is right in the
+   middle of the board and wrong at the wall, where it would poke out through
+   the frame. */
+.hedges {
+  z-index: 1;
+  overflow: hidden;
+  border-radius: var(--r-md);
+}
+.pieces {
+  z-index: 2;
+}
+.walls {
+  z-index: 3;
+}
+
+/* One hedge, drawn once per seam and named the same way `refusalOf` names it.
+   It runs half a bar past each end so two hedges meeting at a corner join up
+   instead of leaving a notch. */
+.hedge {
+  position: absolute;
+  background: var(--p-moss);
+  border: var(--hair) solid color-mix(in oklab, var(--ink) 40%, transparent);
+  border-radius: var(--r-sm);
+}
+
+.hedge[data-lie='v'] {
+  left: calc((var(--c) + 1) * 100% / var(--n));
+  top: calc(var(--r) * 100% / var(--n) - var(--bar) / 2);
+  width: var(--bar);
+  height: calc(100% / var(--n) + var(--bar));
+  margin-left: calc(var(--bar) / -2);
+}
+
+.hedge[data-lie='h'] {
+  top: calc((var(--r) + 1) * 100% / var(--n));
+  left: calc(var(--c) * 100% / var(--n) - var(--bar) / 2);
+  height: var(--bar);
+  width: calc(100% / var(--n) + var(--bar));
+  margin-top: calc(var(--bar) / -2);
+}
+
+/* A piece keeps its node and travels: the rabbit slides one square, and the
+   dog slides to the square it passed through and then on to where it stopped. */
+.piece {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% / var(--n));
+  height: calc(100% / var(--n));
+  display: grid;
+  place-items: center;
+  transform: translate(calc(var(--c) * 100%), calc(var(--r) * 100%));
+  transition: transform var(--dur-3) var(--ease);
+}
+
+.art {
+  width: 68%;
+  height: 68%;
+}
+
+/* The wall, and the one hole in it. The border is drawn by a pseudo-element so
+   the gap's percentages measure the whole maze rather than the inside of a
+   border. */
+.walls::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+.gap {
+  position: absolute;
+  background: var(--surface-sunk);
+}
+
+.gap[data-side='up'],
+.gap[data-side='down'] {
+  left: calc(var(--gc) * 100% / var(--n));
+  width: calc(100% / var(--n));
+  height: calc(var(--edge) + 2 * var(--hair));
+}
+
+.gap[data-side='up'] {
+  top: calc(var(--hair) * -1);
+}
+.gap[data-side='down'] {
+  bottom: calc(var(--hair) * -1);
+}
+
+.gap[data-side='left'],
+.gap[data-side='right'] {
+  top: calc(var(--gr) * 100% / var(--n));
+  height: calc(100% / var(--n));
+  width: calc(var(--edge) + 2 * var(--hair));
+}
+
+.gap[data-side='left'] {
+  left: calc(var(--hair) * -1);
+}
+.gap[data-side='right'] {
+  right: calc(var(--hair) * -1);
+}
+
+/* --- the lane outside the gap -------------------------------------------- */
+
+/* Where the rabbit has to end up, said in ink. It is the same word in the same
+   place whether or not the rabbit can take it this turn; the only thing that
+   changes is that it becomes a button. */
+.sign,
+.escaped {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+}
+
+.escaped .art {
+  width: 76%;
+  height: 76%;
+}
+
+/* --- the five moves ------------------------------------------------------- */
+
+.step,
+.hold {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--r-md);
+  color: var(--amber);
+  min-width: var(--tap-sm);
+  min-height: var(--tap-sm);
+}
+
+/* A wash the size of the square, kept clear of the seams so a hedge is never
+   tinted by the button standing over it. */
+.step::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--bar) / 2 + var(--hair));
+  border-radius: var(--r-sm);
+  background: color-mix(in oklab, var(--amber) 15%, transparent);
+}
+
+/* The mark rides over the wash: a positioned pseudo-element would otherwise
+   paint on top of a static child. */
+.mark,
+.ring {
+  position: relative;
+  z-index: 1;
+  width: 62%;
+  height: 62%;
+}
+
+.ring {
+  width: 92%;
+  height: 92%;
+}
+
+/* One mark, four directions. */
+.step[data-dir='right'] .mark {
+  transform: rotate(90deg);
+}
+.step[data-dir='down'] .mark {
+  transform: rotate(180deg);
+}
+.step[data-dir='left'] .mark {
+  transform: rotate(270deg);
+}
+
+/* Out is a word, not an arrow: it is the only place on the board that is a
+   destination rather than the next square along. */
+.out::before {
+  inset: var(--s1);
+}
+
+/* Dead because the move would change nothing, or because the setting that
+   offers a forbidden move has been turned off. It keeps its place in the tab
+   order — a disabled button cannot take focus — and gives up the shadow that
+   promises something will happen. */
+.step[data-dead='true'],
+.hold[data-dead='true'] {
+  box-shadow: var(--press-none);
+  cursor: default;
+}
+
+.step[data-dead='true']:active:not(:disabled),
+.hold[data-dead='true']:active:not(:disabled) {
+  transform: none;
+}
+
+.step[data-dead='true'] {
+  color: var(--ink-faint);
+}
+
+.step[data-dead='true']::before {
+  background: transparent;
+}
+
+.step:disabled,
+.hold:disabled {
+  cursor: default;
+}
+
+/* --- what the board says -------------------------------------------------- */
+
+/* What the dog just did, in words. It is not on any cue's timer: reduced
+   motion collapses the two travels to nothing, and this line is then the whole
+   of what says the dog moved at all. */
+.note {
+  margin: 0 auto;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-lg);
+  color: var(--ink);
+  min-height: 1.4em;
+}
