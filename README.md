@@ -51,6 +51,7 @@ toolbar, one tap from the screen.
 | The stone path         | Route                    |
 | The water jugs         | Arithmetic               |
 | The small square       | Logic                    |
+| Suns and moons         | Balance                  |
 | The patchwork quilt    | Neighbours               |
 | The tall and the short | Ranking                  |
 | The chocolate bar      | Area                     |

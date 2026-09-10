@@ -1,0 +1,258 @@
+/* A sky of squares, engraved straight into the stage the shell provides — a
+   second sunk panel inside it would only draw a redundant box and eat the
+   width an eight-wide grid needs on a phone.
+
+   Every square carries one thing: a sun, a moon, or nothing yet. The picture
+   says which mark it is, so the plate under it is free to carry state — bone
+   for a square you can press, sunk and flush for a printed one, clay for a
+   mark that breaks a rule. Nothing here is told apart by colour: a sun is a
+   spiked disc and a moon is an open hook, and that holds at any size. */
+
+/* The stage is a grid, and a grid item will not shrink below its own content
+   unless it is told it may. Without this the eight-wide board pushes the whole
+   page sideways on a narrow phone instead of sliding inside its own frame. */
+.wrap {
+  min-width: 0;
+}
+
+/* The frame centres the grid and scrolls it. A square never drops below a
+   fingertip, so on the narrowest phone an eight-wide board is allowed to be
+   wider than the stage and slide sideways. The padding keeps a focus ring
+   clear of the scroll edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the grid ------------------------------------------------ */
+
+.grid {
+  /* Lengths, not colours: the rule round the outside, the seat a square sits
+     in, and how big a square may get before it turns silly on a big monitor.
+
+     --cell-min and --cell-max are the pitch of a column, not the size of the
+     button in it: a column spends 2 * var(--seat) on the seat and up to
+     var(--hair) on the line down its left side before the button starts, and
+     the grid spends var(--edge) a side on its own border. The floor is written
+     as pitch, set high enough that what is left over still takes a fingertip,
+     and min-width hands the grid's own border back rather than charging it to
+     the squares.
+
+     There are no heavy lines inside: this board has no boxes, and a rule every
+     few columns would promise a third rule that does not exist. */
+  --edge: 3px;
+  --seat: 3px;
+  --cell-min: 60px;
+  --cell-max: 112px;
+
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  width: 100%;
+  min-width: calc(var(--n) * var(--cell-min) + 2 * var(--edge));
+  max-width: calc(var(--n) * var(--cell-max) + 2 * var(--edge));
+  margin-inline: auto;
+  background: var(--surface-sunk);
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+/* More squares to fit, so each one gives up a little. The ceiling comes down
+   with the count as well as the floor, so a sixteen-square board grows into
+   the stage instead of huddling in the middle of it, and a sixty-four-square
+   one still fits a laptop.
+
+   The floor stops where the button inside the pitch still clears --tap-sm
+   (40px). Eight wide is the tightest: a 44px pitch spends var(--seat) on each
+   side and var(--hair) on the line down the left, and a grid standing on that
+   floor is already under 30rem of viewport — 8 * 44px + the border, against
+   everything the page, the stage and the frame pad it with — so the seat is
+   the 1px one below and the button is 44 - 2 - 1 = 41px. Below that the grid
+   stands still and slides sideways inside .frame. */
+.grid[data-size='6'] {
+  --seat: 2px;
+  --cell-min: 52px;
+  --cell-max: 84px;
+}
+
+.grid[data-size='8'] {
+  --edge: 2px;
+  --seat: 2px;
+  --cell-min: 44px;
+  --cell-max: 64px;
+}
+
+.cell {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: stretch;
+  padding: var(--seat);
+  border-top: 0;
+  border-left: 0;
+}
+
+.cell[data-top='hair'] {
+  border-top: var(--hair) solid var(--rule);
+}
+
+.cell[data-left='hair'] {
+  border-left: var(--hair) solid var(--rule);
+}
+
+/* One radius for the printed square, the tile and the rings on it, stated
+   once. These squares are big enough to press, so they take the control
+   radius. */
+.given,
+.tile {
+  --tile-r: var(--r-md);
+}
+
+/* A printed mark: flush with the board, nothing to press. */
+.given {
+  display: grid;
+  place-items: center;
+  background: var(--surface-sunk);
+  border-radius: var(--tile-r);
+}
+
+/* A square you fill in: a bone tile seated in the board. */
+.tile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  border: var(--hair) solid var(--rule-strong);
+  border-radius: var(--tile-r);
+}
+
+/* A mark that breaks one of the two rules. The picture brings its own colours,
+   so the mistake is said in clay round it: the plate, the border and a solid
+   ring, with the shake the board fires at the same time. */
+.tile[data-conflict='true'] {
+  background: var(--clay-soft);
+  border-color: var(--clay);
+}
+
+.tile[data-conflict='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--tile-r);
+  box-shadow: inset 0 0 0 3px var(--clay);
+}
+
+.tile:disabled {
+  cursor: default;
+}
+
+/* The mark fills its square: at this size the picture is the board. */
+.art {
+  width: 74%;
+  height: 74%;
+}
+
+/* --- the two keys -------------------------------------------- */
+
+/* Which mark the next tap puts down. It is a choice, not a move, so it never
+   reaches the shell — and it is why one tap fills one square, whichever mark
+   the square wants. */
+.palette {
+  --key: clamp(72px, 17vw, 108px);
+
+  margin-top: var(--s5);
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: var(--s3);
+}
+
+.key {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s1);
+  width: var(--key);
+  min-height: var(--key);
+  padding: var(--s1) var(--s1) var(--s2);
+  background: var(--surface);
+  color: var(--ink);
+  border: var(--hair) solid var(--ink);
+  border-radius: var(--r-md);
+}
+
+/* Amber is "your turn": this is the mark the next tap on the board puts down.
+   The ring is a layer of its own rather than a second box-shadow, so the press
+   shadow under the key survives being chosen — a key you can still press has
+   to go on saying so. */
+.key[aria-pressed='true'] {
+  background: var(--amber-soft);
+  border-color: var(--amber);
+}
+
+.key[aria-pressed='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-md);
+  box-shadow: inset 0 0 0 3px var(--amber);
+}
+
+.key:disabled {
+  background: var(--surface-sunk);
+  border-color: var(--rule-strong);
+  color: var(--ink-faint);
+}
+
+.keyArt {
+  width: calc(var(--key) * 0.5);
+  height: calc(var(--key) * 0.5);
+}
+
+/* A dead key should not offer a bright sun. */
+.key:disabled .keyArt {
+  opacity: 0.45;
+}
+
+/* The name of the thing on the key, so a child who is still learning the two
+   pictures has the word as well. A word, so not the instrument voice. */
+.keyWord {
+  font-size: var(--t-xs);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ink-muted);
+}
+
+.key[aria-pressed='true'] .keyWord {
+  color: var(--ink);
+}
+
+.key:disabled .keyWord {
+  color: var(--ink-faint);
+}
+
+/* What to do next, or the rule that has just been broken. */
+.note {
+  margin: var(--s4) auto 0;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-sm);
+  line-height: 1.4;
+  color: var(--ink-muted);
+  min-height: 2.8em;
+}
+
+@media (max-width: 30rem) {
+  .grid {
+    --seat: 2px;
+  }
+  .grid[data-size='6'],
+  .grid[data-size='8'] {
+    --seat: 1px;
+  }
+  .palette {
+    margin-top: var(--s4);
+    gap: var(--s2);
+  }
+}

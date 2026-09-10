@@ -7,6 +7,7 @@ import { slipperyIce } from './slippery-ice'
 import { stonePath } from './stone-path'
 import { waterJugs } from './water-jugs'
 import { miniSudoku } from './mini-sudoku'
+import { sunsAndMoons } from './suns-and-moons'
 import { suguru } from './suguru'
 import { tallAndShort } from './tall-and-short'
 import { shikaku } from './shikaku'
@@ -30,6 +31,7 @@ export const PUZZLES: PuzzleMeta[] = [
   stonePath,
   waterJugs,
   miniSudoku,
+  sunsAndMoons,
   suguru,
   tallAndShort,
   shikaku,

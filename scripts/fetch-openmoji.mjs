@@ -56,6 +56,9 @@ const MANIFEST = {
   // the tents and trees
   tent: '26FA',
   tree: '1F333',
+  // suns and moons
+  sun: '2600',
+  moon: '1F319',
 }
 
 mkdirSync(OUT, { recursive: true })
