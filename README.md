@@ -47,6 +47,7 @@ toolbar, one tap from the screen.
 | Tower of Hanoi     | Order                    |
 | Lights out         | Patterns                 |
 | Leapfrog           | Sequence                 |
+| The slippery ice   | Foresight                |
 | The water jugs     | Arithmetic               |
 | The small square   | Logic                    |
 | The chocolate bar  | Area                     |

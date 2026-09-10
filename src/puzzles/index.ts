@@ -3,6 +3,7 @@ import { riverCrossing } from './river-crossing'
 import { towerOfHanoi } from './tower-of-hanoi'
 import { lightsOut } from './lights-out'
 import { frogLeap } from './frog-leap'
+import { slipperyIce } from './slippery-ice'
 import { waterJugs } from './water-jugs'
 import { miniSudoku } from './mini-sudoku'
 import { shikaku } from './shikaku'
@@ -21,6 +22,7 @@ export const PUZZLES: PuzzleMeta[] = [
   towerOfHanoi,
   lightsOut,
   frogLeap,
+  slipperyIce,
   waterJugs,
   miniSudoku,
   shikaku,

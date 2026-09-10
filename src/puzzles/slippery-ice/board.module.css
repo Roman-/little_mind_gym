@@ -1,0 +1,358 @@
+/* A frozen pond cut straight into the stage the shell provides — a second sunk
+   panel inside it would only draw a redundant box and eat the width a six-wide
+   board needs on a phone.
+
+   Four layers, and each one says exactly one thing: the pale teal squares are
+   the ice, the slate bars are the walls standing on it, the ring is the square
+   the mouse has to stop on, and the animals are the pieces. Under the board,
+   four arrows and a well: the well holds whoever the next arrow will send.
+
+   Colour is state throughout. Amber rings the animal a child has chosen and
+   inks the arrows that would move it, moss says the mouse is home, and the
+   only identity colours here are the teal the ice is made of and the slate a
+   wall is made of. */
+
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  /* A grid item will not shrink below its own content unless it is told it
+     may, and without this a six-wide pond pushes the whole page sideways on a
+     narrow phone instead of sliding inside its own frame. */
+  min-width: 0;
+}
+
+/* The one rule a child has to hold in a head, kept on the board rather than in
+   the drawer that shuts on a second visit. */
+.goal {
+  margin: 0;
+  text-align: center;
+  color: var(--ink);
+}
+
+/* Centres the pond and scrolls it. A square never drops below a fingertip, so
+   on the narrowest phone a six-wide board is allowed to be wider than the
+   stage and slide sideways. The padding keeps a focus ring off the scroll
+   edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the ice -------------------------------------------------------------- */
+
+.grid {
+  /* Lengths, not colours: the rim of the pond, how thick a wall is, and the
+     pitch of one column — a floor that keeps every square a fingertip wide and
+     a ceiling that follows the stage's own height, so a short wide window
+     never gets a pond taller than the window.
+
+     The board states that it is square, because everything drawn over it is
+     laid out in squares rather than in pixels: a layer's own box is the grid's
+     content box, and one square of it is 100% / var(--n) each way. */
+  --edge: 3px;
+  --bar: clamp(6px, 1.1vh, 9px);
+  --cell-min: 56px;
+  --cell-max: clamp(56px, 9vh, 96px);
+
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  grid-template-rows: repeat(var(--n), 1fr);
+  aspect-ratio: 1;
+  width: 100%;
+  min-width: calc(var(--n) * var(--cell-min) + 2 * var(--edge));
+  max-width: calc(var(--n) * var(--cell-max) + 2 * var(--edge));
+  margin-inline: auto;
+  background: var(--surface-sunk);
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+/* More squares to fit, so each one gives up a little. The floor stops where
+   the animal standing in a square is still a fingertip on the narrowest phone;
+   below that the pond stops shrinking and slides sideways inside .frame. */
+.grid[data-size='6'] {
+  --edge: 2px;
+  --cell-min: 50px;
+  --cell-max: clamp(50px, 7.5vh, 80px);
+}
+
+/* One square of ice. Flat enamel and two hairlines, so the lattice reads
+   without competing with the walls standing on it. */
+.cell {
+  position: relative;
+  z-index: 0;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  background: color-mix(in oklab, var(--p-teal) 14%, var(--surface));
+  border-top: var(--hair) solid var(--rule);
+  border-left: var(--hair) solid var(--rule);
+}
+
+/* Where the mouse has to come to rest, said twice.
+
+   The ring is the mark, and it is what a child looks for on an open square.
+   The warm patch under the ring is what is left when somebody is standing
+   there: a piece covers the ring whole, and a square that went back to plain
+   ice under a rabbit would look as though the ring had been rubbed out. The
+   patch turns moss the moment the mouse is the one standing on it. */
+.cell[data-home='true'] {
+  background: color-mix(in oklab, var(--p-bone) 75%, var(--surface));
+}
+
+.cell[data-won='true'] {
+  background: var(--moss-soft);
+}
+
+.ring {
+  width: 88%;
+  height: 88%;
+  color: var(--ink);
+}
+
+/* --- the two layers over the ice ------------------------------------------ */
+
+.walls,
+.pieces {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Clipped to the pond, because a wall runs half a bar past each end so that
+   two of them meeting at a corner join up. That overhang is right in the
+   middle of the board and wrong at the rim, where it would poke out through
+   the frame. */
+.walls {
+  z-index: 1;
+  overflow: hidden;
+  border-radius: var(--r-md);
+}
+
+.pieces {
+  z-index: 2;
+}
+
+/* One wall, drawn once per seam. Flat enamel under a hairline, exactly as a
+   hedge is drawn on the maze. */
+.wall {
+  position: absolute;
+  background: var(--p-slate);
+  border: var(--hair) solid color-mix(in oklab, var(--ink) 40%, transparent);
+  border-radius: var(--r-sm);
+}
+
+.wall[data-lie='v'] {
+  left: calc((var(--c) + 1) * 100% / var(--n));
+  top: calc(var(--r) * 100% / var(--n) - var(--bar) / 2);
+  width: var(--bar);
+  height: calc(100% / var(--n) + var(--bar));
+  margin-left: calc(var(--bar) / -2);
+}
+
+.wall[data-lie='h'] {
+  top: calc((var(--r) + 1) * 100% / var(--n));
+  left: calc(var(--c) * 100% / var(--n) - var(--bar) / 2);
+  height: var(--bar);
+  width: calc(100% / var(--n) + var(--bar));
+  margin-top: calc(var(--bar) / -2);
+}
+
+/* The square an animal stands in, and the only thing on this board that
+   travels. A send slides it the whole way in one --dur-3, which is the token
+   for a piece crossing the board; a reader who has asked for less motion has
+   that collapsed to a millisecond and sees the animal simply arrive, with the
+   move tape and the status line still saying what happened. */
+.slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% / var(--n));
+  height: calc(100% / var(--n));
+  display: grid;
+  place-items: center;
+  transform: translate(calc(var(--c) * 100%), calc(var(--r) * 100%));
+  transition: transform var(--dur-3) var(--ease);
+}
+
+/* One animal: a bone tile with a picture on it, standing on the ice. The
+   picture has already said which animal this is, so the tile under it is
+   neutral and free to carry state. */
+.animal {
+  position: relative;
+  pointer-events: auto;
+  display: grid;
+  place-items: center;
+  width: 82%;
+  height: 82%;
+  padding: 0;
+  background: var(--surface);
+  border: var(--hair) solid var(--rule-strong);
+  border-radius: var(--r-md);
+}
+
+.animal:not(:disabled):hover {
+  border-color: var(--ink);
+}
+
+/* The animal the next arrow sends. Amber, because it is the move in progress. */
+.animal[data-chosen='true'] {
+  background: var(--amber-soft);
+}
+
+.animal[data-chosen='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-md);
+  box-shadow: inset 0 0 0 4px var(--amber);
+}
+
+.animal:disabled {
+  cursor: default;
+}
+
+.art {
+  width: 78%;
+  height: 78%;
+}
+
+/* --- the four sends ------------------------------------------------------- */
+
+/* A compass rather than a row: which way is which is the whole of what these
+   four say, and a cross says it without being read. The well in the middle of
+   it holds whoever the next press sends. */
+.pad {
+  --key: clamp(50px, 11vw, 60px);
+  display: grid;
+  grid-template-columns: repeat(3, var(--key));
+  grid-template-rows: repeat(3, var(--key));
+  gap: var(--s2);
+  justify-content: center;
+}
+
+.key {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: var(--surface);
+  color: var(--amber);
+  border: var(--hair) solid var(--ink);
+  border-radius: var(--r-md);
+}
+
+.key[data-dir='up'] {
+  grid-area: 1 / 2;
+}
+.key[data-dir='right'] {
+  grid-area: 2 / 3;
+}
+.key[data-dir='down'] {
+  grid-area: 3 / 2;
+}
+.key[data-dir='left'] {
+  grid-area: 2 / 1;
+}
+
+/* Dead because nobody is chosen, or because the animal that is chosen is
+   already flush against something that way. It keeps its place in the tab
+   order — a disabled button cannot take focus — and gives up the shadow that
+   promises something will happen. */
+.key[data-dead='true'] {
+  background: var(--surface-sunk);
+  border-color: var(--rule-strong);
+  color: var(--ink-faint);
+  box-shadow: var(--press-none);
+  cursor: default;
+}
+
+.key[data-dead='true']:active:not(:disabled) {
+  transform: none;
+}
+
+.key:disabled {
+  cursor: default;
+}
+
+/* One mark, four directions. */
+.mark {
+  width: 54%;
+  height: 54%;
+}
+
+.key[data-dir='right'] .mark {
+  transform: rotate(90deg);
+}
+.key[data-dir='down'] .mark {
+  transform: rotate(180deg);
+}
+.key[data-dir='left'] .mark {
+  transform: rotate(270deg);
+}
+
+/* The middle of the compass: empty until an animal is chosen, and then that
+   animal. It is not a control — it takes no taps and says nothing a screen
+   reader has not already been told by the arrows around it. */
+.well {
+  grid-area: 2 / 2;
+  display: grid;
+  place-items: center;
+  background: var(--surface-sunk);
+  border: var(--hair) solid var(--rule);
+  border-radius: var(--r-md);
+}
+
+.wellArt {
+  width: 66%;
+  height: 66%;
+}
+
+/* --- what the board says -------------------------------------------------- */
+
+/* What the next tap is for. It stands rather than running on a timer: there is
+   no cue on this board to answer, because nothing here can break a rule. */
+.note {
+  margin: 0 auto;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-body);
+  color: var(--ink);
+  min-height: 1.4em;
+}
+
+/* Room to stand the pad beside the pond rather than under it. The four arrows
+   cost about two hundred pixels of height, and on a window this wide that
+   height is worth more to the ice than to them: the board grows into it, which
+   is the whole of what the stage is for. */
+@media (min-width: 56rem) {
+  .board {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto 1fr auto;
+    align-items: center;
+    column-gap: var(--s5);
+  }
+
+  .goal,
+  .note {
+    grid-column: 1 / -1;
+  }
+
+  .grid {
+    --cell-max: clamp(56px, 11vh, 104px);
+  }
+
+  .grid[data-size='6'] {
+    --cell-max: clamp(50px, 9.5vh, 88px);
+  }
+}
+
+@media (max-width: 30rem) {
+  .pad {
+    --key: 50px;
+    gap: var(--s1);
+  }
+}
