@@ -1,0 +1,290 @@
+/* A camp site drawn as a plan: the field of squares engraved into the stage
+   the shell provides, and the numbers standing outside it in a margin of
+   their own. A second sunk panel inside the stage would only draw a redundant
+   box and eat the width a seven-wide board needs on a phone.
+
+   The margin is the whole point of this board. Every other grid in the
+   collection is a field of pieces; this one is a field of pieces with a
+   number at the end of every row and every column, and the numbers are what
+   the puzzle is played on. So they are set big, in the instrument voice, in a
+   gutter the rim of the field parts them from — a plan with its measurements
+   written round the edge, rather than another tray of tiles.
+
+   Four materials and no more.
+
+   A number, bare, in ink. When its line has all the tents it asked for the
+   number is crossed off in moss, the way a number on a list is crossed off
+   when it is done; when its line still wants a tent and has nowhere left to
+   put one, it is boxed in clay. Both of those say the same thing — there is
+   nothing more to do here — and a child can work either of them out by
+   looking, which is why the board is allowed to say them.
+
+   A tree is a slab, sunk into the field with no gap round it: it is part of
+   the ground and nobody can press it. It takes the same clay box as a number
+   once the four squares round it are all spoken for, because a tree that can
+   never be given its tent is the same kind of fact about a tree as a boxed
+   number is about a line. A square is a bone tile you can press, seated in the
+   field with the press shadow under it. And a square the tents already pitched
+   leave no room for keeps its tile and takes a small faint dot — the paper
+   game's patch of grass, drawn for free, because a mark is not a move.
+
+   Colour says state and nothing else here: moss for a line that is done, clay
+   for a line that can no longer be filled, for a tree that can no longer be
+   given its tent, and for the square a refused tent bounced off. The tents and
+   the trees bring their own colours, in their own pictures, and the tile under
+   each of them stays neutral. */
+
+/* The stage is a grid, and a grid item will not shrink below its own content
+   unless it is told it may. Without this the seven-wide board pushes the whole
+   page sideways on a narrow phone instead of sliding inside its own frame. */
+.wrap {
+  min-width: 0;
+}
+
+/* The frame scrolls the plan, which centres itself inside it. A square never
+   drops below a fingertip, so on the narrowest phone a seven-wide board is
+   allowed to be wider than the stage and slide sideways. The padding keeps a
+   focus ring clear of the scroll edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the plan ------------------------------------------------- */
+
+.plan {
+  /* Lengths, not colours: the rim round the field, the seat a tile sits in,
+     one square, and the margin the numbers stand in. Everything on the board
+     is measured off --cell, so the numbers grow with the squares they count
+     and the whole plan stays square.
+
+     The floor is the size of a square, not the pitch of a column: what is
+     left after the seat is still a fingertip on the narrowest phone. */
+  --edge: 3px;
+  --seat: 2px;
+  --cell: clamp(52px, 10.5vw, 104px);
+  --gutter: calc(var(--cell) * 0.66);
+
+  display: grid;
+  grid-template-columns: var(--gutter) auto;
+  grid-template-rows: var(--gutter) auto;
+  /* Shrink-wrapped and then centred, rather than centred by the frame: a flex
+     box that centres a child wider than itself puts the overflow out of reach
+     on the left, and an auto margin simply gives up and lets the frame scroll. */
+  width: max-content;
+  margin-inline: auto;
+}
+
+/* More squares to fit, so each one gives up a little. */
+.plan[data-size='6'] {
+  --cell: clamp(48px, 9.5vw, 92px);
+}
+
+.plan[data-size='7'] {
+  --edge: 2px;
+  --cell: clamp(44px, 8.5vw, 78px);
+}
+
+/* --- the numbers ---------------------------------------------- */
+
+/* The two gutters take the field's own tracks, less the rim and the seat, so
+   a number stands square with the line it counts. */
+.top {
+  display: grid;
+  grid-template-columns: repeat(var(--n), var(--cell));
+  align-items: center;
+  justify-items: center;
+  padding-inline: calc(var(--edge) + var(--seat));
+}
+
+.left {
+  display: grid;
+  grid-template-rows: repeat(var(--n), var(--cell));
+  align-items: center;
+  justify-items: center;
+  padding-block: calc(var(--edge) + var(--seat));
+}
+
+/* docs/DESIGN.md rations the mono face to values and names a clue number as
+   one of them, so this is the instrument voice rather than an exception to
+   it — sized for the field it measures rather than for a caption, which is
+   why it is not the .u-mono utility. */
+.clue {
+  /* A plain block, not a grid: the track it sits in already centres it, and a
+     line drawn through a number has to land on a line box of its own. */
+  display: block;
+  text-align: center;
+  min-width: 1.6em;
+  padding: 0.14em 0.16em;
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  /* Off --cell, like every other length on this board, and not off the
+     viewport: the gutter that a number stands in is 0.66 of a square, so a
+     number sized off the viewport outgrows its gutter wherever --cell has
+     stopped at its floor and the viewport has not. It did. At 4.4vw the
+     min-width above came to 1.6 x 0.044 = 0.0704 of the viewport, while a
+     seven-wide board holds --cell at 44px — and so the gutter at 29px —
+     until 8.5vw catches 44px at 518px wide. From 413px up, the row numbers
+     stood wider than their gutter and ran under the rim of the field.
+     Measured off the square instead, 1.6em is 1.6 x 0.38 = 0.61 of a square
+     against a gutter of 0.66, which has room to spare at every size; and if
+     a square ever shrank far enough for the 1rem floor to win, 1.6rem is
+     25.6px against that same 29px. */
+  font-size: clamp(1rem, calc(var(--cell) * 0.38), 1.7rem);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink);
+  transition:
+    background-color var(--dur-2) var(--ease),
+    color var(--dur-2) var(--ease);
+}
+
+/* Done: the line has the tents its number asked for, so by its own rule
+   nothing more may join them. Crossed off, the way a number on a list is. */
+.clue[data-mark='done'] {
+  color: var(--moss);
+  background: var(--moss-soft);
+  box-shadow: inset 0 0 0 var(--hair) var(--moss);
+  text-decoration: line-through;
+  text-decoration-thickness: 0.1em;
+}
+
+/* Stuck: the line still wants a tent and has nowhere left to put one. Nothing
+   on the board breaks a rule — this one cannot be finished from here. */
+.clue[data-mark='stuck'] {
+  color: var(--clay);
+  background: var(--clay-soft);
+  box-shadow: inset 0 0 0 2px var(--clay);
+}
+
+/* --- the field ------------------------------------------------ */
+
+.field {
+  display: grid;
+  grid-template-columns: repeat(var(--n), var(--cell));
+  grid-auto-rows: var(--cell);
+  padding: var(--seat);
+  background: var(--surface-sunk);
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+.cell {
+  display: grid;
+  place-items: stretch;
+  padding: var(--seat);
+}
+
+/* A tree takes the whole of its square, so two trees side by side butt up into
+   one stand of wood — which is what a wood looks like. */
+.cell[data-tree='true'] {
+  padding: 0;
+}
+
+/* --- a tree --------------------------------------------------- */
+
+.tree {
+  display: grid;
+  place-items: center;
+  background: var(--surface-sunk);
+  /* A lattice cell, not a control: the small radius, and no press shadow. */
+  border-radius: var(--r-sm);
+  transition: background-color var(--dur-2) var(--ease);
+}
+
+/* Walled in: every square round this tree is a tree, a tent or dotted, so the
+   tent it is owed can never arrive. The same clay box as the number of a line
+   that can no longer be filled, because it is the same kind of fact. */
+.tree[data-mark='stuck'] {
+  background: var(--clay-soft);
+  box-shadow: inset 0 0 0 2px var(--clay);
+}
+
+/* --- a square ------------------------------------------------- */
+
+.tile {
+  --tile-r: var(--r-md);
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  border: var(--hair) solid var(--rule-strong);
+  border-radius: var(--tile-r);
+  transition: border-color var(--dur-2) var(--ease);
+}
+
+.tile:not(:disabled):not([aria-disabled='true']):hover {
+  border-color: var(--ink);
+}
+
+.tile:disabled {
+  cursor: default;
+}
+
+/* Dead because the player asked for a forbidden tent to be refused up front,
+   rather than offered and handed back. It is aria-disabled and never disabled:
+   a disabled button cannot take focus, and the roving tab stop would go off
+   the board in silence. What it drops is the shadow that promises something
+   will happen, and the sink under a press that will not come. */
+.tile[aria-disabled='true'] {
+  box-shadow: var(--press-none);
+  cursor: default;
+}
+
+/* Outscoring .u-press:active:not(:disabled), which is set in another
+   stylesheet and so cannot be settled by order. */
+.tile[aria-disabled='true']:active:not(:disabled) {
+  transform: none;
+}
+
+/* The press shadow is set on .u-press, which lands after the global focus ring
+   in the cascade, so a square a child has arrived at by keyboard has to ask
+   for the ring back. The balance scales' pieces do the same. */
+.tile:focus-visible {
+  box-shadow: var(--focus-ring);
+  border-radius: var(--tile-r);
+}
+
+/* A square the tents already pitched leave no room for: one beside a tent, or
+   one in a line that has all the tents its number wants. The dot is the paper
+   game's patch of grass and it costs no move, so the scanning the puzzle runs
+   on is handed back without a tap. It never says a word about the trees. */
+.tile[data-room='none'] {
+  border-color: var(--rule);
+}
+
+.tile[data-room='none']::after {
+  content: '';
+  width: 15%;
+  height: 15%;
+  border-radius: var(--r-round);
+  background: var(--ink-faint);
+}
+
+/* The picture is the square: at this size a tent or a tree read as themselves
+   only when they fill it. */
+.art {
+  width: 86%;
+  height: 86%;
+}
+
+/* --- what is left to do --------------------------------------- */
+
+.note {
+  margin: var(--s4) auto 0;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-lg);
+  color: var(--ink);
+  min-height: 1.4em;
+}
+
+@media (max-width: 30rem) {
+  .plan {
+    --seat: 1px;
+  }
+  .note {
+    font-size: var(--t-body);
+    min-height: 2.8em;
+  }
+}

@@ -55,6 +55,7 @@ toolbar, one tap from the screen.
 | The tall and the short | Ranking                  |
 | The chocolate bar      | Area                     |
 | The garden cats        | Elimination              |
+| The tents and trees    | Pairing                  |
 | The heavier one        | Evidence                 |
 | Who has what           | Deduction                |
 | The counting path      | Paths                    |

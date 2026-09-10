@@ -11,6 +11,7 @@ import { suguru } from './suguru'
 import { tallAndShort } from './tall-and-short'
 import { shikaku } from './shikaku'
 import { gardenCats } from './garden-cats'
+import { tentsAndTrees } from './tents-and-trees'
 import { balanceScales } from './balance-scales'
 import { logicGrid } from './logic-grid'
 import { countingPath } from './counting-path'
@@ -33,6 +34,7 @@ export const PUZZLES: PuzzleMeta[] = [
   tallAndShort,
   shikaku,
   gardenCats,
+  tentsAndTrees,
   balanceScales,
   logicGrid,
   countingPath,
