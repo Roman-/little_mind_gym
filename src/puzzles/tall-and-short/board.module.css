@@ -1,0 +1,337 @@
+/* A field of posts, engraved straight into the stage the shell provides — a
+   second sunk panel inside it would only draw a redundant box and eat the
+   width a five-wide board needs on a phone.
+
+   The grid has two kinds of track in each direction: a square, then the seam a
+   sign stands in, then a square, and so on. A sign belongs between two squares
+   and nowhere else, so it is given a track of its own rather than an overlay
+   over the squares — the layout says where the sign goes, and no coordinate is
+   worked out a second time in JavaScript. The whole board is square, because
+   the same alternation runs down it as across it.
+
+   A post is flat enamel: a stack of blocks in one --p-* colour under a
+   hairline, standing on the floor of its square. Height is what the puzzle is
+   about and it is also the hardest thing to read: a square never falls under
+   56px, which leaves one height about ten pixels above the next on a five-wide
+   board. So the post carries two more channels that say the same thing. The
+   blocks count it out. The colour names it, on the Hanoi ramp, deeper the
+   taller it stands. Neither of them is a numeral, which is the one thing a
+   square on this board must never hold.
+
+   Colour says state and nothing else: amber for the square the next tap writes
+   into, clay for a post that breaks a rule. The --p-* colours are not states —
+   they are the posts, exactly as ochre, clay and moss are the Hanoi discs. */
+
+/* The stage is a grid, and a grid item will not shrink below its own content
+   unless it is told it may. Without this the five-wide board pushes the whole
+   page sideways on a narrow phone instead of sliding inside its own frame. */
+.wrap {
+  min-width: 0;
+}
+
+/* The frame centres the board and scrolls it. A square never drops below a
+   fingertip, so on the narrowest phone a five-wide board is allowed to be
+   wider than the stage and slide sideways. The padding keeps a focus ring
+   clear of the scroll edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the board ----------------------------------------------- */
+
+.grid {
+  /* Lengths, not colours: the board's own rim, the seat a square sits in, how
+     wide the seam between two squares is, and how big a square may get before
+     it turns silly on a big monitor.
+
+     --cell-min and --cell-max are the size of a square, not the pitch of a
+     column: the seams are tracks of their own, so min-width adds them and the
+     board's rim back rather than charging them to the squares. */
+  --edge: 2px;
+  --seat: 3px;
+  --sign: clamp(20px, 5vw, 34px);
+  --cell-min: 76px;
+  --cell-max: 120px;
+
+  display: grid;
+  grid-template-columns: 1fr repeat(var(--m), var(--sign) 1fr);
+  grid-template-rows: 1fr repeat(var(--m), var(--sign) 1fr);
+  aspect-ratio: 1;
+  width: 100%;
+  min-width: calc(var(--n) * var(--cell-min) + var(--m) * var(--sign) + 2 * var(--edge) + 2 * var(--seat));
+  max-width: calc(var(--n) * var(--cell-max) + var(--m) * var(--sign) + 2 * var(--edge) + 2 * var(--seat));
+  margin-inline: auto;
+  padding: var(--seat);
+  background: var(--surface-sunk);
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+/* More squares to fit, so each one gives up a little — and so does the seam
+   between them, which never has to hold more than one wedge. The floors stop
+   where the button inside a square is still a fingertip on the narrowest
+   phone; below that the board stops shrinking and slides sideways inside
+   .frame instead. */
+.grid[data-size='4'] {
+  --sign: clamp(18px, 4.2vw, 30px);
+  --cell-min: 66px;
+  --cell-max: 104px;
+}
+
+.grid[data-size='5'] {
+  --sign: clamp(16px, 3.6vw, 28px);
+  --cell-min: 56px;
+  --cell-max: 88px;
+}
+
+.cell {
+  display: grid;
+  place-items: stretch;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* One radius for the printed square, the tile and the selection ring, stated
+   once. These squares are big enough to press, so they take the control
+   radius. */
+.printed,
+.tile {
+  --tile-r: var(--r-md);
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  border-radius: var(--tile-r);
+}
+
+/* A printed post: engraved into the board, nothing to press. It keeps the
+   hairline anyway, because without one a recess with a short post in it reads
+   as a hole in the grid rather than as a square somebody has already filled. */
+.printed {
+  background: var(--surface-sunk);
+  border: var(--hair) solid var(--rule);
+}
+
+/* A square you stand a post in: a bone tile seated in the board. */
+.tile {
+  background: var(--surface);
+  border: var(--hair) solid var(--rule-strong);
+}
+
+/* Amber tells a child which square their next tap fills. Clay says the post in
+   it breaks a rule. A post brings its own colour, so both signals land on the
+   tile under it. A square that is chosen *and* wrong rings clay: the mistake is
+   the more urgent of the two, and a ring is still a ring. */
+.tile[data-selected='true'] {
+  background: var(--amber-soft);
+}
+
+.tile[data-selected='true']::after,
+.tile[data-conflict='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--tile-r);
+}
+
+.tile[data-selected='true']::after {
+  box-shadow: inset 0 0 0 4px var(--amber);
+}
+
+.tile[data-conflict='true'] {
+  background: var(--clay-soft);
+  border-color: var(--clay);
+}
+
+.tile[data-conflict='true']::after {
+  box-shadow: inset 0 0 0 3px var(--clay);
+}
+
+.tile[data-conflict='true'][data-selected='true']::after {
+  box-shadow: inset 0 0 0 4px var(--clay);
+}
+
+.tile:not(:disabled):hover {
+  border-color: var(--ink);
+}
+
+.tile:disabled {
+  cursor: default;
+}
+
+/* --- a post --------------------------------------------------- */
+
+/* Standing on the floor of whatever holds it, --h blocks of the --n it could
+   have been. The seams between the blocks are the square showing through, so a
+   post counts itself out without a single extra colour. */
+.post {
+  position: absolute;
+  left: 32%;
+  right: 32%;
+  bottom: 0;
+  height: calc(92% * var(--h) / var(--n));
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+  border: var(--hair) solid color-mix(in oklab, var(--ink) 40%, transparent);
+  /* Rounded at the cap and square at the foot, the way a Hanoi disc sits on
+     its peg: a post stands on the floor of its square rather than floating in
+     the middle of it, and the shortest one is a block rather than a lozenge. */
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+}
+
+.block {
+  flex: 1;
+  min-height: 0;
+  background: var(--post);
+}
+
+/* --- the signs ------------------------------------------------ */
+
+/* One wedge in the seam between two squares, turned to whichever of the four
+   ways round it points. It takes no taps: the squares either side of it do. */
+.sign {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  color: var(--ink);
+  pointer-events: none;
+}
+
+.signMark {
+  width: var(--sign);
+  height: var(--sign);
+}
+
+/* The wedge is drawn pointing right and turned to the other three. Which way
+   it points is the whole of what it says, so the markup says it in a word. */
+.sign[data-points='down'] .signMark {
+  transform: rotate(90deg);
+}
+
+.sign[data-points='left'] .signMark {
+  transform: rotate(180deg);
+}
+
+.sign[data-points='up'] .signMark {
+  transform: rotate(270deg);
+}
+
+/* --- the keypad ----------------------------------------------- */
+
+.palette {
+  /* One number sets the whole row: the key, the post standing on it and the
+     numeral under it all come off this. */
+  --key: clamp(60px, 15vw, 88px);
+
+  margin-top: var(--s5);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: var(--s2);
+}
+
+.palette[data-size='5'] {
+  --key: clamp(54px, 12vw, 74px);
+}
+
+.key {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s1);
+  width: var(--key);
+  min-height: var(--key);
+  padding: var(--s1) var(--s1) var(--s2);
+  background: var(--surface);
+  color: var(--ink);
+  border: var(--hair) solid var(--ink);
+  border-radius: var(--r-md);
+}
+
+.key:disabled {
+  background: var(--surface-sunk);
+  border-color: var(--rule-strong);
+  color: var(--ink-faint);
+}
+
+/* The floor a key's post stands on. Every key gives its post the same room, so
+   the row of them is the ruler a child reads the board against. */
+.keyWell {
+  position: relative;
+  width: 100%;
+  height: calc(var(--key) * 0.62);
+}
+
+/* A dead key should not offer a bright post. */
+.key:disabled .post {
+  opacity: 0.45;
+}
+
+.keyGlyph {
+  width: calc(var(--key) * 0.42);
+  height: calc(var(--key) * 0.42);
+}
+
+.keyCap {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono);
+  font-weight: 500;
+  letter-spacing: var(--track-mono);
+  line-height: 1;
+  color: var(--ink-muted);
+}
+
+.key:disabled .keyCap,
+.key:disabled .keyWord {
+  color: var(--ink-faint);
+}
+
+/* "Take out" is a word, not a key value, so it does not take the instrument
+   voice — and it is wider than a numeral, so its key is wider too. */
+.keyWord {
+  font-size: var(--t-xs);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ink-muted);
+}
+
+.lift {
+  width: auto;
+  min-width: calc(var(--key) * 1.2);
+  justify-content: center;
+  padding-inline: var(--s3);
+  margin-left: var(--s3);
+}
+
+.note {
+  margin: var(--s4) auto 0;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-sm);
+  line-height: 1.4;
+  color: var(--ink-muted);
+  min-height: 2.8em;
+}
+
+@media (max-width: 30rem) {
+  .grid {
+    --seat: 2px;
+  }
+  .grid[data-size='5'] {
+    --seat: 1px;
+  }
+  .palette {
+    margin-top: var(--s4);
+    gap: var(--s1);
+  }
+  .lift {
+    margin-left: var(--s2);
+  }
+}
