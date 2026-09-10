@@ -1,0 +1,267 @@
+/* A sheet of graph paper with thermometers lying on it, engraved into the
+   stage the shell provides, and the numbers standing outside it in a margin of
+   their own. A second sunk panel inside the stage would only draw a redundant
+   box and eat the width a seven-across board needs on a phone.
+
+   Three materials and no more.
+
+   A number, bare, in ink, in the instrument voice. It never changes and it
+   never comments: this board says nothing about how a line is getting on, and
+   Board.tsx says why at length. The number is the whole of what the margin has
+   to give.
+
+   A square of graph paper. It is the control — the whole square, so a
+   fingertip always has 44px to land on, and the three floors under .plan are
+   where that number is worked out — and it is drawn as a square of a sheet
+   rather than as a tile of its own: no gap, no radius, one hairline between it
+   and the next. That is the one place this board parts company with the garden
+   cats and the tents, and it is the tube's doing. A thermometer runs across
+   four or five of these squares and has to read as one object, so
+   the squares underneath it abut and the roundness belongs to the thermometer:
+   a bulb at one end, a rounded tip at the other. The hairlines then cross the
+   glass exactly where the squares divide, which is what a real thermometer's
+   graduations do, and which is how a child counts a row against its number.
+
+   And the thermometer: bone glass under a hairline of ink, and mercury in
+   --p-clay. The mercury is a substance you can point at, so it takes an enamel
+   piece colour rather than a signal — and it can be that red safely, because
+   nothing on this board is ever drawn in --clay. No move here breaks a rule,
+   so there is no rule-broken state to confuse it with. */
+
+/* The stage is a grid, and a grid item will not shrink below its own content
+   unless it is told it may. Without this the seven-across board pushes the
+   whole page sideways on a narrow phone instead of sliding inside its frame. */
+.wrap {
+  min-width: 0;
+}
+
+/* The frame scrolls the sheet, which centres itself inside it. A square never
+   drops below a fingertip, so on the narrowest phone a seven-across board is
+   allowed to be wider than the stage and slide sideways. The padding keeps a
+   focus ring clear of the scroll edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the sheet ------------------------------------------------ */
+
+.plan {
+  /* Lengths, not colours: the rim round the field, the seat the squares sit
+     in, one square, and the margin the numbers stand in. Everything is
+     measured off --cell, so the numbers grow with the squares they count and
+     the whole board stays square.
+
+     The floor is the size of a square, and a square stays over --tap-sm even
+     after the paper's ruling has taken its hairline out of it — the sum is
+     under the two rules below. */
+  --edge: 3px;
+  --seat: 2px;
+  --cell: clamp(52px, 10.5vw, 104px);
+  --gutter: calc(var(--cell) * 0.66);
+  /* The hairline the glass is drawn in: the same ink at four tenths that every
+     enamel piece in the collection wears. */
+  --glass: color-mix(in oklab, var(--ink) 40%, transparent);
+
+  display: grid;
+  grid-template-columns: var(--gutter) auto;
+  grid-template-rows: var(--gutter) auto;
+  /* Shrink-wrapped and then centred, rather than centred by the frame: a flex
+     box that centres a child wider than itself puts the overflow out of reach
+     on the left, and an auto margin simply gives up and lets the frame scroll. */
+  width: max-content;
+  margin-inline: auto;
+}
+
+/* More squares to fit, so each one gives up a little.
+
+   The three floors are where the 44px above comes from, and one hairline is
+   the difference between them and it. The paper's ruling is drawn inside the
+   later square (.cell[data-top], .cell[data-left]) and box-sizing is
+   border-box everywhere, so the hairline comes out of the square's content
+   box — which is the button. A square is --cell less one --hair, and --hair is
+   1px: 52 - 1 = 51px on five across, 48 - 1 = 47px on six across, and
+   45 - 1 = 44px on seven across, the smallest square this board ever draws.
+   (--tap-sm, the floor the design asks of anything touchable, is 40px; the
+   44px is this board's own, and logic.test.ts reads these floors back out of
+   this file and does the subtraction.) */
+.plan[data-size='6'] {
+  --cell: clamp(48px, 9.5vw, 92px);
+}
+
+.plan[data-size='7'] {
+  --edge: 2px;
+  --cell: clamp(45px, 8.5vw, 78px);
+}
+
+/* --- the numbers ---------------------------------------------- */
+
+/* The two gutters take the field's own tracks, less the rim and the seat, so a
+   number stands square with the line it counts. */
+.top {
+  display: grid;
+  grid-template-columns: repeat(var(--n), var(--cell));
+  align-items: center;
+  justify-items: center;
+  padding-inline: calc(var(--edge) + var(--seat));
+}
+
+.left {
+  display: grid;
+  grid-template-rows: repeat(var(--n), var(--cell));
+  align-items: center;
+  justify-items: center;
+  padding-block: calc(var(--edge) + var(--seat));
+}
+
+/* docs/DESIGN.md rations the mono face to values and names a clue number as
+   one of them, so this is the instrument voice rather than an exception to
+   it — sized for the field it measures rather than for a caption, which is
+   why it is not the .u-mono utility. */
+.clue {
+  display: block;
+  text-align: center;
+  min-width: 1.6em;
+  font-family: var(--font-mono);
+  font-size: clamp(1rem, 4.4vw, 1.7rem);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink);
+}
+
+/* --- the field ------------------------------------------------ */
+
+.field {
+  display: grid;
+  grid-template-columns: repeat(var(--n), var(--cell));
+  grid-auto-rows: var(--cell);
+  padding: var(--seat);
+  background: var(--surface-sunk);
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+/* The squares abut, so the hairline between two of them is drawn once: on the
+   later one. It is the paper's ruling and the thermometer's graduation at the
+   same time — the glass runs over it, and where the mercury stops is read
+   against it. */
+.cell {
+  display: grid;
+  place-items: stretch;
+}
+
+.cell[data-top='true'] {
+  border-top: var(--hair) solid var(--rule);
+}
+
+.cell[data-left='true'] {
+  border-left: var(--hair) solid var(--rule);
+}
+
+/* --- a square ------------------------------------------------- */
+
+.tile {
+  position: relative;
+  display: block;
+  background: var(--surface);
+}
+
+.tile:disabled {
+  cursor: default;
+}
+
+.tile:not(:disabled):hover .stem,
+.tile:not(:disabled):hover .bulb {
+  border-color: var(--ink);
+}
+
+/* The press shadow is set on .u-press, which lands after the global focus ring
+   in the cascade, so a square a child has arrived at by keyboard has to ask for
+   the ring back. The tents and the balance scales do the same. The lift is so
+   that the ring is not clipped by the square next door. */
+.tile:focus-visible {
+  box-shadow: var(--focus-ring);
+  z-index: 1;
+}
+
+/* --- a thermometer -------------------------------------------- */
+
+/* One square's worth of glass. It runs the whole way across its square in the
+   direction the thermometer lies, so the run reads as one tube: only the
+   paper's own hairline crosses it. */
+.stem,
+.bulb {
+  position: absolute;
+  background: var(--p-bone);
+  transition:
+    background-color var(--dur-2) var(--ease),
+    border-color var(--dur-1) var(--ease);
+}
+
+.tile[data-run='across'] .stem {
+  inset: 22% 0;
+  border-top: var(--hair) solid var(--glass);
+  border-bottom: var(--hair) solid var(--glass);
+}
+
+.tile[data-run='down'] .stem {
+  inset: 0 22%;
+  border-left: var(--hair) solid var(--glass);
+  border-right: var(--hair) solid var(--glass);
+}
+
+/* The bulb's square holds only the neck: the glass starts at the middle of the
+   square and runs towards the tip, and the bulb itself sits over the top of it. */
+.tile[data-part='bulb'][data-toward='east'] .stem {
+  left: 50%;
+}
+.tile[data-part='bulb'][data-toward='west'] .stem {
+  right: 50%;
+}
+.tile[data-part='bulb'][data-toward='south'] .stem {
+  top: 50%;
+}
+.tile[data-part='bulb'][data-toward='north'] .stem {
+  bottom: 50%;
+}
+
+/* The far end is closed and rounded, so which end is the bulb and which the
+   tip can be told from either end of the tube. */
+.tile[data-part='tip'][data-toward='east'] .stem {
+  border-right: var(--hair) solid var(--glass);
+  border-radius: 0 var(--r-round) var(--r-round) 0;
+}
+.tile[data-part='tip'][data-toward='west'] .stem {
+  border-left: var(--hair) solid var(--glass);
+  border-radius: var(--r-round) 0 0 var(--r-round);
+}
+.tile[data-part='tip'][data-toward='south'] .stem {
+  border-bottom: var(--hair) solid var(--glass);
+  border-radius: 0 0 var(--r-round) var(--r-round);
+}
+.tile[data-part='tip'][data-toward='north'] .stem {
+  border-top: var(--hair) solid var(--glass);
+  border-radius: var(--r-round) var(--r-round) 0 0;
+}
+
+/* The bulb: wider than the glass it feeds, the way a thermometer's is, so the
+   end the mercury starts from can be seen across a table. */
+.bulb {
+  inset: 12%;
+  border: var(--hair) solid var(--glass);
+  border-radius: var(--r-round);
+}
+
+/* The mercury. It reaches this square, so every square between here and the
+   bulb holds it too — that is the shape of the state, not a rule this has to
+   keep. */
+.tile[data-wet='true'] .stem,
+.tile[data-wet='true'] .bulb {
+  background: var(--p-clay);
+}
+
+@media (max-width: 30rem) {
+  .plan {
+    --seat: 1px;
+  }
+}

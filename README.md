@@ -57,6 +57,7 @@ toolbar, one tap from the screen.
 | The chocolate bar      | Area                     |
 | The garden cats        | Elimination              |
 | The tents and trees    | Pairing                  |
+| The thermometers       | Totals                   |
 | The heavier one        | Evidence                 |
 | Who has what           | Deduction                |
 | The counting path      | Paths                    |
