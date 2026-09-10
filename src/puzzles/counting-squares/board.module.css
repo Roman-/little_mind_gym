@@ -1,0 +1,176 @@
+/* One grid of squares, engraved straight into the stage the shell provides — a
+   second sunk panel inside it would only draw a redundant box and eat the
+   width a seven-across board needs on a phone.
+
+   Every square carries two things at once: whether it is filled in, and, on
+   the squares the puzzle printed, the number that counts it. Filled is flat
+   enamel — a solid --p-indigo tile, the same material the water level and the
+   weighing balls are drawn in — and empty is bone paper. State stays off both:
+   clay rings the *number* that has more squares filled in round it than it
+   counts, never the squares themselves, because which of them is the wrong one
+   is exactly what the child is there to work out. */
+
+/* The stage is a grid, and a grid item will not shrink below its own content
+   unless it is told it may. Without this a seven-across board pushes the whole
+   page sideways on a narrow phone instead of sliding inside its own frame. */
+.wrap {
+  min-width: 0;
+}
+
+/* The frame centres the grid and scrolls it. A square never drops below a
+   fingertip, so on the narrowest phone a seven-across board is allowed to be
+   wider than the stage and slide sideways. The padding keeps a focus ring
+   clear of the scroll edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the grid ------------------------------------------------- */
+
+.grid {
+  /* Lengths, not colours: the board's own rim, the seat a square sits in, and
+     how big a square may get before it turns silly on a big monitor.
+
+     --cell-min and --cell-max are the pitch of a column, not the size of the
+     button in it. A column spends 2 * var(--seat) on the seat and one
+     var(--hair) on the ruling down its left side before the button starts, and
+     the board spends var(--edge) a side on its own rim before the first column
+     does — every one of those lengths is inside the box, because the app is
+     border-box. So the floor is written as pitch, set high enough that what is
+     left over still takes a fingertip: 56 - 4 - 1 = 51px of button at five
+     across, 45px at six and 41px at seven, all of them over the 40px floor.
+     min-width hands the rim back rather than charging it to the squares. */
+  --edge: 3px;
+  --seat: 2px;
+  --cell-min: 56px;
+  --cell-max: 104px;
+
+  /* The numbers are sized against the grid rather than the page, so five
+     across and seven across both come out with the numeral filling its
+     square. */
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  width: 100%;
+  min-width: calc(var(--n) * var(--cell-min) + 2 * var(--edge));
+  max-width: calc(var(--n) * var(--cell-max) + 2 * var(--edge));
+  margin-inline: auto;
+  background: var(--surface-sunk);
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+/* More squares to fit, so each one gives up a little. The ceilings are set so
+   that all three sizes come out about the same width — 5 * 104, 6 * 88 and
+   7 * 76 are 520, 528 and 532 — because the stage is the same stage whichever
+   level is open, and a board that filled it should go on filling it. */
+.grid[data-size='6'] {
+  --cell-min: 50px;
+  --cell-max: 88px;
+}
+
+.grid[data-size='7'] {
+  --cell-min: 46px;
+  --cell-max: 76px;
+}
+
+.cell {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: stretch;
+  padding: var(--seat);
+  border-top: 0;
+  border-left: 0;
+}
+
+/* The paper's own ruling, between the squares and never round the outside —
+   the rim on .grid is what closes the board off. */
+.cell[data-top='true'] {
+  border-top: var(--hair) solid var(--rule);
+}
+
+.cell[data-left='true'] {
+  border-left: var(--hair) solid var(--rule);
+}
+
+/* One square. Big enough to press, so it takes the control radius. */
+.tile {
+  --tile-r: var(--r-md);
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  color: var(--ink);
+  border: var(--hair) solid var(--rule-strong);
+  border-radius: var(--tile-r);
+}
+
+/* Filled in: flat enamel, and the number on it goes to the ink that reads on
+   enamel. No gradient, no glow — a square that has been filled in is a solid
+   colour and nothing else. */
+.tile[data-on='true'] {
+  background: var(--p-indigo);
+  border-color: color-mix(in oklab, var(--p-indigo) 65%, var(--ink));
+  color: var(--p-on-dark);
+}
+
+/* A number with more squares filled in round it than it counts. A solid ring,
+   the border, and the shake the board fires at the same time. It sits inside
+   the square, so it reads on bone and on enamel alike and cannot move the
+   layout. */
+.tile[data-over='true'] {
+  border-color: var(--clay);
+}
+
+.tile[data-over='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--tile-r);
+  box-shadow: inset 0 0 0 3px var(--clay);
+}
+
+.tile:disabled {
+  cursor: default;
+}
+
+/* The number itself: a value, so it takes the instrument voice. */
+.mark {
+  font-family: var(--font-mono);
+  font-size: 10cqw;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.grid[data-size='6'] .mark {
+  font-size: 8.4cqw;
+}
+
+.grid[data-size='7'] .mark {
+  font-size: 7.2cqw;
+}
+
+/* The number that has just gone over its count, or how to play. */
+.note {
+  margin: var(--s4) auto 0;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-lg);
+  color: var(--ink);
+  min-height: 2.8em;
+}
+
+/* On a phone the seat is where the width comes from: it is the one length in a
+   column that is neither the button nor the ruling. A pixel off the seat is
+   two pixels onto the square at the same pitch, which is 43px of button on a
+   seven-across board and 47px on a six-across. */
+@media (max-width: 30rem) {
+  .grid[data-size='6'],
+  .grid[data-size='7'] {
+    --seat: 1px;
+  }
+  .note {
+    font-size: var(--t-body);
+  }
+}

@@ -6,6 +6,7 @@ import { frogLeap } from './frog-leap'
 import { slipperyIce } from './slippery-ice'
 import { stonePath } from './stone-path'
 import { waterJugs } from './water-jugs'
+import { countingSquares } from './counting-squares'
 import { miniSudoku } from './mini-sudoku'
 import { sunsAndMoons } from './suns-and-moons'
 import { suguru } from './suguru'
@@ -31,6 +32,7 @@ export const PUZZLES: PuzzleMeta[] = [
   slipperyIce,
   stonePath,
   waterJugs,
+  countingSquares,
   miniSudoku,
   sunsAndMoons,
   suguru,

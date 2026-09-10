@@ -50,6 +50,7 @@ toolbar, one tap from the screen.
 | The slippery ice       | Foresight                |
 | The stone path         | Route                    |
 | The water jugs         | Arithmetic               |
+| The counting squares   | Overlaps                 |
 | The small square       | Logic                    |
 | Suns and moons         | Balance                  |
 | The patchwork quilt    | Neighbours               |
