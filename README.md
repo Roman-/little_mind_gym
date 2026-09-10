@@ -47,6 +47,7 @@ toolbar, one tap from the screen.
 | Tower of Hanoi         | Order                    |
 | Lights out             | Patterns                 |
 | Leapfrog               | Sequence                 |
+| The long table         | Arranging                |
 | The slippery ice       | Foresight                |
 | The stone path         | Route                    |
 | The water jugs         | Arithmetic               |

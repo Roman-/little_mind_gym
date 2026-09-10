@@ -1,0 +1,328 @@
+/* One long table, seen from the front, with the guests along the far side of
+   it and a swap in every gap between two places.
+
+   The table is the reason this board is not another row of animals. It is a
+   real object drawn once and drawn big: a top that runs the whole width, a
+   plate laid at every seat, and two legs under it. The animals stand behind
+   it, so a swap is two of them sliding past each other along a surface rather
+   than two tokens jumping about in space.
+
+   Three tracks of the same width run down the board — a place a seat, a plate
+   a seat, a gap between every two — and all three come off one number,
+   --seats, which the board sets from the row it is drawing. Nothing here works
+   a position out twice.
+
+   Colour says state and nothing else. The ochre of the table and the bone of
+   the plates are the *things*, the way the Hanoi discs are ochre and clay;
+   amber marks the gap a finger is on; clay arrives once, around the count of
+   swaps, at the moment the last one is spent and the row is still wrong. The
+   quarrels on the roster are drawn in ink on purpose: a rule that is simply
+   true is not a rule that has been broken. */
+
+.board {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  min-height: clamp(21rem, 54vh, 34rem);
+}
+
+/* --- who cannot sit next to whom ----------------------------- */
+
+/* A standing fact about the cast, not a reading of the row. It says the same
+   thing on the first tap as on the last, which is the whole point of it: the
+   board states the rule and the child does the looking. */
+.roster {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.rosterTitle {
+  text-align: center;
+}
+
+.pairs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s2);
+}
+
+.pair {
+  display: flex;
+  align-items: center;
+  gap: var(--s1);
+  padding: var(--s1) var(--s2);
+  border-radius: var(--r-md);
+  border: var(--hair) solid var(--rule);
+  background: var(--surface);
+}
+
+.pairArt {
+  width: clamp(24px, 4.6vw, 34px);
+  height: clamp(24px, 4.6vw, 34px);
+  flex: none;
+}
+
+.noMark {
+  width: clamp(15px, 2.8vw, 20px);
+  height: clamp(15px, 2.8vw, 20px);
+  flex: none;
+  color: var(--ink);
+}
+
+/* --- the table ----------------------------------------------- */
+
+/* The table keeps a fingertip under every gap, so on a screen too narrow for
+   the row the room slides sideways rather than squeezing the swap down to
+   something a child cannot hit.
+
+   Sideways is the only way it may run over. `overflow-x: auto` beside a
+   visible `overflow-y` makes this a scroll container on both axes, and what
+   runs past the top of a scroll container is not scrolled to, it is cut off —
+   so nothing inside may ever be taller than the box holding it. One number
+   below settles that: the animal and the box it stands in are the same
+   height. */
+.room {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  padding: var(--s2) var(--s1);
+}
+
+.table {
+  /* How tall an animal stands: a shade under the place it sits in, so seven of
+     them do not crowd each other along the row. Both the animal and the box it
+     stands in are cut from this one number, and that is the whole of the
+     reason it exists. They used to be clamped off different axes — the animal
+     against 9vw, its box against 18vh — and on every phone in portrait the
+     width term won and floored at 40px while the height term went to its
+     148px ceiling, which left a 108px band of empty table across the board.
+     A ceiling of its own would be a third number saying what max-width below
+     already says: at the widest a place ever gets, an animal is 107px. */
+  --stature: calc(0.92 * 100cqw / var(--seats));
+
+  position: relative;
+  width: 100%;
+  /* A place never falls under a fingertip, and the swap in every gap is a
+     fingertip of its own: 48px leaves a plate and a 40px swap side by side.
+     Narrower than that, the row slides inside .room rather than shrinking
+     under a finger — and the query at the bottom of this file, where the
+     plates are already gone, takes it down to what the swap alone asks for. */
+  min-width: calc(var(--seats) * 48px);
+  max-width: calc(var(--seats) * 116px);
+  margin-inline: auto;
+  /* What makes a place a length: 100cqw is this table, so 100cqw / --seats is
+     one place, and everything standing at one is measured against it. */
+  container-type: inline-size;
+}
+
+.guests {
+  position: relative;
+  height: var(--stature);
+}
+
+/* One place wide, standing at its seat. The sideways slide of a swap is this
+   transform and nothing else: the animals are drawn in the cast's own order
+   and moved by it, so no node is ever lifted out of the row and dropped back
+   in. */
+.guest {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: calc(100% / var(--seats));
+  height: 100%;
+  display: grid;
+  place-items: end center;
+  transform: translateX(calc(var(--place) * 100%));
+  transition: transform var(--dur-3) var(--ease);
+}
+
+/* The same height as the box it stands in, so there is never a band of empty
+   table above the row and never an animal poking out through the top of
+   `.room`, which would be cut off rather than scrolled to. */
+.art {
+  width: var(--stature);
+  height: var(--stature);
+}
+
+.top {
+  position: relative;
+  height: clamp(52px, 9.5vh, 74px);
+  border-radius: var(--r-sm);
+  background: color-mix(in oklab, var(--p-ochre) 38%, var(--surface-sunk));
+  border: var(--hair) solid color-mix(in oklab, var(--p-ochre) 55%, var(--rule-strong));
+}
+
+.plates {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--seats), 1fr);
+  align-items: center;
+  pointer-events: none;
+}
+
+.plate {
+  justify-self: center;
+  width: min(46%, 46px);
+  aspect-ratio: 2.6;
+  border-radius: var(--r-round);
+  background: var(--p-bone);
+  border: var(--hair) solid color-mix(in oklab, var(--ink) 30%, transparent);
+}
+
+.gaps {
+  position: absolute;
+  inset: 0;
+}
+
+/* The gap holds the place; the button inside it does the pressing. They are
+   two elements because .gap is already wearing a transform to stand where it
+   does, and u-press sinks a control with one of its own. */
+.gap {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--gap) * 100% / var(--seats));
+  transform: translate(-50%, -50%);
+}
+
+.seam {
+  display: grid;
+  place-items: center;
+  width: clamp(40px, 6.4vw, 54px);
+  height: clamp(40px, 6.4vw, 54px);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  border: var(--hair) solid var(--ink);
+  color: var(--ink);
+}
+
+.seam:hover {
+  background: var(--amber-soft);
+}
+
+/* A level that is over keeps its gaps in the tab order — they are how the row
+   is read out — so they go dead rather than away, and the shadow that means
+   "you can press this" goes with the pressing. */
+.seam[aria-disabled='true'],
+.seam[aria-disabled='true']:hover {
+  background: var(--surface-sunk);
+  border-color: var(--rule-strong);
+  color: var(--ink-faint);
+  box-shadow: var(--press-none);
+  cursor: default;
+}
+
+.seam[aria-disabled='true']:active {
+  transform: none;
+}
+
+/* The press shadow is set on .u-press, which lands after the global focus ring
+   in the cascade, so a gap a child has arrived at by keyboard has to ask for
+   the ring back. The alice maze, the tents, the thermometers and the balance
+   scales all do the same.
+
+   This board has to ask twice. `.seam` is its only control and the whole row
+   is meant to be walked by keyboard — the arrow-key rover above is nothing
+   else — and the dead rule two blocks up sets `box-shadow` at one class and
+   one attribute, which outscores a bare `:focus-visible` whatever the order.
+   So the second selector carries the attribute too, and the state whose own
+   comment says the gaps stay in the tab order is the state that keeps a ring. */
+.seam:focus-visible,
+.seam[aria-disabled='true']:focus-visible {
+  box-shadow: var(--focus-ring);
+  border-radius: var(--r-md);
+}
+
+.swapMark {
+  width: 72%;
+  height: 72%;
+}
+
+.legs {
+  position: relative;
+  height: clamp(30px, 6vh, 54px);
+}
+
+.legs span {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: clamp(14px, 2.6vw, 26px);
+  background: color-mix(in oklab, var(--p-ochre) 38%, var(--surface-sunk));
+  border: var(--hair) solid color-mix(in oklab, var(--p-ochre) 55%, var(--rule-strong));
+  border-top: none;
+  border-radius: 0 0 var(--r-sm) var(--r-sm);
+}
+
+.legs span:first-child {
+  left: 7%;
+}
+
+.legs span:last-child {
+  right: 7%;
+}
+
+/* --- what is left -------------------------------------------- */
+
+/* The budget is a rule of the level, the way the balance has a number of
+   weighings: it is stated, not counted down from behind the child's back. */
+.counter {
+  align-self: center;
+  padding: var(--s2) var(--s4);
+  border-radius: var(--r-md);
+  border: var(--hair) solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--t-body);
+}
+
+.note {
+  margin: 0 auto;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-sm);
+  line-height: 1.4;
+  color: var(--ink-muted);
+  min-height: 1.4em;
+}
+
+@media (max-width: 30rem) {
+  .board {
+    gap: var(--s3);
+  }
+  .pairs {
+    gap: var(--s1);
+  }
+  .pair {
+    padding: 2px var(--s1);
+  }
+  /* A plate is the setting, not the puzzle. On the narrowest phone the seven
+     places are barely wider than the swap that sits between two of them, and
+     the swap is the one of the two a finger has to find. */
+  .plate {
+    display: none;
+  }
+  /* With the plates gone, a place has to hold one thing: the 40px swap, with a
+     hair of table either side of it so that two of them read as two. Seven of
+     those go into a 390px phone, which is where the seventh guest used to be
+     cut in half at the edge of the room on first sight of the hardest level.
+     Narrower than that the row still slides, which is what .room is for. */
+  .table {
+    min-width: calc(var(--seats) * 44px);
+  }
+  /* The four pixels the row needs to come in under the edge. The stage's own
+     padding still keeps the table off the side of the recess. */
+  .room {
+    padding-inline: 0;
+  }
+}
