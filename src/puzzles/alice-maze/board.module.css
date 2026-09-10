@@ -1,0 +1,347 @@
+/* A maze cut straight into the stage the shell provides — a second sunk panel
+   inside it would only draw a redundant box and eat the width a six-wide board
+   needs on a phone.
+
+   Three layers, and each one says exactly one thing. The squares are the board
+   and they are also the controls: every square carries the ways the kangaroo
+   may set off from it, and a plus or a minus where landing on it changes the
+   number. Over them, the amber trail is where the kangaroo has been, one arc a
+   hop, and the kangaroo itself stands at the head of it on an amber square.
+
+   Colour is state throughout. Amber is the hop in progress — the tile with the
+   number on it, the trail, and the square the kangaroo is on — moss says it has
+   landed on the ring, and clay rings a square that would not take it. Nothing
+   here is coloured to tell one kind of square from another: a square that
+   lengthens the hop and one that shortens it are told apart by a plus and a
+   minus, because a green square beside a red one would read as the right answer
+   beside the wrong one.
+
+   The numbers worth writing down. At a 360px viewport both phone media queries
+   are already in force, so every pad below is the one they set rather than the
+   one on the desktop rule: the page keeps 12px either side (Chrome.module.css
+   at 34rem), the board panel 12px and a hairline, and the stage 12px and a
+   hairline. Everything here is border-box, so 360 - 24 - 26 - 26 leaves 284px,
+   and .frame keeps 4px of that either side for a focus ring: the grid is 276px
+   wide, its own rim takes 2 of that either side on a six-wide board, and
+   272 / 6 is a 45px column. A five-wide gets 54px the same way and a four-wide,
+   whose rim is 3px, gets 67px.
+
+   The floors below are what a square drops to only if a window is narrower
+   still, and below them the board stops shrinking and slides sideways inside
+   .frame: a six-wide floors at 40px of pitch and no seat, so 40px of square; a
+   five-wide at 48px of pitch, 44px of square; a four-wide at 58px of pitch,
+   54px of square. Every one of those is at or over --tap-sm, and each holds
+   three arrows on the rim, a mark in the middle and a kangaroo standing on top
+   of it. */
+
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  /* A grid item will not shrink below its own content unless it is told it
+     may, and without this a six-wide board pushes the whole page sideways on a
+     narrow phone instead of sliding inside its own frame. */
+  min-width: 0;
+}
+
+/* The two rules a child has to hold in a head — the ring is landed on rather
+   than flown over, and only the arrows under the kangaroo's own feet count —
+   kept on the board rather than in the drawer that shuts on a second visit. */
+.goal {
+  margin: 0;
+  text-align: center;
+  color: var(--ink);
+}
+
+/* --- the number ----------------------------------------------------------- */
+
+/* How far the kangaroo goes, which is half of the position and the half a
+   board cannot draw. It is amber because it is the move in progress, it is big
+   because it is read before every single tap, and it is a numeral in the
+   instrument voice because it is a value — the one thing docs/DESIGN.md
+   rations the mono face to. */
+.hop {
+  align-self: center;
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  min-height: var(--tap);
+  padding: var(--s1) var(--s4);
+  border-radius: var(--r-md);
+  background: var(--amber-soft);
+  border: 2px solid var(--amber);
+}
+
+.hopWord {
+  color: var(--ink);
+}
+
+.hopNumber {
+  font-size: var(--t-xl);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--amber);
+  /* Room for two digits, so the tile does not change width under a hop that
+     grows. Nothing on a board this size ever needs three. */
+  min-width: 1.4ch;
+  text-align: center;
+}
+
+/* --- the board ------------------------------------------------------------ */
+
+/* Centres the maze and scrolls it. A square never drops below a fingertip, so
+   on the narrowest phone a six-wide board is allowed to be wider than the stage
+   and slide sideways. The padding keeps a focus ring off the scroll edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+.grid {
+  /* Lengths, not colours: the rim of the board, the seat a square sits in, and
+     the pitch of one column — a floor that keeps every square a fingertip wide
+     and a ceiling that follows the stage's own height, so a short wide window
+     never gets a board taller than the window.
+
+     --cell-min and --cell-max are the pitch of a column rather than the size of
+     the button in it: a column spends 2 * var(--seat) on the seat before the
+     button starts. The floor is written as pitch, set high enough that what is
+     left over still takes a fingertip.
+
+     It states that it is square, because everything drawn over it is laid out
+     in squares rather than in pixels: a layer's own box is the grid's content
+     box, and one square of it is 100% / var(--n) each way. */
+  --edge: 3px;
+  --seat: 2px;
+  --cell-min: 58px;
+  --cell-max: clamp(58px, 9vh, 96px);
+
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  grid-template-rows: repeat(var(--n), 1fr);
+  aspect-ratio: 1;
+  width: 100%;
+  min-width: calc(var(--n) * var(--cell-min) + 2 * var(--edge));
+  max-width: calc(var(--n) * var(--cell-max) + 2 * var(--edge));
+  margin-inline: auto;
+  background: var(--surface);
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+/* More squares to fit, so each one gives up a little. 48px of pitch less two
+   seats leaves 44px of button; 44px less one leaves 42px. Both are over
+   --tap-sm, and below that floor the board stops shrinking and slides. */
+.grid[data-size='5'] {
+  --edge: 2px;
+  --cell-min: 48px;
+  --cell-max: clamp(48px, 8vh, 88px);
+}
+
+.grid[data-size='6'] {
+  --edge: 2px;
+  /* No seat at all, so the floor a six-wide board can be squeezed to is
+     6 * 40 + 2 * 2 = 244px, comfortably inside the 276px a 360px phone leaves
+     it. The squares meet along their own hairlines, which is how the quilt and
+     the stone path draw a lattice, and the arrows never meet across a seam
+     because each one sits a third of the way along its rim rather than in the
+     middle of it. */
+  --seat: 0px;
+  --cell-min: 40px;
+  --cell-max: clamp(40px, 6.4vh, 74px);
+}
+
+.cell {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  place-items: stretch;
+  padding: var(--seat);
+}
+
+/* One square of the maze, and one control. Everything on it is drawn in a box
+   the size of the whole square and placed inside that box, so an arrow lands on
+   the rim and a mark lands in the middle whatever size the board is on the day. */
+.square {
+  position: relative;
+  padding: 0;
+  background: var(--surface);
+  border: var(--hair) solid var(--rule);
+  border-radius: var(--r-sm);
+  color: var(--ink);
+}
+
+.square:not([aria-disabled='true']):hover {
+  border-color: var(--ink-muted);
+}
+
+/* A square that is dead because the tap would change nothing, and every square
+   the rules refuse once "Allow moves that break a rule" is turned off. It keeps
+   its place in the tab order — the arrow keys rove this board — so it says it
+   is dead by losing the shadow rather than by leaving. */
+.square[aria-disabled='true'] {
+  box-shadow: var(--press-none);
+  cursor: default;
+}
+
+.square[aria-disabled='true']:active {
+  transform: none;
+}
+
+/* The press shadow is set on .u-press, which lands after the global focus ring
+   in the cascade, so a square a child has arrived at by keyboard has to ask for
+   the ring back. The tents and the balance scales do the same. This board needs
+   it more than most: one tab stop roves thirty-six squares, and most of them
+   are dead at any moment. */
+.square:focus-visible {
+  box-shadow: var(--focus-ring);
+  border-radius: var(--r-sm);
+}
+
+/* Where the kangaroo is standing. The ring is drawn inside the square rather
+   than as a border, so nothing on the board moves by two pixels when the
+   kangaroo lands. */
+.square[data-here='true']::after,
+.square[data-won='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-sm);
+  box-shadow: inset 0 0 0 2px var(--amber);
+}
+
+.square[data-here='true'] {
+  background: var(--amber-soft);
+}
+
+/* The last hop landed on the ring. */
+.square[data-won='true'] {
+  background: var(--moss-soft);
+}
+
+.square[data-won='true']::after {
+  box-shadow: inset 0 0 0 2px var(--moss);
+}
+
+/* --- what is drawn on a square -------------------------------------------- */
+
+.way,
+.change,
+.ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* One arrow, four ways: drawn pointing up and turned to the way it means. */
+.way {
+  transform: rotate(var(--turn));
+  color: var(--ink);
+}
+
+.change {
+  color: var(--ink);
+}
+
+.ring {
+  color: var(--ink);
+}
+
+/* --- the trail and the kangaroo ------------------------------------------- */
+
+.route,
+.rider {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.route {
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--amber);
+  stroke-linecap: round;
+}
+
+/* Every hop but the last, kept light: a record of where the kangaroo has been
+   rather than the thing to look at now. The round cap at each end is what marks
+   a landing; an amber disc there read as a third kind of ring wherever it fell
+   inside a plus or a minus. */
+.leg {
+  stroke-width: 0.045;
+  stroke-opacity: 0.5;
+}
+
+/* The hop it has just made. */
+.leg[data-last='true'] {
+  stroke-width: 0.068;
+  stroke-opacity: 1;
+}
+
+.rider {
+  z-index: 2;
+}
+
+/* The square the kangaroo rides in. The square travels and the picture sits
+   still inside it: a hop crosses whole squares in one --dur-3, which is the
+   token for a piece travelling across the board, and a reader who has asked for
+   less motion has that collapsed to a millisecond and sees it simply arrive,
+   with the move tape and the status line still saying what happened. */
+.slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% / var(--n));
+  height: calc(100% / var(--n));
+  display: grid;
+  place-items: center;
+  transform: translate(calc(var(--c) * 100%), calc(var(--r) * 100%));
+  transition: transform var(--dur-3) var(--ease);
+}
+
+/* Smaller than the square it stands on, so the arrows on the rim are still
+   readable round it. At the narrowest the board ever gets — a 40px square on a
+   360px phone — that is 26px of kangaroo, and the OpenMoji drawing still reads
+   as one at 24. */
+.roo {
+  width: 66%;
+  height: 66%;
+}
+
+/* --- what the board says -------------------------------------------------- */
+
+/* A refusal, and nothing else. How far there is still to go is not a thing
+   this board can honestly say — counting the hop out is the puzzle — and the
+   number itself is on the tile above the board in figures a child can read
+   across a table. */
+.note {
+  margin: 0 auto;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-body);
+  color: var(--ink);
+  min-height: 1.4em;
+}
+
+/* Room to grow. There is no pad of controls under this board — the squares are
+   the controls — so on a wide window every pixel the stage has goes to the
+   board itself, which is the whole of what the stage is for. */
+@media (min-width: 56rem) {
+  .grid {
+    --cell-max: clamp(58px, 11vh, 108px);
+  }
+
+  .grid[data-size='5'] {
+    --cell-max: clamp(48px, 9.5vh, 98px);
+  }
+
+  .grid[data-size='6'] {
+    --cell-max: clamp(40px, 7.6vh, 84px);
+  }
+}

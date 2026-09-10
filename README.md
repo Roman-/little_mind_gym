@@ -50,6 +50,7 @@ toolbar, one tap from the screen.
 | The long table         | Arranging                |
 | The slippery ice       | Foresight                |
 | The stone path         | Route                    |
+| The kangaroo’s hops    | Steps                    |
 | The water jugs         | Arithmetic               |
 | The counting squares   | Overlaps                 |
 | The small square       | Logic                    |
