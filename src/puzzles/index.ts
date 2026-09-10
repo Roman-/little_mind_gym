@@ -4,6 +4,7 @@ import { towerOfHanoi } from './tower-of-hanoi'
 import { lightsOut } from './lights-out'
 import { frogLeap } from './frog-leap'
 import { slipperyIce } from './slippery-ice'
+import { stonePath } from './stone-path'
 import { waterJugs } from './water-jugs'
 import { miniSudoku } from './mini-sudoku'
 import { shikaku } from './shikaku'
@@ -23,6 +24,7 @@ export const PUZZLES: PuzzleMeta[] = [
   lightsOut,
   frogLeap,
   slipperyIce,
+  stonePath,
   waterJugs,
   miniSudoku,
   shikaku,

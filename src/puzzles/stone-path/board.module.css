@@ -1,0 +1,243 @@
+/* A board of squares cut straight into the stage the shell provides — a second
+   sunk panel inside it would only draw a redundant box and eat the width a
+   six-wide board needs on a phone.
+
+   Four layers, and each one says exactly one thing: the pale lattice is the
+   board, the slate discs are the stones still lying on it, the amber line is
+   the route the walk has taken, and the amber disc at the head of that line is
+   where the walk is standing — with the arrow on it saying which way it came
+   in, which is the one fact the never-turn-back rule needs and the one a child
+   cannot be asked to remember.
+
+   Colour is state throughout. Amber is the walk in progress, moss says the
+   last stone is up, clay rings a stone that would not be taken, and the only
+   identity colour here is the slate a stone is made of. */
+
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  /* A grid item will not shrink below its own content unless it is told it
+     may, and without this a six-wide board pushes the whole page sideways on a
+     narrow phone instead of sliding inside its own frame. */
+  min-width: 0;
+}
+
+/* The one rule a child has to hold in a head, kept on the board rather than in
+   the drawer that shuts on a second visit. */
+.goal {
+  margin: 0;
+  text-align: center;
+  color: var(--ink);
+}
+
+/* Centres the board and scrolls it. A stone never drops below a fingertip, so
+   on the narrowest phone a six-wide board is allowed to be wider than the
+   stage and slide sideways. The padding keeps a focus ring off the scroll
+   edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the board ------------------------------------------------------------ */
+
+.grid {
+  /* Lengths, not colours: the rim of the board and the pitch of one column — a
+     floor that keeps every stone a fingertip wide and a ceiling that follows
+     the stage's own height, so a short wide window never gets a board taller
+     than the window.
+
+     It states that it is square, because everything drawn over it is laid out
+     in squares rather than in pixels: a layer's own box is the grid's content
+     box, and one square of it is 100% / var(--n) each way. */
+  --edge: 3px;
+  --cell-min: 60px;
+  --cell-max: clamp(60px, 10vh, 104px);
+
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  grid-template-rows: repeat(var(--n), 1fr);
+  aspect-ratio: 1;
+  width: 100%;
+  min-width: calc(var(--n) * var(--cell-min) + 2 * var(--edge));
+  max-width: calc(var(--n) * var(--cell-max) + 2 * var(--edge));
+  margin-inline: auto;
+  background: var(--surface);
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+/* More squares to fit, so each one gives up a little. The floor stops where a
+   stone is still a fingertip on the narrowest phone; below that the board
+   stops shrinking and slides sideways inside .frame. */
+.grid[data-size='5'] {
+  --cell-min: 56px;
+  --cell-max: clamp(56px, 9vh, 96px);
+}
+
+.grid[data-size='6'] {
+  --edge: 2px;
+  --cell-min: 50px;
+  --cell-max: clamp(50px, 7.5vh, 84px);
+}
+
+/* One square of the board. Two hairlines and nothing else: the lattice is what
+   a child traces a line along, so it has to be there and has to stay quiet. */
+.cell {
+  min-width: 0;
+  min-height: 0;
+  border-top: var(--hair) solid var(--rule);
+  border-left: var(--hair) solid var(--rule);
+}
+
+/* --- the three layers over the board -------------------------------------- */
+
+.route,
+.pieces,
+.walker {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.route {
+  z-index: 1;
+}
+
+.pieces {
+  z-index: 2;
+}
+
+.walker {
+  z-index: 3;
+}
+
+/* The route so far, drawn in the grid's own units. It is amber because it is
+   the move in progress rather than a thing on the board, and it is thin
+   because a child reads where it turns rather than how heavy it is. */
+.line {
+  fill: none;
+  stroke: var(--amber);
+  stroke-width: 0.08;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The square a piece stands in. Everything drawn over the board is placed by
+   its square rather than by pixels, so one rule puts a stone, and the walk,
+   wherever the state says they are. */
+.slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% / var(--n));
+  height: calc(100% / var(--n));
+  display: grid;
+  place-items: center;
+  transform: translate(calc(var(--c) * 100%), calc(var(--r) * 100%));
+}
+
+/* --- a stone -------------------------------------------------------------- */
+
+/* The hit area and the press shadow. It is exactly the size of the disc inside
+   it, so the offset shadow sits under the stone's own edge rather than round
+   an invisible box — and a clay outline for a refusal lands as a ring just
+   outside the stone that would not be taken. */
+.stone {
+  pointer-events: auto;
+  display: grid;
+  place-items: center;
+  width: 80%;
+  height: 80%;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--r-round);
+}
+
+/* Flat enamel under a hairline, exactly as a Hanoi disc and a weighing ball
+   are drawn. A go stone is not a thing a child could name a picture of. */
+.disc {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--r-round);
+  background: var(--p-slate);
+  border: var(--hair) solid color-mix(in oklab, var(--ink) 40%, transparent);
+}
+
+.stone:not(:disabled):hover .disc {
+  border-color: var(--ink);
+}
+
+.stone:disabled {
+  cursor: default;
+}
+
+/* --- the walk ------------------------------------------------------------- */
+
+/* Where the walk has got to. The square travels and the mark sits still inside
+   it: a walk crosses whole squares in one --dur-3, which is the token for a
+   piece travelling across the board, and a reader who has asked for less
+   motion has that collapsed to a millisecond and sees the walk simply arrive,
+   with the move tape and the status line still saying what happened. */
+.walker .slot {
+  transition: transform var(--dur-3) var(--ease);
+}
+
+.here {
+  display: grid;
+  place-items: center;
+  width: 80%;
+  height: 80%;
+  border-radius: var(--r-round);
+  background: var(--amber-soft);
+  border: 2px solid var(--amber);
+  color: var(--ink);
+}
+
+/* The last stone is up and the board is empty. */
+.here[data-done='true'] {
+  background: var(--moss-soft);
+  border-color: var(--moss);
+}
+
+/* One mark, four ways. It is drawn pointing up and turned to the way the walk
+   came in, so the tail of it lies along the one line the walk may not take. */
+.way {
+  width: 64%;
+  height: 64%;
+  transform: rotate(var(--turn));
+}
+
+/* --- what the board says -------------------------------------------------- */
+
+/* How many stones are left, with a refusal in front of it where there is one.
+   The count stands rather than running on a timer: it is a fact about the
+   board, and it is what a child counts to see how far there is to go. */
+.note {
+  margin: 0 auto;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-body);
+  color: var(--ink);
+  min-height: 1.4em;
+}
+
+/* Room to grow. There is no pad of controls under this board — the stones are
+   the controls — so on a wide window every pixel the stage has goes to the
+   board itself, which is the whole of what the stage is for. */
+@media (min-width: 56rem) {
+  .grid {
+    --cell-max: clamp(60px, 12vh, 116px);
+  }
+
+  .grid[data-size='5'] {
+    --cell-max: clamp(56px, 11vh, 104px);
+  }
+
+  .grid[data-size='6'] {
+    --cell-max: clamp(50px, 9.5vh, 92px);
+  }
+}

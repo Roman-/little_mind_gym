@@ -48,6 +48,7 @@ toolbar, one tap from the screen.
 | Lights out         | Patterns                 |
 | Leapfrog           | Sequence                 |
 | The slippery ice   | Foresight                |
+| The stone path     | Route                    |
 | The water jugs     | Arithmetic               |
 | The small square   | Logic                    |
 | The chocolate bar  | Area                     |
