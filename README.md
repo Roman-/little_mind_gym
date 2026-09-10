@@ -103,9 +103,9 @@ was wrong, and the board puts it back — with nothing on the move tape and
 nothing in the history, so a forbidden position is drawn and never played from.
 A dead button would have said which moves are legal without the child ever
 having to work it out. **Allow moves that break a rule** in the settings turns
-it off, and the controls go back to refusing up front. It changes the Tower of
-Hanoi, leapfrog and the balance scales; the other six disable nothing their
-rules forbid.
+it off, and the controls go back to refusing up front. It changes twelve of the
+puzzles — the Tower of Hanoi, leapfrog and the balance scales among them; the
+other thirteen disable nothing their rules forbid.
 
 **Immerse gives the whole window to the board.** The button is in the navbar
 on a puzzle page. It asks the browser for the screen and takes away the navbar,
@@ -147,9 +147,9 @@ account, no network call and no analytics.
 
 ## Pictures
 
-The animals, food, hats and lamps are [OpenMoji](https://openmoji.org) artwork,
-used under **CC BY-SA 4.0** and credited in the app's footer. The SVGs are
-committed under `src/assets/openmoji/` — nothing is fetched at run time — and
+The pictures a child can point at and name are [OpenMoji](https://openmoji.org)
+artwork, used under **CC BY-SA 4.0** and credited in the app's footer. The SVGs
+are committed under `src/assets/openmoji/` — nothing is fetched at run time — and
 `node scripts/fetch-openmoji.mjs` puts them there. That script holds the code
 point behind every name; add a picture by adding it there, adding the name to
 the `PictoName` union in `src/components/pictogram-art.ts`, and running it.
@@ -166,5 +166,5 @@ a table, made of the same materials the board is. Three discs on the first of
 three pegs. A boat out on the water with the goat still waiting on the bank.
 Two jugs of different heights, one of them part full. A balance holding two
 against two and still not level. `Scene` in `src/components/scene.tsx` is the
-frame all eleven are drawn in, and each puzzle's is at the bottom of its
-`glyphs.tsx`.
+frame that all twenty-five are drawn in, and each puzzle's is at the bottom of
+its `glyphs.tsx`.
