@@ -10,6 +10,7 @@ import { gardenCats } from './garden-cats'
 import { balanceScales } from './balance-scales'
 import { logicGrid } from './logic-grid'
 import { countingPath } from './counting-path'
+import { signposts } from './signposts'
 import { lightUp } from './light-up'
 import { knightSwap } from './knight-swap'
 import { hedgeMaze } from './hedge-maze'
@@ -27,6 +28,7 @@ export const PUZZLES: PuzzleMeta[] = [
   balanceScales,
   logicGrid,
   countingPath,
+  signposts,
   lightUp,
   knightSwap,
   hedgeMaze,

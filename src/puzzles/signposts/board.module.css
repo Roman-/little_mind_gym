@@ -1,0 +1,214 @@
+/* A field of signposts, engraved straight into the stage the shell provides —
+   a second sunk panel inside it would only draw a redundant box and eat the
+   width a five-wide board needs on a phone.
+
+   Every square carries three things, and each of them has its own layer.
+
+   The arrow is on the square itself, at the rim, facing the way it points: the
+   position says the direction a second time, which is what makes eight of them
+   readable at a glance.
+
+   The chain is one svg over the whole grid, drawing every joined stretch as a
+   line from the middle of one square to the middle of the next. It is the only
+   thing here that could not be built out of boxes: a link reaches any distance
+   in any of eight directions, so the line has to be drawn rather than laid
+   out. It takes no taps, so the squares underneath still take every one.
+
+   The numbers are drawn last, in that same svg, each on a small plate — so a
+   line running past a number ducks behind it rather than through it, the way a
+   road on a map does. A printed number sits on bone enamel, the same material
+   a Hanoi disc is drawn in; a number the chain has worked out sits on the
+   square's own colour, and only shows itself by hiding the line.
+
+   Colour says state and nothing else: amber for the square a join is starting
+   from, clay for a join the board will not keep. Indigo is not a state — it is
+   the chain, which is the one thing on this board a child builds. */
+
+/* The stage is a grid, and a grid item will not shrink below its own content
+   unless it is told it may. Without this the five-wide board pushes the whole
+   page sideways on a narrow phone instead of sliding inside its own frame. */
+.wrap {
+  min-width: 0;
+}
+
+/* The frame centres the board and scrolls it. A square never drops below a
+   fingertip, so on the narrowest phone a five-wide board is allowed to be
+   wider than the stage and slide sideways. The padding keeps a focus ring
+   clear of the scroll edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the board ----------------------------------------------- */
+
+.grid {
+  /* Lengths, not colours: the board's own rim, the seat a square sits in, and
+     how big a square may get before it turns silly on a big monitor.
+
+     --cell-min and --cell-max are the pitch of a column, not the size of the
+     button in it: a column spends 2 * var(--seat) on the seat before the
+     button starts, and the board spends var(--edge) a side on its own border
+     before the first column does. So the floor is written as pitch, set high
+     enough that what is left over still takes a fingertip, and min-width hands
+     the board's own border back rather than charging it to the squares.
+
+     The board states that it is square, because the chain drawn over it is
+     laid out in squares rather than in pixels: the overlay's own box is the
+     grid's content box, and a cell of it is one unit each way. */
+  --edge: 3px;
+  --seat: 3px;
+  --cell-min: 76px;
+  --cell-max: 148px;
+
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  grid-template-rows: repeat(var(--n), 1fr);
+  aspect-ratio: 1;
+  width: 100%;
+  min-width: calc(var(--n) * var(--cell-min) + 2 * var(--edge));
+  max-width: calc(var(--n) * var(--cell-max) + 2 * var(--edge));
+  margin-inline: auto;
+  background: var(--surface-sunk);
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+/* More squares to fit, so each one gives up a little. The pitch stops where
+   the button inside it is still 50px on the narrowest phone; below that the
+   board stops shrinking and slides sideways inside .frame instead. */
+.grid[data-size='4'] {
+  --cell-min: 64px;
+  --cell-max: 116px;
+}
+
+.grid[data-size='5'] {
+  --edge: 2px;
+  --seat: 2px;
+  --cell-min: 54px;
+  --cell-max: 94px;
+}
+
+.cell {
+  display: grid;
+  place-items: stretch;
+  padding: var(--seat);
+  min-width: 0;
+  min-height: 0;
+}
+
+/* One square. Sheet-coloured, seated in the board, and a button whatever is on
+   it: tapping a square is how a join is started, finished or taken off again. */
+.tile {
+  --tile-r: var(--r-md);
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  background: var(--surface);
+  color: var(--ink-muted);
+  border: var(--hair) solid var(--rule-strong);
+  border-radius: var(--tile-r);
+}
+
+/* The square a join is starting from. Amber, because it is the move in
+   progress. A ring and not a wash: a number the chain has worked out sits on a
+   plate the colour of the square it is on, so a square that changed colour
+   would show that plate as a box with nothing in it. */
+.tile[data-from='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--tile-r);
+  box-shadow: inset 0 0 0 4px var(--amber);
+}
+
+.tile:not(:disabled):hover {
+  border-color: var(--ink);
+}
+
+.tile:disabled {
+  cursor: default;
+}
+
+/* The arrow, turned to face its own way. The whole box turns, so a mark drawn
+   at the top of it ends up on the rim the square points at. */
+.arrow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(var(--turn));
+  pointer-events: none;
+}
+
+/* --- the chain ------------------------------------------------ */
+
+/* One overlay for every line and every number, in the grid's own units: the
+   middle of the square in column c, row r is (c + 0.5, r + 0.5). It sits over
+   the squares and takes none of their taps. */
+.chain {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.line {
+  fill: none;
+  stroke: var(--p-indigo);
+  stroke-width: 0.08;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The plate a number stands on. A number the chain worked out takes the
+   square's own colour and is invisible except where it hides the line; a
+   printed one is flat enamel under a hairline, and never changes. */
+.plate {
+  fill: var(--surface);
+}
+
+.plate[data-printed='true'] {
+  fill: var(--p-bone);
+  stroke: var(--ink);
+  stroke-opacity: 0.4;
+  stroke-width: 0.02;
+}
+
+/* The one thing mono is for: a value. */
+.numeral {
+  fill: var(--ink);
+  font-family: var(--font-mono);
+  font-weight: 500;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.numeral[data-printed='true'] {
+  fill: var(--p-on-light);
+}
+
+/* --- the one line of help ------------------------------------- */
+
+/* What is left to do, or the join the board would not keep. */
+.note {
+  margin: var(--s4) auto 0;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-body);
+  color: var(--ink);
+  min-height: 2.8em;
+}
+
+@media (max-width: 30rem) {
+  .grid {
+    --seat: 2px;
+  }
+  .grid[data-size='5'] {
+    --seat: 1px;
+  }
+}

@@ -41,22 +41,23 @@ toolbar, one tap from the screen.
 
 ## The collection
 
-| Puzzle              | The thinking it asks for |
-| ------------------- | ------------------------ |
-| The river crossing  | Planning                 |
-| Tower of Hanoi      | Order                    |
-| Lights out          | Patterns                 |
-| Leapfrog            | Sequence                 |
-| The water jugs      | Arithmetic               |
-| The small square    | Logic                    |
-| The chocolate bar   | Area                     |
-| The garden cats     | Elimination              |
-| The heavier one     | Evidence                 |
-| Who has what        | Deduction                |
-| The counting path   | Paths                    |
-| The candles         | Counting                 |
-| The four horses     | Structure                |
-| The hedge maze      | Prediction               |
+| Puzzle             | The thinking it asks for |
+| ------------------ | ------------------------ |
+| The river crossing | Planning                 |
+| Tower of Hanoi     | Order                    |
+| Lights out         | Patterns                 |
+| Leapfrog           | Sequence                 |
+| The water jugs     | Arithmetic               |
+| The small square   | Logic                    |
+| The chocolate bar  | Area                     |
+| The garden cats    | Elimination              |
+| The heavier one    | Evidence                 |
+| Who has what       | Deduction                |
+| The counting path  | Paths                    |
+| The signposts      | Direction                |
+| The candles        | Counting                 |
+| The four horses    | Structure                |
+| The hedge maze     | Prediction               |
 
 Each has three levels, three hints that nudge rather than tell, and — where the
 question has an answer — the fewest moves it can possibly be done in.
