@@ -679,7 +679,10 @@ describe('the way back out', () => {
       // And it is not one move back dressed up: most of those dead ends are
       // further back than the move that ended them.
       expect(further).toBeGreaterThan(ends / 2)
-    })
+      // The seven-seat level walks 7776 runs a deal over a pool of its own
+      // size, which is a second or two of work on a quiet machine and more
+      // than the default five under a whole test run.
+    }, 30_000)
   }
 })
 

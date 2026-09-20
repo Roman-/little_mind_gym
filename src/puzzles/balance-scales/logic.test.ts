@@ -737,7 +737,10 @@ describe('the way back out', () => {
       }
       expect(winnable).toBeGreaterThan(0)
       expect(lost).toBeGreaterThan(0)
-    })
+      // Every weighing of six balls, twice over, against a minimax that tries
+      // every weighing again from each of them: seconds rather than
+      // milliseconds, and more than the default five under a whole test run.
+    }, 30_000)
   }
 
   it('is lost the moment a ball is named, however the naming went', () => {
