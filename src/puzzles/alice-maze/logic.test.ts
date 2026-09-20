@@ -682,6 +682,30 @@ describe('the kangaroo’s hops — rules', () => {
    The words.
    ============================================================ */
 
+describe('the kangaroo’s hops — the way back out', () => {
+  it('needs no `canStillWin`, because the dead end is the moment the ring goes', () => {
+    // The other boards with a dead end answer `canStillWin`, so the shell's
+    // Step back can walk back past the moves that were already lost before the
+    // board said anything. This one has nothing to walk back past: `failure`
+    // is the eager reading — `STUCK_NO_HOME` fires the moment the ring can no
+    // longer be reached — so every position a child is still playing from is
+    // one they can still get home from, and one move back is always
+    // somewhere a win is reachable.
+    expect(aliceMaze.engine.canStillWin).toBeUndefined()
+    let live = 0
+    for (const deals of DEALS) {
+      for (const start of deals.slice(0, 6)) {
+        for (const here of everyPosition(start)) {
+          if (failure(here) !== null) continue
+          expect(`${keyOf(here)}: ${reaches(here)}`).toBe(`${keyOf(here)}: true`)
+          live++
+        }
+      }
+    }
+    expect(live).toBeGreaterThan(0)
+  })
+})
+
 describe('the kangaroo’s hops — what it says', () => {
   it('ramps 1 → 2 → 3 with three hints and a stable id each', () => {
     expect(levels.map((l) => l.difficulty)).toEqual([1, 2, 3])

@@ -13,6 +13,7 @@ import {
   DIR_WORDS,
   STUCK,
   back,
+  canStillWin,
   canWalk,
   describeMove,
   failure,
@@ -85,8 +86,9 @@ function replay(start: StoneState, plan: string[]): StoneState[] {
  *   ways          how many different walks clear the board
  *   worstWrongRun the longest run of taps a wrong turn buys before it jams,
  *                 counting the wrong turn itself — the one number this
- *                 puzzle's boards were chosen on, because it is also the
- *                 number of Step backs it costs to undo
+ *                 puzzle's boards were chosen on, because it is the whole of
+ *                 what a wrong turn costs: the taps spent in a walk that was
+ *                 already over, which one press of Step back then undoes
  *   wrongTurns    how many moves anywhere on the board lead from a position
  *                 that can still be finished to one that cannot
  *   jams          reachable positions with stones left and nowhere to go
@@ -260,9 +262,9 @@ describe('the stone path — the three boards', () => {
    * `worstWrongRun` is the whole design. A board thrown down at random has one
    * answer and a first wrong turn that wanders five or six moves at five wide,
    * and seven or eight at six wide, before it jams — and every one of those
-   * moves is a Step back on the way out again. These three were searched for
-   * offline until the worst wrong turn on them ran three, and the first of
-   * them cannot be got wrong at all.
+   * moves is a tap spent on a walk that was already over. These three were
+   * searched for offline until the worst wrong turn on them ran three, and the
+   * first of them cannot be got wrong at all.
    */
   const GRADES: Record<
     string,
@@ -315,6 +317,72 @@ describe('the stone path — the three boards', () => {
         expect(stonesLeft(state)).toBeGreaterThan(0)
         for (const dir of DIRS) expect(reduce(state, { type: 'walk', dir })).toBe(state)
       }
+    })
+  }
+
+  /**
+   * Can this walk still be finished? A plain recursion over the rules, with
+   * none of the shared search in it, so `canStillWin` is being held to an
+   * outside opinion rather than to its own. Stones are taken as they are
+   * walked on, so the board only ever empties and this ends.
+   */
+  const finishes = (state: StoneState): boolean =>
+    isSolved(state) ||
+    walksOf(state).some((action) => {
+      const next = reduce(state, action)
+      return next !== state && finishes(next)
+    })
+
+  for (const level of levels) {
+    it(`"${level.label}" knows which walks can still be finished`, () => {
+      let doomed = 0
+      for (const state of everyPosition(init(level))) {
+        expect(`${keyOf(state)}: ${canStillWin(state)}`).toBe(`${keyOf(state)}: ${finishes(state)}`)
+        if (!finishes(state) && !isSolved(state) && failure(state) === null) doomed++
+      }
+      // The first board has no wrong turn to take, so it has no stranded walk
+      // either; the other two are why Step back asks this question at all.
+      expect(`${level.id}: ${doomed > 0}`).toBe(`${level.id}: ${level.id !== 'seven-stones'}`)
+    })
+  }
+
+  for (const level of levels.slice(1)) {
+    it(`"${level.label}" hands one press back to a walk that can still be finished`, () => {
+      // The shell's own rule, over every way of walking this board into a jam:
+      // stop at the last position a win is still reachable from, and check
+      // that it really is one. The press undoes exactly the taps the wrong
+      // turn bought, which is the number the board was picked on.
+      const path = [init(level)]
+      let jams = 0
+      let furthest = 0
+      let landedStranded = 0
+      const walk = () => {
+        const here = path[path.length - 1]
+        if (isSolved(here)) return
+        if (failure(here) !== null) {
+          jams++
+          let stop = path.length - 2
+          while (stop > 0 && !canStillWin(path[stop])) stop--
+          if (!finishes(path[stop])) landedStranded++
+          furthest = Math.max(furthest, path.length - 1 - stop)
+          return
+        }
+        for (const action of walksOf(here)) {
+          const next = reduce(here, action)
+          if (next === here) continue
+          path.push(next)
+          walk()
+          path.pop()
+        }
+      }
+      walk()
+      expect(jams).toBeGreaterThan(0)
+      expect(landedStranded).toBe(0)
+      expect(furthest, 'moves the one press undoes at worst').toBe(
+        gradeOf(init(level)).worstWrongRun,
+      )
+      // And it is a real walk back, not one move dressed up.
+      expect(furthest).toBeGreaterThan(1)
     })
   }
 

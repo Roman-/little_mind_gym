@@ -1,3 +1,4 @@
+import { shortestSolution } from '../../lib/search'
 import type { PuzzleLevel } from '../../lib/types'
 
 /**
@@ -170,6 +171,32 @@ export function isSolved(state: StoneState): boolean {
 export function failure(state: StoneState): string | null {
   if (isSolved(state)) return null
   return DIRS.some((dir) => canWalk(state, dir)) ? null : STUCK
+}
+
+/**
+ * True while every stone still on the board can still be picked up from here.
+ *
+ * Stones are used up as they are taken, so the walk never comes round to a
+ * square it has left in the same state twice and the shared search sees a
+ * handful of positions — sixteen at the widest of the three boards. It is
+ * where Step back goes once the walk is stuck: a walk can strand a stone
+ * several steps before it runs out of stones to step to, and one step back
+ * from `STUCK` is often a walk that strands the same stone again. See
+ * `canStillWin` in src/lib/types.ts.
+ *
+ * Nothing on the board may ask this. A stone marked "this one still works" is
+ * the walk laid out in advance.
+ */
+export function canStillWin(state: StoneState): boolean {
+  return (
+    shortestSolution<StoneState, StoneAction>({
+      start: state,
+      moves: walksOf,
+      apply: reduce,
+      key: keyOf,
+      solved: isSolved,
+    }) !== null
+  )
 }
 
 /**

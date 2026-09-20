@@ -4,7 +4,7 @@ import { Pictogram } from '../../components/Pictogram'
 import { cues, cx, useCue } from '../../lib/motion'
 import type { BoardProps } from '../../lib/types'
 import type { Guest, TableAction, TableState } from './logic'
-import { everySeam, failure, nameFor, swapsLeft } from './logic'
+import { everySeam, failureOf, nameFor, swapsLeft } from './logic'
 import { NoMark, SwapMark } from './glyphs'
 import s from './board.module.css'
 
@@ -13,24 +13,40 @@ import s from './board.module.css'
  * between two of them. Tapping a gap swaps the two neighbours either side, so
  * one tap is one move and there is no piece to pick up first.
  *
- * **The board never marks the quarrels it can see.** Who cannot sit next to
- * whom is on the roster above the table, the same roster from the first tap to
- * the last; which of those pairs are next to each other *now* is for the
- * player to read off the row. Lighting those seams in clay was the obvious
- * thing to draw and it would have taken the puzzle apart: with the bad pairs
- * lit, a child is being handed the one reading the whole level is made of, and
- * the board does the looking that the child came to do. (A lit seam would also
- * mislead. Swapping two who quarrel leaves them next to each other — a lit
- * seam is the one gap that tapping cannot fix — and logic.test.ts proves that
- * no run of lit-seam taps ever seats anybody, on any of the three levels.)
+ * **While a swap is left, the board never marks the quarrels it can see.** Who
+ * cannot sit next to whom is on the roster above the table, the same roster
+ * from the first tap to the last; which of those pairs are next to each other
+ * *now* is for the player to read off the row. Lighting those seams in clay
+ * while the level is open was the obvious thing to draw and it would have
+ * taken the puzzle apart: with the bad pairs lit, a child is being handed the
+ * one reading the whole level is made of, and the board does the looking that
+ * the child came to do. (A lit seam would also mislead. Swapping two who
+ * quarrel leaves them next to each other — a lit seam is the one gap that
+ * tapping cannot fix — and logic.test.ts proves that no run of lit-seam taps
+ * ever seats anybody, on any of the three levels.)
  *
- * The dead end holds the same line. It says nothing until the swaps are spent,
- * so no tap is ever answered right-or-wrong; the top of logic.ts has what the
- * eager reading gave away, what this one costs instead, and why nothing on the
- * board is drawn to soften it.
+ * The dead end holds the same line for as long as the level is open. It says
+ * nothing until the swaps are spent, so no tap is ever answered
+ * right-or-wrong; the top of logic.ts has what the eager reading gave away and
+ * what this one costs instead.
  *
- * So the board says two things and no more: who cannot sit next to whom, and
- * how many swaps are left. The rest is the row.
+ * **Once the swaps are spent, it points.** The sentence under the board is
+ * that two who cannot sit next to each other are still next to each other, and
+ * a child who cannot yet find them in a row of seven is being told a fact
+ * about a picture they cannot read. So those two wear a clay ring, and the
+ * roster's own "not these two" mark stands in the gap between them, in clay
+ * rather than ink — a rule on that roster that has actually been broken.
+ * `failureOf` in logic.ts says who they are; the board never works it out a
+ * second time. Where a row has more than one such pair in it, every one of
+ * them is marked: they are separate rules, and parting one pair would leave
+ * the other sitting there.
+ *
+ * This gives nothing away that the level has not already ended on. It is drawn
+ * at the same moment as the sentence it belongs to, and by then the looking is
+ * over.
+ *
+ * So while the level is open the board says two things and no more: who cannot
+ * sit next to whom, and how many swaps are left. The rest is the row.
  *
  * Nothing here is ever refused, so there is no `useRefusal`. Every gap is a
  * real move while a swap remains — two who quarrel sitting next to each other
@@ -61,6 +77,13 @@ export function Board({ state, dispatch, locked }: BoardProps<TableState, TableA
   const left = swapsLeft(state)
 
   /**
+   * Null for the whole of the level, and the two the sentence is about once
+   * the swaps have gone. Everything the board draws in clay hangs off this one
+   * question, asked of logic.ts rather than answered here.
+   */
+  const dead = useMemo(() => failureOf(state), [state])
+
+  /**
    * Which seat each guest is sitting in — the other way round from `seats`,
    * because the guests are drawn in the cast's own order and *placed* by a
    * transform rather than listed in row order. A swap changes the row order by
@@ -88,10 +111,10 @@ export function Board({ state, dispatch, locked }: BoardProps<TableState, TableA
    * fired from: the move tape can rewind while it is still running, and a mark
    * left over a position the board has since left would be a lie.
    */
-  const [dead, blame] = useCue<TableState>()
+  const [spent, blame] = useCue<TableState>()
   useEffect(() => {
-    if (failure(state) !== null) blame(state)
-  }, [state, blame])
+    if (dead !== null) blame(state)
+  }, [dead, state, blame])
 
   const seams = everySeam(seats)
   const refs = useRef<Record<number, HTMLButtonElement | null>>({})
@@ -128,8 +151,13 @@ export function Board({ state, dispatch, locked }: BoardProps<TableState, TableA
 
   return (
     <div className={s.board} style={{ '--seats': String(seats.length) } as CSSProperties}>
+      {/* A screen reader hears what a looker sees: where the ring and the mark
+          name a pair, the sentence names it too. */}
       <p className="u-sr" role="status">
-        {rowSummary(state)} {swapsWord(left)}.
+        {rowSummary(state)} {swapsWord(left)}.{' '}
+        {(dead?.seams ?? [])
+          .map((seam) => quarrelSentence(cfg.guests[seats[seam]], cfg.guests[seats[seam + 1]]))
+          .join(' ')}
       </p>
 
       <div className={s.roster}>
@@ -164,7 +192,10 @@ export function Board({ state, dispatch, locked }: BoardProps<TableState, TableA
                 className={s.guest}
                 style={{ '--place': String(placeOf[who]) } as CSSProperties}
               >
-                <Pictogram name={guest.art} className={s.art} />
+                <Pictogram
+                  name={guest.art}
+                  className={cx(s.art, dead?.blamed.includes(guest.id) && s.blamed)}
+                />
               </div>
             ))}
           </div>
@@ -182,6 +213,9 @@ export function Board({ state, dispatch, locked }: BoardProps<TableState, TableA
               {seams.map((seam) => {
                 const one = cfg.guests[seats[seam]]
                 const two = cfg.guests[seats[seam + 1]]
+                // The gap between two who are still sitting together says which
+                // rule it is, in the words and the mark the roster uses.
+                const wrong = dead?.seams.includes(seam) === true
                 return (
                   <span
                     className={s.gap}
@@ -190,7 +224,7 @@ export function Board({ state, dispatch, locked }: BoardProps<TableState, TableA
                   >
                     <button
                       type="button"
-                      className={cx(s.seam, 'u-press')}
+                      className={cx(s.seam, wrong && s.stuckSeam, 'u-press')}
                       data-seam={seam}
                       ref={(el) => {
                         refs.current[seam] = el
@@ -200,13 +234,21 @@ export function Board({ state, dispatch, locked }: BoardProps<TableState, TableA
                          neighbours — and a finished level is exactly when a
                          child wants to go back over it. */
                       aria-disabled={locked ? 'true' : undefined}
-                      aria-label={`Swap ${nameFor(one)} and ${nameFor(two)}`}
+                      aria-label={
+                        wrong
+                          ? quarrelSentence(one, two)
+                          : `Swap ${nameFor(one)} and ${nameFor(two)}`
+                      }
                       onClick={() => {
                         if (locked) return
                         dispatch({ type: 'swap', seam })
                       }}
                     >
-                      <SwapMark className={s.swapMark} />
+                      {wrong ? (
+                        <NoMark className={s.swapMark} />
+                      ) : (
+                        <SwapMark className={s.swapMark} />
+                      )}
                     </button>
                   </span>
                 )
@@ -221,7 +263,7 @@ export function Board({ state, dispatch, locked }: BoardProps<TableState, TableA
         </div>
       </div>
 
-      <p className={cx('u-label', s.counter, dead === state && cues.flash)}>{swapsWord(left)}</p>
+      <p className={cx('u-label', s.counter, spent === state && cues.flash)}>{swapsWord(left)}</p>
       <p className={s.note}>{note}</p>
     </div>
   )

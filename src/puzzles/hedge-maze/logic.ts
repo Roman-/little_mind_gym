@@ -1,3 +1,4 @@
+import { shortestSolution } from '../../lib/search'
 import type { PuzzleLevel } from '../../lib/types'
 
 /**
@@ -303,6 +304,35 @@ export function failure(state: MazeState): string | null {
 
 /** Two states with the same key are the same position. The maze never changes. */
 export const stateKey = (state: MazeState): string => `${state.hero},${state.dog}`
+
+/**
+ * True while the rabbit can still get out from here.
+ *
+ * The maze never changes, so a position is the two animals and nothing else,
+ * and the shared search walks all of them — a couple of hundred at the widest
+ * of the three mazes. Being caught is not a position to walk on from, so the
+ * search never goes through one.
+ *
+ * It is where Step back goes once the dog has the rabbit: a dog two squares
+ * off down a corridor with no turning has already won, and stepping back into
+ * that is being caught again on the next turn. See `canStillWin` in
+ * src/lib/types.ts.
+ *
+ * Nothing on the board may ask this. A door marked "this way still gets out"
+ * is the maze solved for the child.
+ */
+export function canStillWin(state: MazeState): boolean {
+  return (
+    shortestSolution<MazeState, MazeAction>({
+      start: state,
+      moves: () => ACTIONS,
+      apply: reduce,
+      key: stateKey,
+      solved: isSolved,
+      invalid: (at) => caughtAt(at) !== null,
+    }) !== null
+  )
+}
 
 /**
  * A step a hedge will not take, drawn anyway. The frame is not a refusal —

@@ -30,6 +30,7 @@ init(level, rng) => S      // pure. Only touch rng if the level is randomised.
 reduce(state, action) => S // pure. See the invariant below.
 isSolved(state) => boolean
 failure?(state) => string | null   // a dead end the player must step back from
+canStillWin?(state) => boolean     // false once the level is past saving
 describe?(prev, next, action) => string   // "Took the goat across"
 Board: ComponentType<BoardProps<S, A>>
 ```
@@ -52,6 +53,31 @@ Board: ComponentType<BoardProps<S, A>>
 
 Hidden information (which ball is heavy, the sudoku solution) lives in the
 state too — just don't render it.
+
+### The way back out
+
+The shell answers a dead end with **Step back**, and that button has to land
+somewhere the level can still be won. On most boards that is one move back:
+the move that broke the rule is the move that ended it. On some it is not —
+a budget runs out, a line jams, a dog closes in — and the move that lost the
+level is several moves behind the one the board spoke on. There, one move back
+is a button that ends the level again.
+
+So: **if a player can be past saving before your `failure` says so, answer
+`canStillWin`.** The shell walks back through the positions the player has
+already been in and stops at the last one it says yes to. It is asked only
+once a dead end is up, and only about positions in the past — your `Board.tsx`
+must never ask it, because a mark meaning "this move still wins" is the whole
+puzzle given away. Leave it out where every position a player can still play is
+one they can still win: the river crossing, whose every move undoes, and the
+alice maze, whose `failure` already fires the moment the ring goes out of
+reach. Both prove that in their own `logic.test.ts` rather than assuming it.
+
+The answer can be arithmetic (`candidates <= 3 ** weighingsLeft` in the balance
+scales), a table the level already built (`swapsToGo <= swapsLeft` in the long
+table), or `shortestSolution` over a small graph (the frogs, the stones, the
+hedges). It runs at most once a move in the player's history, and only at a
+dead end, so a search over a few hundred positions is nothing.
 
 ## Board rules
 
@@ -164,6 +190,11 @@ graph. Use it. Every puzzle's test file must prove:
 - every level is solvable, and its `par` is exactly the shortest solution;
 - illegal actions return the identical state object;
 - `failure` fires when it should and stays null when it should not;
+- `canStillWin`, where you answer it, agrees with an outside opinion — a search
+  written in the test over your own rules, not the one `logic.ts` uses — on
+  every position a player can reach, and there really are positions it says no
+  to that `failure` says nothing about. Where you leave it out, prove *that*:
+  every position a player can still play is one they can still win;
 - for a reseedable puzzle: at least 30 different seeds all produce a solvable
   start.
 

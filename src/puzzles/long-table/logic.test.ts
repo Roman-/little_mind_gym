@@ -8,9 +8,11 @@ import { makeRng } from '../../lib/rng'
 import { shortestSolution } from '../../lib/search'
 import type { PuzzleLevel } from '../../lib/types'
 import { longTable } from './index'
+import board from './board.module.css'
 import type { TableConfig, TableState } from './logic'
 import {
   OUT_OF_SWAPS,
+  canStillWin,
   canSwap,
   climberGetsHome,
   dealsFor,
@@ -19,6 +21,7 @@ import {
   everySeam,
   everySeating,
   failure,
+  failureOf,
   init,
   isGoodSeating,
   isSolved,
@@ -528,6 +531,36 @@ describe('the dead end', () => {
       )
     })
 
+    it(`"${level.label}" hands the board the pair it is about, and nobody else`, () => {
+      // What the clay is drawn from. The sentence says two who cannot sit next
+      // to each other are still next to each other; this is who they are, and
+      // the board never works it out a second time.
+      let named = 0
+      for (const seed of SEEDS.slice(0, 3)) {
+        for (const state of everyPosition(start(level, seed))) {
+          const dead = failureOf(state)
+          if (failure(state) === null) {
+            expect(dead).toBeNull()
+            continue
+          }
+          named++
+          const seams = quarrelSeams(config, state.seats)
+          expect(dead?.message).toBe(OUT_OF_SWAPS)
+          expect(dead?.seams).toEqual(seams)
+          // Everybody sitting either side of one of those gaps, each named
+          // once however many of the pairs they are in.
+          const both = new Set<string>()
+          for (const seam of seams) {
+            both.add(config.guests[state.seats[seam]].id)
+            both.add(config.guests[state.seats[seam + 1]].id)
+          }
+          expect([...(dead?.blamed ?? [])].sort()).toEqual([...both].sort())
+          expect(dead?.blamed.length).toBeGreaterThan(1)
+        }
+      }
+      expect(named).toBeGreaterThan(0)
+    })
+
     it(`"${level.label}" never says so at a table nobody has touched`, () => {
       for (const seats of dealsFor(config)) {
         expect(failure({ cfg: config, seats, used: 0 })).toBeNull()
@@ -544,6 +577,108 @@ describe('the dead end', () => {
         expect(swapsLeft(state)).toBe(0)
         expect(failure(state)).toBeNull()
       }
+    })
+  }
+})
+
+/* ============================================================
+   The way back out
+
+   The swaps run out several taps after the one that lost the
+   level, so the position one move back is usually lost as
+   well: Step back has to go further than one move or it is a
+   button that ends the level again. The shell walks back
+   through the positions a player has already been in and stops
+   at the last one `canStillWin` says a win is still reachable
+   from.
+
+   What follows holds that answer to an outside opinion —
+   `canStillFinish`, which looks for a finishing run and has
+   none of this puzzle's distance table in it — and then plays
+   the shell's own rule out over every way of tapping a deal.
+   ============================================================ */
+
+describe('the way back out', () => {
+  for (const level of levels) {
+    const { config } = level
+
+    it(`"${level.label}" says a row can still be saved exactly when it can`, () => {
+      const memo = new Map<string, boolean>()
+      let alive = 0
+      let lost = 0
+      for (const seed of SEEDS.slice(0, 3)) {
+        for (const state of everyPosition(start(level, seed))) {
+          const looked = canStillFinish(config, state.seats, swapsLeft(state), memo)
+          const row = `${readRow(config, state.seats)}, ${swapsLeft(state)} left`
+          expect(`${row}: ${canStillWin(state)}`).toBe(`${row}: ${looked}`)
+          if (looked) alive++
+          else lost++
+        }
+      }
+      // Both kinds are really there, so neither half of that is vacuous.
+      expect(alive).toBeGreaterThan(0)
+      expect(lost).toBeGreaterThan(0)
+    })
+
+    it(`"${level.label}" opens on a row that can be saved, on 40 seeds`, () => {
+      // Where this ever failed there would be no way back out at all: the
+      // walk back would run off the start of the level.
+      for (const seed of SEEDS) expect(canStillWin(start(level, seed))).toBe(true)
+      for (const seats of dealsFor(config)) {
+        expect(canStillWin({ cfg: config, seats, used: 0 })).toBe(true)
+      }
+    })
+
+    it(`"${level.label}" lands one press on a row a win is still reachable from`, () => {
+      // The shell's rule, played out over every one of the
+      // (seats - 1) ^ swaps ways of tapping the deal: where the swaps ran out
+      // on a row that is still wrong, walk back the way PuzzlePage.tsx walks
+      // back and check where it stops. Every losing run is followed, so this
+      // is the promise under the notice — "nothing is lost" — rather than a
+      // sample of it.
+      const memo = new Map<string, boolean>()
+      let ends = 0
+      let further = 0
+      let landedLost = 0
+      let skippedWinnable = 0
+      for (const seats of dealsFor(config)) {
+        const run: TableState[] = [{ cfg: config, seats: seats.slice(), used: 0 }]
+        const walk = () => {
+          const here = run[run.length - 1]
+          if (isSolved(here)) return
+          if (failure(here) !== null) {
+            ends++
+            let back = run.length - 2
+            while (back > 0 && !canStillWin(run[back])) back--
+            // Where it stops really can be finished, by an opinion that knows
+            // nothing of this puzzle's distance table.
+            if (!canStillFinish(config, run[back].seats, swapsLeft(run[back]), memo)) landedLost++
+            // And one press is the whole way back: everything the run did
+            // after that position was already lost, so there is nothing
+            // between where it stops and where it ended worth stopping at.
+            for (let i = back + 1; i < run.length; i++) {
+              if (canStillFinish(config, run[i].seats, swapsLeft(run[i]), memo)) skippedWinnable++
+            }
+            if (run.length - 2 > back) further++
+            return
+          }
+          for (const move of legalMoves(here)) {
+            run.push(reduce(here, move))
+            walk()
+            run.pop()
+          }
+        }
+        walk()
+      }
+      // Counted rather than asserted a run at a time: the third level walks
+      // 7776 runs a deal, and an expectation inside that loop is minutes.
+      expect(`${level.id}: ${landedLost} lost landings, ${skippedWinnable} skipped`).toBe(
+        `${level.id}: 0 lost landings, 0 skipped`,
+      )
+      expect(ends).toBeGreaterThan(0)
+      // And it is not one move back dressed up: most of those dead ends are
+      // further back than the move that ended them.
+      expect(further).toBeGreaterThan(ends / 2)
     })
   }
 })
@@ -1131,6 +1266,58 @@ describe('the long table — board', () => {
     )
     expect(new Set(looks).size).toBe(1)
     expect(document.body.querySelectorAll(`.${cues.flash}, .${cues.highlight}`)).toHaveLength(0)
+    // And no animal is ringed, which is the same tell drawn behind the table.
+    expect(document.body.querySelectorAll(`.${board.blamed}, .${board.stuckSeam}`)).toHaveLength(0)
+  })
+
+  it('and points at them the moment the swaps are gone', () => {
+    // The other half of the same rule. The level is over, the sentence under
+    // the board says two who cannot sit next to each other are still next to
+    // each other, and a child who cannot find them in a row of seven is being
+    // told a fact about a picture they cannot read. So the two are ringed and
+    // the gap between them carries the roster's own mark.
+    const state = start(levels[2], 21)
+    let dead = state
+    for (let i = 0; i < state.cfg.swaps; i++) dead = reduce(dead, { type: 'swap', seam: 0 })
+    const named = failureOf(dead)
+    expect(named?.seams.length).toBeGreaterThan(0)
+
+    const { view } = show(dead, true)
+    expect(view.container.querySelectorAll(`.${board.blamed}`)).toHaveLength(
+      named?.blamed.length as number,
+    )
+    gaps().forEach((button, seam) => {
+      const one = dead.cfg.guests[dead.seats[seam]]
+      const two = dead.cfg.guests[dead.seats[seam + 1]]
+      if (named?.seams.includes(seam)) {
+        expect(button.className).toContain(board.stuckSeam)
+        expect(button).toHaveAttribute(
+          'aria-label',
+          `The ${one.label.toLowerCase()} cannot sit next to the ${two.label.toLowerCase()}.`,
+        )
+      } else {
+        expect(button.className).not.toContain(board.stuckSeam)
+        expect(button).toHaveAttribute('aria-label', `Swap ${nameFor(one)} and ${nameFor(two)}`)
+      }
+    })
+
+    // A screen reader hears the same thing, in the same words.
+    const said = view.container.querySelector('[role="status"]')?.textContent ?? ''
+    expect(said).toContain('No swaps left')
+    for (const seam of named?.seams ?? []) {
+      const one = dead.cfg.guests[dead.seats[seam]]
+      const two = dead.cfg.guests[dead.seats[seam + 1]]
+      expect(said).toContain(
+        `The ${one.label.toLowerCase()} cannot sit next to the ${two.label.toLowerCase()}.`,
+      )
+    }
+
+    // And the roster above the table is left alone. A quarrel card states a
+    // rule that is simply true, and it says the same thing on the last tap as
+    // on the first.
+    for (const card of view.container.querySelectorAll('[role="img"]')) {
+      expect(card.className).not.toContain(board.blamed)
+    }
   })
 
   it('reads the row and the swaps left out for anyone who cannot see it', () => {
@@ -1345,31 +1532,32 @@ describe('a child who does not look at the row', () => {
 
   /**
    * The best a thoughtless player can do: tap a gap at random, and when the
-   * board says the swaps have gone, step back and take a gap not tried yet
-   * from where that lands — a depth-first walk of the (guests - 1) ^ swaps
-   * ways of tapping, in a random order, remembering nothing but which gaps
-   * have already been tried on the way down. It is the strongest player who
-   * never reads the row, so it is the cheapest this can honestly be.
+   * board says the swaps have gone, press Step back and take a gap not tried
+   * yet from where that lands — remembering nothing but which gaps have
+   * already been tried there. It is the strongest player who never reads the
+   * row, so it is the cheapest this can honestly be.
+   *
+   * What one press is worth is the whole of the difference from the rule this
+   * replaced. Step back lands on the last position a win is still reachable
+   * from, so tapping a gap that leaves the shortest line costs the swaps that
+   * remain — one for the tap, and the rest spent inside a row that can no
+   * longer be put right — and then the table is back where it was with one
+   * more gap crossed off. Under one-move-at-a-time that same wrong tap cost
+   * the whole subtree under it, which is where 34.75, 230.52 and 1410.65 came
+   * from.
    *
    * Worked out rather than sampled, and worked out through `reduce`,
    * `failure` and `isSolved`, so what is counted is the board the child really
-   * has. `full[left]` is the taps it takes to exhaust a subtree with that many
-   * swaps left — every subtree at a depth is the same size, because every
-   * position has the same gaps. At a node with `s` children a win is still
-   * reachable through and `f` children where it is not, a uniform order puts
-   * f / (s + 1) losers in front of the first winner, and that first winner is
-   * uniform among the winners and independent of how many losers came before
-   * it. So the whole thing is one recursion, kept under the row and the swaps
-   * left.
+   * has. At a node with `s` children a win is still reachable through and `f`
+   * children where it is not, a uniform order puts f / (s + 1) losers in front
+   * of the first winner, and that first winner is uniform among the winners
+   * and independent of how many losers came before it. So the whole thing is
+   * one recursion, kept under the row and the swaps left.
    *
    * There is no early win to allow for: a deal is `swaps` from a good seating
    * and one swap moves one step, so nothing short of the last tap is solved.
    */
   function expectedTaps(cfg: TableConfig, seats: readonly number[]): number {
-    const full = [0]
-    for (let left = 1; left <= cfg.swaps; left++) {
-      full[left] = (cfg.guests.length - 1) * (1 + full[left - 1])
-    }
     const memo = new Map<string, number | null>()
     const walk = (state: TableState): number | null => {
       if (isSolved(state)) return 0
@@ -1385,8 +1573,7 @@ describe('a child who does not look at the row', () => {
         else wins.push(on)
       }
       const left = swapsLeft(state)
-      const taps =
-        wins.length === 0 ? null : (lost / (wins.length + 1)) * (1 + full[left - 1]) + 1 + mean(wins)
+      const taps = wins.length === 0 ? null : (lost / (wins.length + 1)) * left + 1 + mean(wins)
       memo.set(key, taps)
       return taps
     }
@@ -1395,19 +1582,33 @@ describe('a child who does not look at the row', () => {
     return taps as number
   }
 
-  /** The same child, actually tapping, one gap at a time. */
+  /**
+   * The same child, actually tapping, one gap at a time.
+   *
+   * `canStillWin` appears here as the *board's* behaviour and never as the
+   * child's knowledge: the tap is taken either way, and all it decides is what
+   * happens afterwards — play on, or spend the swaps that are left in a row
+   * that cannot be put right and then take one press of Step back home.
+   * Whatever those last taps land on, there are exactly that many of them.
+   */
   function playIt(cfg: TableConfig, seats: readonly number[], rng: () => number): number {
     let taps = 0
     const walk = (state: TableState): boolean => {
       if (isSolved(state)) return true
-      // The board has ended the run. Step back and take another gap.
       if (failure(state) !== null) return false
       const order = legalMoves(state)
         .map((move) => ({ move, at: rng() }))
         .sort((a, b) => a.at - b.at)
       for (const { move } of order) {
         taps++
-        if (walk(reduce(state, move))) return true
+        const next = reduce(state, move)
+        if (canStillWin(next)) {
+          if (walk(next)) return true
+        } else {
+          // The rest of the budget, tapped out blind, and then one press back
+          // to this very row.
+          taps += swapsLeft(next)
+        }
       }
       return false
     }
@@ -1415,16 +1616,22 @@ describe('a child who does not look at the row', () => {
     return taps
   }
 
-  it('is not walked home: 34.75, 230.52 and 1410.65 taps against a par of 3, 4 and 5', () => {
+  it('is not walked home: 10.75, 18.51 and 27.48 taps against a par of 3, 4 and 5', () => {
     const cost = levels.map((level) =>
       to2(mean(dealsFor(level.config).map((seats) => expectedTaps(level.config, seats)))),
     )
-    expect(cost).toEqual([34.75, 230.52, 1410.65])
-    // Twelve, fifty-eight and two hundred and eighty-two times par. Tapping
-    // is not a way through this board, which is the whole of what the change
-    // to `failure` bought. (`config.swaps` is the level's par, which the top
-    // of this file holds it to.)
-    expect(levels.map((level, i) => Math.round(cost[i] / level.config.swaps))).toEqual([12, 58, 282])
+    expect(cost).toEqual([10.75, 18.51, 27.48])
+    // Four, five and five times par, and the ramp is still a ramp: a longer
+    // table costs a thoughtless child more, level after level.
+    // (`config.swaps` is the level's par, which the top of this file holds it
+    // to.)
+    expect(levels.map((level, i) => Math.round(cost[i] / level.config.swaps))).toEqual([4, 5, 5])
+    expect(cost[0] < cost[1] && cost[1] < cost[2]).toBe(true)
+    // Half of what it is worth to read the row: the eager rule below walked
+    // the same child home in 7.08, 10.46 and 13.94, and one-move-at-a-time
+    // Step back charged them 34.75, 230.52 and 1410.65 — most of which was a
+    // child pressing it into another row that could not be saved either.
+    expect(levels.map((_, i) => cost[i] > [7.08, 10.46, 13.94][i])).toEqual([true, true, true])
   })
 
   it('and the rule this replaced walked the same child home in 7.08, 10.46 and 13.94', () => {
@@ -1528,13 +1735,18 @@ describe('a child who does not look at the row', () => {
     expect(odds).toEqual([43, 188, 555])
   })
 
-  it('and pays for a wrong tap with 1.57, 2.44 and 3.12 more taps before the board says so', () => {
+  it('and pays for a wrong tap with 1.57, 2.44 and 3.12 more taps, worth one press', () => {
     // The price of holding the dead end back, over every one of the
     // ways ^ swaps runs of each deal: where a losing run left the set of
     // positions a win is still reachable from, how many taps it spent after
-    // that, and how many step backs it then takes to stand somewhere winnable
-    // again. Walking the whole tree of taps once a deal is what makes this
-    // exact rather than sampled.
+    // that, and how far back the one press of Step back then carries it.
+    // Walking the whole tree of taps once a deal is what makes this exact
+    // rather than sampled.
+    //
+    // The second number is what the shell now does in one press. It used to
+    // be a count of presses — the child pressed Step back 2.57 times on
+    // average, and every press but the last landed on a row that was just as
+    // lost with the board saying nothing about it.
     const priced = levels.map((level) => {
       const { config } = level
       const memo = new Map<string, boolean>()
@@ -1558,12 +1770,12 @@ describe('a child who does not look at the row', () => {
         }
         walk(seats, 0, 0)
       }
-      return `${to2(onward / lost)} taps then ${to2(back / lost)} step backs`
+      return `${to2(onward / lost)} taps then one press worth ${to2(back / lost)} moves`
     })
     expect(priced).toEqual([
-      '1.57 taps then 2.57 step backs',
-      '2.44 taps then 3.44 step backs',
-      '3.12 taps then 4.12 step backs',
+      '1.57 taps then one press worth 2.57 moves',
+      '2.44 taps then one press worth 3.44 moves',
+      '3.12 taps then one press worth 4.12 moves',
     ])
   })
 })

@@ -13,6 +13,7 @@ import {
   DIRS,
   DIR_WORDS,
   canStep,
+  canStillWin,
   caughtAt,
   colOf,
   describeMove,
@@ -440,6 +441,58 @@ describe('the hedge maze — rules', () => {
           if (next === state) continue
           const said = failure(next)
           expect(said).toBe(next.hero !== -1 && next.hero === next.dog ? 'The dog caught you.' : null)
+        }
+      }
+    }
+  })
+
+  it('knows which corners the rabbit can no longer get out of', () => {
+    // `distances` works backwards from the way out over the graph the rules
+    // really allow, so a position it never reaches is one no run of moves
+    // escapes from. That is an outside opinion on `canStillWin`, and it comes
+    // from the same walk the second derivation of `par` comes from.
+    for (const level of levels) {
+      const start = init(level)
+      const { states, dist } = distances(start)
+      let cornered = 0
+      for (const [k, state] of states) {
+        expect(`${level.id} ${k}: ${canStillWin(state)}`).toBe(`${level.id} ${k}: ${dist.has(k)}`)
+        if (!dist.has(k)) cornered++
+      }
+      // Being caught is not a position to go on from, so it is not a position
+      // to step back to either.
+      const caught: MazeState = { ...start, hero: start.dog }
+      expect(caughtAt(caught)).not.toBeNull()
+      expect(canStillWin(caught)).toBe(false)
+      // And every maze has corners like that, which is why Step back asks.
+      expect(`${level.id}: ${cornered > 0}`).toBe(`${level.id}: true`)
+    }
+  })
+
+  it('is caught later than it is lost, so Step back goes back further', () => {
+    // The gap the hook is for: the dog closing in is not the dog arriving. A
+    // rabbit that can no longer reach the way out keeps hopping, and the board
+    // says nothing until the two of them are on one square — so the move that
+    // lost the maze is behind the move that ended it.
+    for (const level of levels) {
+      const start = init(level)
+      const { states } = distances(start)
+      const playedOn = [...states.values()].filter(
+        (state) =>
+          !canStillWin(state) &&
+          ACTIONS.some((action) => {
+            const next = reduce(state, action)
+            return next !== state && failure(next) === null
+          }),
+      )
+      expect(`${level.id}: ${playedOn.length > 0}`).toBe(`${level.id}: true`)
+      // Every move out of one of those is another position the rabbit cannot
+      // get out of, so the walk back never stops halfway.
+      for (const state of playedOn) {
+        for (const action of ACTIONS) {
+          const next = reduce(state, action)
+          if (next === state) continue
+          expect(canStillWin(next)).toBe(false)
         }
       }
     }

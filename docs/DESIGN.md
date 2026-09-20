@@ -309,6 +309,23 @@ no "Great job!!". Say what happened and what to do:
 A failure message is one short sentence of fact. The shell adds the "step back"
 control, so the message does not have to.
 
+**And the control it adds has to work.** The notice says *nothing is lost*, so
+the button beside it lands on a position the level can still be won from — one
+move back on a board where the move that broke the rule is the move that ended
+it, and further back on a board that goes on playing after it is lost: a spent
+budget, a jammed line, a dog that has already closed in. A prominent button
+that walks a child back into a position they cannot win from is worse than no
+button, because they will press it again. The shell asks the puzzle
+(`canStillWin` in docs/PUZZLE_CONTRACT.md) and says which of the two it is
+doing:
+
+> Nothing is lost. Step back goes to the last place where this level can still
+> be solved.
+
+That is the *only* place a board is told how far back its mistake was. While
+the level is open nothing on the screen may say it — a mark that only good
+moves get is the puzzle answered for the child, tap by tap.
+
 Write to the child, not to whoever is paying. "You have solved 3 of 8", not
 "3 OF 8 SOLVED"; "Pick a puzzle", not "The collection".
 

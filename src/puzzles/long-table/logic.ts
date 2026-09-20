@@ -37,6 +37,10 @@ import type { PictoName } from '../../components/pictogram-art'
    exactly that moment, so this is frog-leap's dead end — a
    position with nothing left to do and the puzzle not done —
    written for a budget rather than for a jammed row.
+   `failureOf` beside it hands the board the two the sentence
+   is about — the only thing this board ever draws in clay —
+   and `canStillWin` answers the shell's other question, which
+   is where Step back goes once that sentence is up.
 
    It read the other way round first: the level ended the
    instant the row could no longer be fixed inside the swaps
@@ -50,7 +54,7 @@ import type { PictoName } from '../../components/pictogram-art'
    back was walked home in 7.08, 10.46 and 13.94 taps against a
    par of 3, 4 and 5 — a solve for about four, six and nine
    wrong taps and no thought about the row. The same child pays
-   34.75, 230.52 and 1410.65 taps under this rule, and a child
+   10.75, 18.51 and 27.48 taps under this rule, and a child
    who starts over rather than stepping back pays 144, 866 and
    4054. `lucky` below only becomes a difficulty dial here: a
    child guided tap by tap never has to find a whole line, so
@@ -62,18 +66,36 @@ import type { PictoName } from '../../components/pictogram-art'
    child who leaves the shortest line plays on in a row that
    can no longer be put right — over every way of tapping a
    deal out, 1.57, 2.44 and 3.12 more taps on average, and at
-   most 2, 3 and 4 — and then steps back 2.57, 3.44 and 4.12
-   times on average to stand where a win is still reachable
-   again. Nothing on the board says so while it is happening,
-   and nothing should: a mark meaning "this row can
+   most 2, 3 and 4 — and one press of Step back, worth 2.57,
+   3.44 and 4.12 moves, then stands them where a win is still
+   reachable again. Nothing on the board says so while it is
+   happening, and nothing should: a mark meaning "this row can
    still be saved" is the same oracle in another coat, and
    docs/DESIGN.md rules out the tell that only good moves get.
+   `canStillWin` is that mark, which is exactly why it is the
+   shell's question and never the board's: it is asked once the
+   level is over, about rows a child has already left.
    What the board does say is how many swaps are left, which is
    a rule of the level rather than a reading of the row — and
-   the clay flash now lands on a counter reading "No swaps
-   left" instead of over one still reading "2 swaps left".
+   the clay flash lands on a counter reading "No swaps left"
+   instead of over one still reading "2 swaps left". Once that
+   counter reads nothing left, the two who are still sitting
+   together wear a clay ring and the roster's own "not these
+   two" mark stands in the gap between them: the sentence names
+   a pair, and a child who cannot yet find it in a row of seven
+   can see which one it means.
 
-   Every number in the two paragraphs above is taken under
+   That press used to be one move. Out of a dead end that
+   arrives when the budget does, one move back is another row
+   that cannot be saved, and a child pressed Step back 2.57,
+   3.44 and 4.12 times — with the board saying nothing at any
+   of the rows in between — before standing anywhere a win was
+   still reachable. It also charged the thoughtless child 34.75,
+   230.52 and 1410.65 taps, and most of that was one of those
+   children wandering a subtree the board had already ended:
+   this puzzle was never entitled to bank it.
+
+   Every number in the three paragraphs above is taken under
    "a child who does not look at the row" at the bottom of
    logic.test.ts, worked out exactly rather than sampled, so
    re-taking them after a change to the deal gives one answer
@@ -96,7 +118,8 @@ import type { PictoName } from '../../components/pictogram-art'
    puts two who quarrel next to each other is a position, not a
    forbidden move. What the rules will not do is pay for a swap
    that cannot be afforded, and that is `failure`, which the
-   shell answers with Step back.
+   shell answers with Step back — back to the last row this
+   level could still have been won from.
    ============================================================ */
 
 /** One animal at the table. */
@@ -179,6 +202,15 @@ export interface TableState {
  * four of them. One tap, one swap, one move — there is no selection step.
  */
 export type TableAction = { type: 'swap'; seam: number }
+
+/** What the dead end says, and who it is about. See `failureOf`. */
+export interface TableFailure {
+  message: string
+  /** Every guest sitting next to somebody they cannot sit next to, by id. */
+  blamed: string[]
+  /** Every gap with one of those pairs either side of it, left to right. */
+  seams: number[]
+}
 
 /**
  * Shown by the shell when the last swap has been spent and the row is still
@@ -375,7 +407,16 @@ export function isSolved(state: TableState): boolean {
 }
 
 /**
- * The dead end: every swap has been spent and the row is still wrong.
+ * The dead end: every swap has been spent and the row is still wrong — with
+ * the guests the sentence is about, and the gaps they are sitting either side
+ * of. The board wears a clay ring on every one of them and puts the roster's
+ * own "not these two" mark in every gap they are sitting either side of. A row
+ * that lost by one swap has one such pair in it, which is the usual sight; a
+ * row somebody tapped at random can have three, and then all three are marked,
+ * because each of them is a rule of its own and fixing one would leave the
+ * others sitting there. Nothing here is a reading of a row a child is
+ * still playing: it says nothing at all until the swaps are spent, exactly as
+ * the sentence does, and by then the level is over and the looking is done.
  *
  * `legalMoves` is empty at exactly that moment, so this is frog-leap's `STUCK`
  * — nothing left to do and the puzzle not done — written for a budget instead
@@ -387,9 +428,40 @@ export function isSolved(state: TableState): boolean {
  * fires the board no longer knows which one it was — and a board that did know
  * would be answering "was that the right move?" after every tap.
  */
-export function failure(state: TableState): string | null {
+export function failureOf(state: TableState): TableFailure | null {
   if (isSolved(state)) return null
-  return swapsLeft(state) <= 0 ? OUT_OF_SWAPS : null
+  if (swapsLeft(state) > 0) return null
+  const seams = quarrelSeams(state.cfg, state.seats)
+  const blamed: string[] = []
+  for (const seam of seams) {
+    for (const seat of [seam, seam + 1]) {
+      const id = state.cfg.guests[state.seats[seat]].id
+      if (!blamed.includes(id)) blamed.push(id)
+    }
+  }
+  return { message: OUT_OF_SWAPS, blamed, seams }
+}
+
+export function failure(state: TableState): string | null {
+  return failureOf(state)?.message ?? null
+}
+
+/**
+ * True while the row can still be put right inside the swaps that are left.
+ *
+ * The budget is exactly par, so this is false from the first swap that does
+ * not shorten the way home — which is why it is the *shell's* question and
+ * never the board's. Asked of the position a child is looking at, it is the
+ * eager dead end in another coat, and the top of this file has what that cost.
+ * Asked of the positions behind them once the swaps have run out, it is the
+ * one thing the way back out has to know: Step back lands on the last position
+ * this was true of, rather than on another lost row one swap earlier.
+ *
+ * The distance table is already built by the time anybody is playing, so this
+ * is a map lookup and a subtraction.
+ */
+export function canStillWin(state: TableState): boolean {
+  return swapsToGo(state.cfg, state.seats) <= swapsLeft(state)
 }
 
 export function describeMove(prev: TableState, _next: TableState, action: TableAction): string {

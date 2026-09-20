@@ -1,3 +1,4 @@
+import { shortestSolution } from '../../lib/search'
 import type { PuzzleLevel } from '../../lib/types'
 
 /**
@@ -148,6 +149,31 @@ export function isSolved(state: FrogState): boolean {
 export function failure(state: FrogState): string | null {
   if (isSolved(state)) return null
   return legalMoves(state).length === 0 ? STUCK : null
+}
+
+/**
+ * True while the line can still be sorted out from here.
+ *
+ * A frog only ever goes forwards, so the line is a small graph with no way
+ * back round it — 23, 72 and 195 positions on the three levels — and the
+ * shared search walks the whole of it. It is where Step back goes once the
+ * line has jammed: a line can be past saving several hops before the last
+ * frog runs out of room, and one hop back from `STUCK` is often a line that is
+ * just as jammed one hop later. See `canStillWin` in src/lib/types.ts.
+ *
+ * Nothing on the board may ask this. A frog marked "this hop still wins" is
+ * the whole puzzle given away in a colour.
+ */
+export function canStillWin(state: FrogState): boolean {
+  return (
+    shortestSolution<FrogState, FrogAction>({
+      start: state,
+      moves: (line) => legalMoves(line).map((from) => ({ type: 'hop', from })),
+      apply: reduce,
+      key: (line) => line.seats.join(','),
+      solved: isSolved,
+    }) !== null
+  )
 }
 
 /** The colour a child would call this frog. */

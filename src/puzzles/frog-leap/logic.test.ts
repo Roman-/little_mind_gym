@@ -10,6 +10,7 @@ import { Board } from './Board'
 import type { FrogAction, FrogConfig, FrogState, Seat } from './logic'
 import {
   STUCK,
+  canStillWin,
   describeMove,
   failure,
   hopTarget,
@@ -472,6 +473,57 @@ describe('leapfrog', () => {
     for (let i = 0; i < stuck.seats.length; i++) expect(hop(stuck, i)).toBe(stuck)
     expect(failure(once)).toBeNull()
     expect(solvable(once)).toBe(true)
+  })
+
+  it('is lost before it jams, and Step back goes back to where it was not', () => {
+    // The row that makes `canStillWin` worth having. Nothing is refused and
+    // nothing is said along the way — the frogs keep hopping for three more
+    // moves — and only the fifth of them runs out of moves.
+    const rows = ['GG_BB', 'G_GBB', 'GBG_B', 'GB_GB', '_BGGB', 'B_GGB']
+    let state = init(levels[0])
+    const run = [state]
+    for (const from of [1, 3, 2, 0, 1]) {
+      state = hop(state, from)
+      run.push(state)
+    }
+    expect(run.map(show)).toEqual(rows)
+    expect(failure(state)).toBe(STUCK)
+
+    // Step back the way the shell steps back: the last row a win is still
+    // reachable from, which is three moves behind the jam and not one.
+    let back = run.length - 2
+    while (back > 0 && !canStillWin(run[back])) back--
+    expect(show(run[back])).toBe('GBG_B')
+    expect(run.length - 1 - back).toBe(3)
+    // The two it walked past are rows the board says nothing about and no
+    // frog can sort out.
+    expect(run.slice(back + 1).map(canStillWin)).toEqual([false, false, false])
+  })
+
+  it('knows every row that can still be sorted out, on all three lines', () => {
+    // An outside opinion: a plain recursion over the rules, with none of the
+    // shared search in it. A frog only ever goes forwards, so it ends.
+    const asked = new Map<string, boolean>()
+    const finishes = (state: FrogState): boolean => {
+      if (isSolved(state)) return true
+      const k = key(state)
+      const known = asked.get(k)
+      if (known !== undefined) return known
+      const out = hops(state).some((move) => finishes(reduce(state, move)))
+      asked.set(k, out)
+      return out
+    }
+
+    for (const level of levels) {
+      let doomed = 0
+      for (const state of allStates(init(level))) {
+        expect(`${show(state)}: ${canStillWin(state)}`).toBe(`${show(state)}: ${finishes(state)}`)
+        if (!finishes(state) && failure(state) === null && !isSolved(state)) doomed++
+      }
+      // And the hook earns its place on every line: there are rows the board
+      // plays on from that can no longer come home.
+      expect(`${level.id}: ${doomed > 0}`).toBe(`${level.id}: true`)
+    }
   })
 
   it('says nothing is wrong once the frogs have swapped, even though nobody can move', () => {

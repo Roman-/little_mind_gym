@@ -1,6 +1,6 @@
 import type { PuzzleMeta } from '../../lib/types'
 import type { BalanceAction, BalanceConfig, BalanceState } from './logic'
-import { describeMove, failure, init, isSolved, reduce } from './logic'
+import { canStillWin, describeMove, failure, init, isSolved, reduce } from './logic'
 import { Board } from './Board'
 import { BalanceIcon } from './glyphs'
 
@@ -56,5 +56,5 @@ export const balanceScales: PuzzleMeta<BalanceState, BalanceAction> = {
     },
   ],
   reseedable: true,
-  engine: { init, reduce, isSolved, failure, describe: describeMove, Board },
+  engine: { init, reduce, isSolved, failure, canStillWin, describe: describeMove, Board },
 }

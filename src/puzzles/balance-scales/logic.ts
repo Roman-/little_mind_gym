@@ -160,6 +160,38 @@ export function failure(state: BalanceState): string | null {
   return null
 }
 
+/**
+ * True while the heavy ball can still be found and named inside the weighings
+ * that are left.
+ *
+ * It is arithmetic rather than a search. A weighing ends three ways, so `k` of
+ * them can tell at most 3 ^ k balls apart — and a player who splits the balls
+ * still in the running into three groups as evenly as they go, two of them on
+ * the pans, always meets that bound: no group is bigger than 3 ^ (k - 1), and
+ * the pans hold the same number of balls by construction. So the whole
+ * question is whether the candidates fit in 3 ^ k, and logic.test.ts checks
+ * that against a search over every legal weighing on a small bench.
+ *
+ * A ball has been named by then or it has not. Naming one ends the level
+ * either way — there is no move left after it — so a wrong name is lost where
+ * it stands.
+ *
+ * It is where Step back goes once the balance is spent. Five balls still in
+ * the running with one weighing left is already lost, and the balance says
+ * nothing about it until that last weighing has been spent too — so stepping
+ * back one weighing out of a spent balance lands on a bench that is just as
+ * lost. See `canStillWin` in src/lib/types.ts.
+ *
+ * Nothing on the board may ask this. It counts the balls a player is entitled
+ * to reason about, but a mark on the *board* saying "this weighing still
+ * works" is the strategy handed over, which is the whole puzzle.
+ */
+export function canStillWin(state: BalanceState): boolean {
+  if (isSolved(state)) return true
+  if (state.accused !== null) return false
+  return candidates(state).length <= 3 ** weighingsLeft(state)
+}
+
 /** Ball numbers the way a player reads them, 1-based: "1", "1 and 2", "1, 2 and 3". */
 export function listBalls(indices: readonly number[]): string {
   const names = indices.map((i) => i + 1)

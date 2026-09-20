@@ -11,6 +11,7 @@ import { Board } from './Board'
 import type { BalanceAction, BalanceConfig, BalanceState, Weighing } from './logic'
 import {
   answerSentence,
+  canStillWin,
   candidates,
   canWeigh,
   describeMove,
@@ -163,10 +164,21 @@ function fewestSurvivors(total: number, live: number): number {
   return best
 }
 
-/** Exact minimax over real sets and real weighings. No abstraction. */
-function exactWeighings(total: number): number {
+const exactCache = new Map<number, Map<number, number>>()
+
+/**
+ * Exact minimax over real sets and real weighings, asked about one set of
+ * still-possible balls. No abstraction: every weighing the engine would accept
+ * is tried, and the balance answers as unhelpfully as it can.
+ */
+function exactWeighingsFrom(total: number, from: number): number {
   const pairs = legalMasks(total)
-  const memo = new Map<number, number>()
+  let kept = exactCache.get(total)
+  if (kept === undefined) {
+    kept = new Map<number, number>()
+    exactCache.set(total, kept)
+  }
+  const memo = kept
   const value = (live: number): number => {
     const n = popcount(live)
     if (n <= 1) return 0
@@ -185,8 +197,11 @@ function exactWeighings(total: number): number {
     memo.set(live, best)
     return best
   }
-  return value((1 << total) - 1)
+  return value(from)
 }
+
+/** The same thing, asked about a full bench. */
+const exactWeighings = (total: number): number => exactWeighingsFrom(total, (1 << total) - 1)
 
 /* --- playing the search's own strategy against the real engine ------ */
 
@@ -661,6 +676,119 @@ describe('failure', () => {
         expect(isSolved(state) && failure(state) !== null).toBe(false)
         expect(isSolved(state)).toBe(index === heavy)
       }
+    }
+  })
+})
+
+/* ==================================================================
+   The way back out
+
+   The balance says nothing until its last use has been spent,
+   so the weighing that lost the level is usually not the one
+   that ended it: one weighing back out of a spent balance is a
+   bench that is just as lost. `canStillWin` is where Step back
+   goes instead, and it is arithmetic — the candidates fit in
+   3 ^ weighings-left, or they do not. What follows holds that
+   arithmetic to a full minimax over every weighing the engine
+   really accepts.
+   ================================================================== */
+
+describe('the way back out', () => {
+  /** Every bench a run of real weighings can leave, for a bench small enough to walk. */
+  function everyBench(balls: number, weighings: number): BalanceState[] {
+    const level: PuzzleLevel<BalanceConfig> = {
+      id: 'bench',
+      label: 'Bench',
+      difficulty: 1,
+      config: { balls, weighings },
+      hints: [],
+    }
+    const out: BalanceState[] = []
+    for (let heavy = 0; heavy < balls; heavy++) {
+      const walk = (state: BalanceState) => {
+        out.push(state)
+        if (weighingsLeft(state) === 0) return
+        for (const [l, r] of legalMasks(balls)) {
+          const next = reduce(state, {
+            type: 'weigh',
+            left: ballsOf(l, balls),
+            right: ballsOf(r, balls),
+          })
+          if (next !== state) walk(next)
+        }
+      }
+      walk({ ...init(level, makeRng(1)), heavy })
+    }
+    return out
+  }
+
+  for (const balls of [4, 5, 6]) {
+    it(`agrees with a full minimax over ${balls} balls, on every bench real play reaches`, () => {
+      let winnable = 0
+      let lost = 0
+      for (const state of everyBench(balls, 2)) {
+        const live = candidates(state).reduce((mask, i) => mask | (1 << i), 0)
+        const needs = exactWeighingsFrom(balls, live)
+        const can = needs <= weighingsLeft(state)
+        expect(`${balls} balls, ${candidates(state).length} live, ${weighingsLeft(state)} left: ${canStillWin(state)}`)
+          .toBe(`${balls} balls, ${candidates(state).length} live, ${weighingsLeft(state)} left: ${can}`)
+        if (can) winnable++
+        else lost++
+      }
+      expect(winnable).toBeGreaterThan(0)
+      expect(lost).toBeGreaterThan(0)
+    })
+  }
+
+  it('is lost the moment a ball is named, however the naming went', () => {
+    const level = levelById('eight-balls')
+    const narrowed = reduce(withHeavy(level, 3), { type: 'weigh', left: [3], right: [4] })
+    expect(candidates(narrowed)).toEqual([3])
+    // A right name is a solved level and the level is won, not winnable.
+    expect(isSolved(reduce(narrowed, { type: 'accuse', index: 3 }))).toBe(true)
+    expect(canStillWin(reduce(narrowed, { type: 'accuse', index: 3 }))).toBe(true)
+    // A wrong one leaves a bench with nothing left to do on it, so Step back
+    // walks straight past it.
+    const wrong = reduce(narrowed, { type: 'accuse', index: 5 })
+    expect(failure(wrong)).not.toBeNull()
+    expect(canStillWin(wrong)).toBe(false)
+    expect(canStillWin(narrowed)).toBe(true)
+  })
+
+  it('goes back past the weighing that was wasted, not the one that ran out', () => {
+    // One ball against one on a bench of twelve, and they match: ten balls
+    // are still in play with two weighings left, which cannot be done. The
+    // balance says nothing about it for two more weighings.
+    const level = levelById('twelve-balls')
+    const run = [withHeavy(level, 11)]
+    const spend = (left: number[], right: number[]) =>
+      run.push(reduce(run[run.length - 1], { type: 'weigh', left, right }))
+    spend([0], [1])
+    spend([2], [3])
+    spend([4], [5])
+    expect(run.map((state) => candidates(state).length)).toEqual([12, 10, 8, 6])
+    expect(run.map(failure)).toEqual([null, null, null, failure(run[3])])
+    expect(failure(run[3])).toBe(
+      'You have used every weighing. More than one ball could still be the heavy one.',
+    )
+
+    // Step back the way the shell steps back: past all three weighings, to
+    // the bench nobody had spent one on. One weighing back is 8 balls and
+    // one weighing, which is the same bench in a smaller coat.
+    let back = run.length - 2
+    while (back > 0 && !canStillWin(run[back])) back--
+    expect(back).toBe(0)
+    expect(run.map(canStillWin)).toEqual([true, false, false, false])
+  })
+
+  it('opens every level on a bench that can be finished', () => {
+    for (const level of levels) {
+      for (let heavy = 0; heavy < level.config.balls; heavy++) {
+        expect(canStillWin(withHeavy(level, heavy))).toBe(true)
+      }
+      // And the strategy the search hands back keeps it that way to the end.
+      const played = playStrategy(withHeavy(level, 0))
+      expect(canStillWin(played.state)).toBe(true)
     }
   })
 })

@@ -183,6 +183,11 @@ describe('playing a puzzle', () => {
     click(/put the wolf in the boat/i)
     click(/row across/i)
     expect(screen.getByText('The goat ate the cabbage.')).toBeInTheDocument()
+    // The move that broke the rule is the move that is taken back, and the
+    // notice says so: this river can always be rowed back the way it came.
+    expect(
+      screen.getByText('Nothing is lost. Go back one move and try another way.'),
+    ).toBeInTheDocument()
 
     // The notice owns the recovery while it is up, so there is exactly one Step back.
     expect(screen.getAllByRole('button', { name: /^step back$/i })).toHaveLength(1)
@@ -190,6 +195,40 @@ describe('playing a puzzle', () => {
     expect(screen.queryByText('The goat ate the cabbage.')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /row across/i })).toBeEnabled()
     expect(screen.getAllByRole('button', { name: /^start over$/i })).toHaveLength(1)
+  })
+
+  it('steps back past the moves that were lost before the board said so', () => {
+    // A jammed line is not a line that has just gone wrong. These five hops
+    // leave the frogs with nowhere to go, and the third of them is where the
+    // line stopped being one that can be sorted out — so one move back is a
+    // line that jams again on the next hop, and the notice's own promise that
+    // nothing is lost would be untrue.
+    turnOn('Show your moves')
+    open('/puzzle/frog-leap')
+    const tape = () => screen.getByRole('group', { name: /move history/i })
+    for (const frog of [
+      /green frog on stone 2/i,
+      /blue frog on stone 4/i,
+      /green frog on stone 3/i,
+      /green frog on stone 1/i,
+      /blue frog on stone 2/i,
+    ]) {
+      click(frog)
+    }
+    expect(screen.getByText('No frog can move. The line is stuck.')).toBeInTheDocument()
+    expect(within(tape()).getAllByRole('button')).toHaveLength(6) // the start and five hops
+    expect(
+      screen.getByText(
+        'Nothing is lost. Step back goes to the last place where this level can still be solved.',
+      ),
+    ).toBeInTheDocument()
+
+    click(/^step back$/i)
+    // Three moves come off at once, and the line they leave is one a child can
+    // still finish — which is the whole of what the button is for.
+    expect(screen.queryByText('No frog can move. The line is stuck.')).not.toBeInTheDocument()
+    expect(within(tape()).getAllByRole('button')).toHaveLength(3)
+    expect(screen.getByText('Moves').parentElement).toHaveTextContent(/^Moves2$/)
   })
 
   it('never shows the same action twice at once', () => {

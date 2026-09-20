@@ -45,6 +45,28 @@ export interface PuzzleEngine<S, A> {
    * `failureOf` in the river crossing — rather than widening this.
    */
   failure?(state: S): string | null
+  /**
+   * False when the level can no longer be won from this position, whether or
+   * not `failure` has said so yet.
+   *
+   * It is where Step back goes. A dead end can arrive long after the move that
+   * lost the level — a budget runs out, a line jams, a dog closes in — and
+   * stepping back one move from one of those lands the player somewhere just
+   * as lost, which is a button that loses the level again. The shell walks
+   * back through the positions the player has already been in and stops at the
+   * last one this returns true for.
+   *
+   * Optional, and left out by a puzzle that cannot strand a player: one whose
+   * moves all undo, or one whose `failure` already fires the moment the win
+   * goes out of reach. Without it the shell steps back one move.
+   *
+   * It is asked only once a dead end is up, and only about positions that are
+   * already in the past. A board must never ask it about the position in front
+   * of a child who is still playing — that is an oracle answering "was that
+   * the right move?", which is the thing every dead end here is written to
+   * avoid.
+   */
+  canStillWin?(state: S): boolean
   /** Past-tense summary of the move that produced `next`. Used by the move tape and screen readers. */
   describe?(prev: S, next: S, action: A): string
   Board: ComponentType<BoardProps<S, A>>

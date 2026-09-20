@@ -9,17 +9,45 @@ import type { Bank, RiverAction, RiverState } from './logic'
 import { failure, failureOf, init, isSolved, legalMoves, reduce } from './logic'
 import s from './board.module.css'
 
+const key = (state: RiverState) => `${state.at.join('')}|${state.boat}`
+
 const solve = (state: RiverState) =>
   shortestSolution<RiverState, RiverAction>({
     start: state,
     moves: (s) => legalMoves(s).map((passengers) => ({ type: 'cross', passengers })),
     apply: reduce,
-    key: (s) => `${s.at.join('')}|${s.boat}`,
+    key,
     solved: isSolved,
     invalid: (s) => failure(s) !== null,
   })
 
 describe('river crossing', () => {
+  it('needs no `canStillWin`, because every crossing can be rowed back', () => {
+    // The shell's Step back goes one move by default, and walks back further
+    // only where a puzzle answers `canStillWin` — which is for boards that can
+    // strand a player several moves before they are told. This one cannot.
+    // Every crossing is a crossing the boat can make in reverse, so a position
+    // that is not itself a dead end can always be finished, and the move
+    // behind a dead end is always a fine place to stand.
+    expect(riverCrossing.engine.canStillWin).toBeUndefined()
+    for (const level of riverCrossing.levels) {
+      const start = init(level)
+      const seen = new Map([[key(start), start]])
+      const stack = [start]
+      while (stack.length > 0) {
+        const state = stack.pop() as RiverState
+        for (const passengers of legalMoves(state)) {
+          const next = reduce(state, { type: 'cross', passengers })
+          if (next === state || failure(next) !== null || seen.has(key(next))) continue
+          seen.set(key(next), next)
+          stack.push(next)
+        }
+      }
+      expect(seen.size).toBeGreaterThan(1)
+      for (const state of seen.values()) expect(solve(state)).not.toBeNull()
+    }
+  })
+
   for (const level of riverCrossing.levels) {
     it(`"${level.label}" is solvable in exactly par (${level.par}) crossings`, () => {
       const path = solve(init(level))

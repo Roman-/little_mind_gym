@@ -1,6 +1,6 @@
 import type { PuzzleMeta } from '../../lib/types'
 import type { MazeAction, MazeConfig, MazeState } from './logic'
-import { describeMove, failure, init, isSolved, reduce } from './logic'
+import { canStillWin, describeMove, failure, init, isSolved, reduce } from './logic'
 import { Board } from './Board'
 import { HedgeMazeIcon } from './glyphs'
 
@@ -128,5 +128,5 @@ export const hedgeMaze: PuzzleMeta<MazeState, MazeAction> = {
     },
   ],
   reseedable: false,
-  engine: { init, reduce, isSolved, failure, describe: describeMove, Board },
+  engine: { init, reduce, isSolved, failure, canStillWin, describe: describeMove, Board },
 }

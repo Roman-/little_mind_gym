@@ -177,10 +177,37 @@ function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
 
   const rewind = useCallback(
     (keep: number) => {
-      setHistory((h) => (keep >= h.length - 1 ? h : h.slice(0, keep + 1)))
+      // Never past the opening position: a board with no state at all would
+      // be the shell's own dead end, and there is no way back out of that one.
+      const stop = Math.max(0, keep)
+      setHistory((h) => (stop >= h.length - 1 ? h : h.slice(0, stop + 1)))
     },
     [setHistory],
   )
+
+  /**
+   * Where Step back goes once a dead end is up: the last position the level
+   * can still be won from, which is one move back on most boards and further
+   * on the ones where a dead end arrives after the move that caused it — a
+   * spent budget, a jammed line, a dog that has already closed in. One move
+   * back from one of those is a button that loses the level a second time, and
+   * the notice beside it promises that nothing is lost.
+   *
+   * A puzzle that does not answer `canStillWin` gets the old behaviour, which
+   * is the right one for a board where every position a player can still play
+   * is a position they can still win.
+   *
+   * It is asked here and nowhere else. While the level is open the toolbar's
+   * Step back is one move, always — a button that jumped four moves back would
+   * be telling a child who is still playing that the last four were wasted.
+   */
+  const wayBack = useMemo(() => {
+    if (failure === null) return moves - 1
+    for (let i = moves - 1; i > 0; i--) {
+      if (meta.engine.canStillWin?.(history[i].state) ?? true) return i
+    }
+    return 0
+  }, [failure, history, moves, meta.engine])
 
   const restart = useCallback(() => {
     setHistory([{ state: initial, note: '' }])
@@ -249,6 +276,17 @@ function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
 
   /** While a notice is up it owns the actions, so the toolbar does not repeat them. */
   const noticeShowing = solved || failure !== null
+
+  /**
+   * What Step back is about to do, said before it is pressed. One move back is
+   * the sentence this app has always shown; further back has to say so, or a
+   * child watching four moves come off the board at once is being surprised by
+   * the one control that is meant to be the safe one.
+   */
+  const wayOut =
+    moves - wayBack === 1
+      ? 'Nothing is lost. Go back one move and try another way.'
+      : 'Nothing is lost. Step back goes to the last place where this level can still be solved.'
   const par = level.par
   const best = record.best[level.id]
   // `par` is the fewest moves a solver can be *sure* of. On a puzzle that hides
@@ -309,7 +347,7 @@ function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
             commit as its text is announced unreliably or not at all. */}
         <p className="u-sr" role="status">
           {failure !== null
-            ? `${failure} Nothing is lost. Go back one move and try another way.`
+            ? `${failure} ${wayOut}`
             : solved
               ? `Solved. ${moves} ${moves === 1 ? 'move' : 'moves'}${verdict}`
               : ''}
@@ -319,10 +357,10 @@ function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
           <div className={s.notice} data-tone="clay">
             <div className={s.noticeBody}>
               <p className={s.noticeTitle}>{failure}</p>
-              <p className={s.noticeLine}>Nothing is lost. Go back one move and try another way.</p>
+              <p className={s.noticeLine}>{wayOut}</p>
             </div>
             <div className={s.noticeActions}>
-              <Button variant="primary" onClick={() => rewind(moves - 1)}>
+              <Button variant="primary" onClick={() => rewind(wayBack)}>
                 <UndoIcon />
                 Step back
               </Button>

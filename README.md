@@ -90,7 +90,11 @@ src/
 
 Because the state is pure and the board is a function of it, rewinding is
 free: a child can explore a wrong idea all the way to its end and walk back
-out of it. **Step back** and **Start over** sit under every board. The
+out of it. **Step back** and **Start over** sit under every board. Where a
+puzzle can be lost some moves before it says so — the swaps run out, the line
+jams, the dog closes in — the Step back under the dead end goes back to the
+last position the level could still have been won from, however many moves
+that is, rather than into another position that cannot. The
 **move tape** — a mark per move, the count beside it, any mark a tap back to
 that moment — is the long way back, and it is off until **Show your moves**
 is turned on in the settings: a tally climbing while the puzzle is still open

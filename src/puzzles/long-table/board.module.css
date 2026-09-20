@@ -14,10 +14,12 @@
 
    Colour says state and nothing else. The ochre of the table and the bone of
    the plates are the *things*, the way the Hanoi discs are ochre and clay;
-   amber marks the gap a finger is on; clay arrives once, around the count of
-   swaps, at the moment the last one is spent and the row is still wrong. The
-   quarrels on the roster are drawn in ink on purpose: a rule that is simply
-   true is not a rule that has been broken. */
+   amber marks the gap a finger is on; clay arrives all at once, at the moment
+   the last swap is spent and the row is still wrong — around the count of
+   swaps, around each animal still sitting next to one it cannot sit next to,
+   and in the gap between them. The quarrels on the roster stay ink even then: a rule that is simply
+   true is not a rule that has been broken, and the roster says the same thing
+   on the first tap as on the last. */
 
 .board {
   width: 100%;
@@ -154,6 +156,23 @@
   height: var(--stature);
 }
 
+/* An animal still sitting next to one it cannot sit next to, with no swap
+   left to part them. Drawn only then: while the level is open
+   this board marks no quarrel it can see, which is the whole of what makes it
+   a puzzle rather than a list of instructions to follow.
+
+   A ring and a tile rather than one of the cues in motion.module.css. A cue is
+   one run long and is over before a child has looked up; this stands for as
+   long as the sentence it belongs to, which is what docs/DESIGN.md asks of a
+   mark that answers a mistake — and it is the same mark under reduced motion,
+   where every cue collapses to a millisecond. */
+.blamed {
+  border-radius: var(--r-md);
+  background: var(--clay-soft);
+  outline: 3px solid var(--clay);
+  outline-offset: 2px;
+}
+
 .top {
   position: relative;
   height: clamp(52px, 9.5vh, 74px);
@@ -224,6 +243,21 @@
 
 .seam[aria-disabled='true']:active {
   transform: none;
+}
+
+/* The gap between two of them. It is a dead control by then, like every other
+   gap on a level that is over, so this says nothing about a move — it is the
+   roster's own "not these two" standing where the pair is, in clay because
+   this is a rule on that roster the row has actually broken.
+
+   Both selectors carry the dead attribute, because the rule above sets the
+   background and the colour at one class and one attribute and would otherwise
+   outscore a bare class here whatever the order. */
+.seam.stuckSeam[aria-disabled='true'],
+.seam.stuckSeam[aria-disabled='true']:hover {
+  background: var(--clay-soft);
+  border-color: var(--clay);
+  color: var(--clay);
 }
 
 /* The press shadow is set on .u-press, which lands after the global focus ring
