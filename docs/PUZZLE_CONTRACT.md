@@ -23,6 +23,14 @@ src/puzzles/<id>/
 `index.ts` must export a single `PuzzleMeta` named in camelCase after the
 directory (`src/puzzles/frog-leap/index.ts` → `export const frogLeap`).
 
+Two lines outside the directory finish the job: add the meta to `PUZZLES` in
+`src/puzzles/index.ts`, and add a line to `ORIGINS` in
+`src/puzzles/origins.ts` saying who invented the puzzle and who publishes it —
+"Traditional" and one sentence of where it was first written down, where there
+is nobody to name. The credits page prints it, and
+`src/routes/credits.test.tsx` fails while a puzzle has no line, so nothing
+ships uncredited.
+
 ## The contract (`src/lib/types.ts`)
 
 ```ts

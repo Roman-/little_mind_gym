@@ -110,15 +110,19 @@ export function Footer() {
   return (
     <footer className={s.footer}>
       <div className={s.footInner}>
-        {/* The pictures are somebody else's work and the licence asks us to say
-            so, so the credit is here on every page rather than buried. */}
+        {/* Where the site lives, and one link to everybody whose work is in it.
+            The credits used to be a line of footer text naming the pictures
+            alone; the puzzles, the type and the tools were owed one too, and
+            four sentences in a footer is a footer nobody reads. */}
         <p className={s.credit}>
-          Pictures from{' '}
-          <a href="https://openmoji.org" target="_blank" rel="noreferrer noopener">
-            OpenMoji
+          Part of{' '}
+          <a href="https://bestsiteever.net" target="_blank" rel="noreferrer noopener">
+            bestsiteever.net
           </a>
-          , used under CC BY-SA 4.0.
         </p>
+        <Link to="/credits" className={s.credits}>
+          Credits
+        </Link>
         {anything && (
           <button
             type="button"

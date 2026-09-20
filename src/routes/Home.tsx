@@ -66,11 +66,15 @@ export function Home() {
 
   return (
     <>
-      {/* A title page: the words sit on the desk rather than on a sheet of
-          their own, so the only things standing on it are the puzzles. */}
+      {/* One line and one button: the display headline above them said what
+          the line under it already said, and the cards are what the page is
+          for. The words sit on the desk rather than on a sheet of their own,
+          so the only things standing on it are the puzzles. */}
       <div className={s.masthead}>
         <div>
-          <h1 className={s.headline}>Puzzles you can work out.</h1>
+          {/* The wordmark in the navbar names the page for anyone looking at
+              it. This is the same name for anyone who is not. */}
+          <h1 className="u-sr">Little Mind Gym</h1>
           <p className={s.lede}>
             You can work every one out by thinking. None of them need quick fingers.
           </p>
@@ -82,21 +86,21 @@ export function Home() {
       </div>
 
       <section id="index">
-        <div className={s.indexHead}>
-          <h2 className={s.sectionTitle}>Pick a puzzle</h2>
-          <div className={s.filters} role="group" aria-label="Filter the collection">
-            {FILTERS.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                className={`${s.chip} u-press`}
-                aria-pressed={filter === f.id}
-                onClick={() => setFilter(f.id)}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
+        {/* No heading over the cards. "Pick a puzzle" named what a page of
+            puzzles already is, so the row above them holds the three filters
+            and nothing else. */}
+        <div className={s.filters} role="group" aria-label="Filter the collection">
+          {FILTERS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              className={`${s.chip} u-press`}
+              aria-pressed={filter === f.id}
+              onClick={() => setFilter(f.id)}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
         {shown.length === 0 ? (
           <Panel className={s.empty}>

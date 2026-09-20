@@ -1,0 +1,115 @@
+/* A page of sentences, so it is read at a column width rather than at the full
+   desk width the boards need — the same column the settings page uses. */
+.page {
+  max-width: var(--content-narrow);
+  margin: 0 auto;
+}
+
+.head {
+  margin: 0 0 var(--s6);
+}
+
+.title {
+  font-size: var(--t-title);
+}
+
+.lede {
+  margin-top: var(--s2);
+  max-width: 46ch;
+  color: var(--ink-on-desk);
+  font-size: var(--t-lg);
+}
+
+/* A heading sits on the desk and the sheet it names sits under it, so the page
+   reads as four things rather than one long scroll. */
+.sectionTitle {
+  font-size: var(--t-xl);
+  margin-bottom: var(--s3);
+}
+
+.block + .block {
+  margin-top: var(--s6);
+}
+
+/* The one line that belongs to a heading rather than to the sheet under it. */
+.note {
+  max-width: 62ch;
+  margin-bottom: var(--s3);
+  color: var(--ink-on-desk);
+  font-size: var(--t-sm);
+}
+
+.panel {
+  padding: var(--s5);
+}
+
+.para {
+  max-width: 62ch;
+  color: var(--ink-muted);
+}
+
+.para + .para {
+  margin-top: var(--s4);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  padding: var(--s4) 0;
+}
+
+.item:first-child {
+  padding-top: 0;
+}
+
+.item:last-child {
+  padding-bottom: 0;
+}
+
+.item + .item {
+  border-top: var(--hair) solid var(--rule);
+}
+
+/* The name is the link to the puzzle, so the credit is also the way back into
+   the thing it credits. It is underlined under a pointer rather than always:
+   twenty-five underlined names down one sheet is a page of rules, and a card
+   in the collection is a link without one too. */
+.itemName {
+  display: inline-block;
+  min-height: var(--tap-sm);
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  font-weight: 700;
+  letter-spacing: var(--track-tight);
+  line-height: var(--tap-sm);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.itemName:hover,
+.itemName:focus-visible {
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+}
+
+.itemLine {
+  max-width: 62ch;
+  color: var(--ink-muted);
+  font-size: var(--t-sm);
+}
+
+.foot {
+  margin-top: var(--s6);
+  color: var(--ink-on-desk);
+  font-size: var(--t-sm);
+}
+
+@media (max-width: 46rem) {
+  .panel {
+    padding: var(--s4);
+  }
+}

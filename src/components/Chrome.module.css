@@ -104,6 +104,17 @@
   color: inherit;
 }
 
+/* The way to the page the footer used to try to be. It reads as a line of
+   footer text and is tapped like a control, so it keeps a finger's height. */
+.credits {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-sm);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--ink-on-desk);
+}
+
 /* The most destructive control in the app. It used to be styled as footer
    texture; it is a button, and it looks like one. */
 .clear {

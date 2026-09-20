@@ -8,5 +8,6 @@ Every `.svg` in this directory is unmodified OpenMoji artwork.
   each file came from.
 
 The licence is share-alike: if you change one of these files, the changed file
-carries CC BY-SA 4.0 too. The app credits OpenMoji in its footer and in the
-README, which is what the attribution clause asks for.
+carries CC BY-SA 4.0 too. The app credits OpenMoji on its credits page
+(`/credits`, linked from the footer of every page) and in the README, which is
+what the attribution clause asks for.

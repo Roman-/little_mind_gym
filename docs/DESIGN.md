@@ -79,8 +79,9 @@ the puzzle really takes. **Nothing inheritable goes on the frame**: a picture
 inside a scene is a nested svg, and a fill or a stroke set on the outside would
 run down into artwork that arrived with its own colours.
 
-The pictograms are CC BY-SA 4.0 and the app credits OpenMoji in its footer.
-`scripts/fetch-openmoji.mjs` vendors them; nothing is fetched at run time.
+The pictograms are CC BY-SA 4.0 and the app credits OpenMoji on `/credits`,
+which the footer links to from every page. `scripts/fetch-openmoji.mjs` vendors
+them; nothing is fetched at run time.
 
 **A fourth rule, about size.** Nothing a finger has to hit goes below
 `--tap-sm` (40px), and a primary control is `--tap` (48px). Radii come in three
@@ -327,7 +328,13 @@ the level is open nothing on the screen may say it — a mark that only good
 moves get is the puzzle answered for the child, tap by tap.
 
 Write to the child, not to whoever is paying. "You have solved 3 of 8", not
-"3 OF 8 SOLVED"; "Pick a puzzle", not "The collection".
+"3 OF 8 SOLVED"; "Give me a nudge", not "Show hint".
+
+**And where a page says what it plainly is, say nothing.** The front page
+carried a display headline and a heading over the cards that between them said
+what the line under them said and what a page of puzzles already looks like.
+Both are gone. A label earns its room by telling a child something the screen
+has not already told them.
 
 **Six rules, in this order.** They came out of a real sentence that failed:
 *"A frog only gets past the other colour by jumping it."*

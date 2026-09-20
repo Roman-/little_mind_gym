@@ -21,8 +21,9 @@ npm run build
 | `/random`      | **Picks a puzzle at random and opens it.** `/surprise` does the same. |
 | `/random_instantly` | The same pick, opened straight away and already immersed. Unlisted — nothing in the app links to it. |
 | `/settings`    | Four settings, kept on this device. Reached from the navbar.         |
+| `/credits`     | Who everything here belongs to. Reached from the footer.             |
 
-The front page is a title page and then the collection: two columns of cards,
+The front page is one line and then the collection: two columns of cards,
 each with the puzzle's picture, its name, one line about it, and — once there
 is something to say — how far the player has got with it. The picture is a
 small drawing of that puzzle's own board, so a child who cannot read the names
@@ -83,7 +84,7 @@ own rules and draw its own pieces.
 src/
   lib/          the contract (types.ts), a seeded rng, a BFS over state graphs, the motion cues, the sounds, the refusals, the immerse mode
   components/   the shell's furniture: the move tape, the confetti, the pictograms, the frame a card's picture is drawn in
-  routes/       home, one puzzle, the random pick, the settings
+  routes/       home, one puzzle, the random pick, the settings, the credits
   puzzles/<id>/ logic.ts · Board.tsx · glyphs.tsx · board.module.css · index.ts · logic.test.ts
   styles/       tokens.css: every colour, size and duration. motion.module.css: the cues
 ```
@@ -142,6 +143,13 @@ page loads, so the first one plays without a gap. The speaker in the navbar and
 - Changing how it looks: **[DESIGN.md](docs/DESIGN.md)**
 - Publishing it: **[AGENTS.md](AGENTS.md)**
 
+**Nothing here is ours alone, and `/credits` says so.** The footer of every
+page carries the domain the site is part of and one link to that page, which
+names the inventor or the publisher of all twenty-five puzzles, the OpenMoji
+artwork and its licence, the three typefaces, and the five tools the app is
+built with. The puzzle lines live in `src/puzzles/origins.ts`, one to an id, and
+`src/routes/credits.test.tsx` fails if a puzzle ever ships without one.
+
 Progress lives in `localStorage` under `little-mind-gym:progress:v1`. The old
 `puzzle-bench:progress:v1` is still read once, so nothing solved before the
 app was renamed is lost. The settings sit beside it under
@@ -152,7 +160,7 @@ account, no network call and no analytics.
 ## Pictures
 
 The pictures a child can point at and name are [OpenMoji](https://openmoji.org)
-artwork, used under **CC BY-SA 4.0** and credited in the app's footer. The SVGs
+artwork, used under **CC BY-SA 4.0** and credited on `/credits`. The SVGs
 are committed under `src/assets/openmoji/` — nothing is fetched at run time — and
 `node scripts/fetch-openmoji.mjs` puts them there. That script holds the code
 point behind every name; add a picture by adding it there, adding the name to

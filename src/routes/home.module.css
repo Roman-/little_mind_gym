@@ -1,24 +1,18 @@
-/* The front page is a title page and then the collection. Nothing under the
-   words at the top: they sit on the desk, and the cards are the only things
-   standing on it. */
+/* The front page is one line and then the collection. Nothing over the cards
+   and nothing under the line: the words sit on the desk, and the cards are the
+   only things standing on it. */
 .masthead {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
   gap: var(--s5);
-  padding-bottom: var(--s6);
+  padding-bottom: var(--s5);
   border-bottom: var(--hair) solid var(--desk-edge);
 }
 
-/* No width of its own: the column it sits in is already narrower than the
-   page, and `text-wrap: balance` breaks it evenly when the column runs out.
-   A display line that breaks at every word reads as an accident. */
-.headline {
-  font-size: var(--t-display);
-}
-
+/* No width of its own beyond a reading measure: the column it sits in is
+   already narrower than the page. */
 .lede {
-  margin-top: var(--s3);
   max-width: 44ch;
   color: var(--ink-on-desk);
   font-size: var(--t-lg);
@@ -26,23 +20,14 @@
 
 /* --- the collection ---------------------------------------- */
 
-.indexHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s3);
-  flex-wrap: wrap;
-  margin: var(--s6) 0 var(--s4);
-}
-
-.sectionTitle {
-  font-size: var(--t-xl);
-  color: var(--ink);
-}
-
+/* The whole of the row above the cards. It had a heading beside it once, and
+   the space-between that heading needed would now push three chips out to the
+   right-hand edge of an empty line. */
 .filters {
   display: flex;
   gap: var(--s2);
+  flex-wrap: wrap;
+  margin: var(--s5) 0 var(--s4);
 }
 
 .chip {
@@ -172,7 +157,6 @@
     grid-template-columns: 1fr;
     justify-items: start;
     gap: var(--s4);
-    padding-bottom: var(--s5);
   }
   .card {
     padding: var(--s4);
