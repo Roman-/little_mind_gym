@@ -119,7 +119,8 @@ afterEach(cleanup)
 describe('the collection page', () => {
   it('lists every puzzle with its status, and opens the one you pick', () => {
     open('/')
-    const list = screen.getByRole('list')
+    // The collection, not the footer's links.
+    const list = within(screen.getByRole('main')).getByRole('list')
     expect(within(list).getAllByRole('listitem')).toHaveLength(PUZZLES.length)
     for (const puzzle of PUZZLES) {
       expect(within(list).getByRole('link', { name: new RegExp(puzzle.title, 'i') })).toHaveAttribute(

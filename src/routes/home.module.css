@@ -81,6 +81,16 @@
   border-color: var(--ink-muted);
 }
 
+/* Under a pointer the card rises one pixel towards it, the press shadow
+   growing to match: the step before a press sinks it. A finger has no hover,
+   and a lift left stuck on a card after a tap would say it was still held. */
+@media (hover: hover) {
+  .card:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: var(--press-lg);
+  }
+}
+
 /* The picture is how a child who is not yet a fluent reader finds a puzzle, so
    it is the first thing on the card and it is big enough to recognise across a
    table. The plate under it stays neutral: the picture has already said which

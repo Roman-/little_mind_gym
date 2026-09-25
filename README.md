@@ -144,7 +144,8 @@ page loads, so the first one plays without a gap. The speaker in the navbar and
 - Publishing it: **[AGENTS.md](AGENTS.md)**
 
 **Nothing here is ours alone, and `/credits` says so.** The footer of every
-page carries the domain the site is part of and one link to that page, which
+page carries the domain the site is part of, a link to the source code on
+GitHub, and one link to that page, which
 names the inventor or the publisher of all twenty-five puzzles, the OpenMoji
 artwork and its licence, the three typefaces, and the five tools the app is
 built with. The puzzle lines live in `src/puzzles/origins.ts`, one to an id, and

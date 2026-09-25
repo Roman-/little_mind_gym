@@ -11,11 +11,14 @@ import {
   BrandMark,
   ContrastIcon,
   ExpandIcon,
+  OutIcon,
   SettingsIcon,
   SoundOffIcon,
   SoundOnIcon,
 } from './icons'
 import s from './Chrome.module.css'
+
+const SOURCE = 'https://github.com/Roman-/little_mind_gym'
 
 export function Header() {
   const [theme, toggle] = useTheme()
@@ -110,19 +113,31 @@ export function Footer() {
   return (
     <footer className={s.footer}>
       <div className={s.footInner}>
-        {/* Where the site lives, and one link to everybody whose work is in it.
-            The credits used to be a line of footer text naming the pictures
-            alone; the puzzles, the type and the tools were owed one too, and
-            four sentences in a footer is a footer nobody reads. */}
-        <p className={s.credit}>
-          Part of{' '}
-          <a href="https://bestsiteever.net" target="_blank" rel="noreferrer noopener">
-            bestsiteever.net
-          </a>
-        </p>
-        <Link to="/credits" className={s.credits}>
-          Credits
-        </Link>
+        {/* Where the site lives, one link to everybody whose work is in it, and
+            one to the code itself. The credits used to be a line of footer text
+            naming the pictures alone; the puzzles, the type and the tools were
+            owed one too, and four sentences in a footer is a footer nobody
+            reads. */}
+        <ul className={s.footLinks} role="list">
+          <li>
+            Part of{' '}
+            <a href="https://bestsiteever.net" target="_blank" rel="noreferrer noopener">
+              bestsiteever.net
+              <OutIcon />
+            </a>
+          </li>
+          <li>
+            <Link to="/credits">Credits</Link>
+          </li>
+          <li>
+            <a href={SOURCE} target="_blank" rel="noreferrer noopener">
+              Source code on GitHub
+              <OutIcon />
+            </a>
+          </li>
+        </ul>
+        {/* The one control down here keeps to the far end of the row, away
+            from the links a hand is reaching for. */}
         {anything && (
           <button
             type="button"

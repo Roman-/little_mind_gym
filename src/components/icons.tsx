@@ -63,6 +63,13 @@ export const SettingsIcon = () => (
   </svg>
 )
 
+/** An arrow leaving up and to the right: this link opens somewhere else. */
+export const OutIcon = () => (
+  <svg {...base}>
+    <path d="M7 17 17 7M8.5 7H17v8.5" />
+  </svg>
+)
+
 export const TickIcon = () => (
   <svg {...base}>
     <path d="M4.5 12.5 9.5 18 20 6" />

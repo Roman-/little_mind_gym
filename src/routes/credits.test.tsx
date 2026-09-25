@@ -70,7 +70,7 @@ describe('the credits page', () => {
 describe('the footer', () => {
   const footer = () => screen.getByRole('contentinfo')
 
-  it('says where the site lives and points at the credits', () => {
+  it('says where the site lives and points at the credits and the code', () => {
     open('/')
     expect(within(footer()).getByRole('link', { name: 'bestsiteever.net' })).toHaveAttribute(
       'href',
@@ -80,6 +80,9 @@ describe('the footer', () => {
       'href',
       '/credits',
     )
+    expect(
+      within(footer()).getByRole('link', { name: 'Source code on GitHub' }),
+    ).toHaveAttribute('href', 'https://github.com/Roman-/little_mind_gym')
   })
 
   it('leaves the licence wording to the page that has room for it', () => {

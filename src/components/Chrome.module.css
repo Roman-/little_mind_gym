@@ -32,18 +32,21 @@
   display: inline-flex;
   align-items: center;
   gap: var(--s2);
+  min-height: var(--tap-sm);
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.0625rem;
+  font-size: var(--t-lg);
   letter-spacing: var(--track-tight);
   text-decoration: none;
   color: var(--ink);
 }
 
+/* The mark sits on the desk, so it takes the desk's ink rather than a
+   sheet's. */
 .brand svg {
-  width: 22px;
-  height: 22px;
-  color: var(--ink-muted);
+  width: 26px;
+  height: 26px;
+  color: var(--ink-on-desk);
 }
 
 .nav {
@@ -84,35 +87,50 @@
   margin-top: auto;
 }
 
+/* The same edges as the navbar: the links start under the wordmark, and the
+   one button ends under the controls. */
 .footInner {
   max-width: var(--content);
   margin: 0 auto;
   padding: var(--s4);
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--s4);
+  justify-content: space-between;
+  gap: var(--s2) var(--s5);
   flex-wrap: wrap;
 }
 
-.credit {
+.footLinks {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  column-gap: var(--s5);
   font-size: var(--t-sm);
   color: var(--ink-on-desk);
 }
 
-.credit a {
-  color: inherit;
-}
-
-/* The way to the page the footer used to try to be. It reads as a line of
-   footer text and is tapped like a control, so it keeps a finger's height. */
-.credits {
+/* They read as a line of footer text and are tapped like controls, so each
+   keeps a finger's height. */
+.footLinks a {
   display: inline-flex;
   align-items: center;
+  gap: var(--s1);
   min-height: var(--tap-sm);
-  font-size: var(--t-sm);
   font-weight: 600;
-  color: var(--ink-on-desk);
+  transition: color var(--dur-1) var(--ease);
+}
+
+.footLinks a:hover {
+  color: var(--ink);
+  text-decoration-color: currentColor;
+}
+
+.footLinks svg {
+  width: 0.9em;
+  height: 0.9em;
+  flex: none;
 }
 
 /* The most destructive control in the app. It used to be styled as footer
@@ -152,8 +170,14 @@
     gap: var(--s1);
     margin-left: auto;
   }
-  .brandWord {
-    display: none;
+  .footInner {
+    padding: var(--s4) var(--s3);
+  }
+  /* Three links folded wherever they ran out of room leave one stranded on a
+     line of its own, so a phone stacks them: one link, one line. */
+  .footLinks {
+    flex-direction: column;
+    align-items: flex-start;
   }
   /* "All puzzles" keeps its words — a child who wants out needs them — and
      "Immerse" clips to its icon, clipped rather than hidden so it keeps its
@@ -165,5 +189,14 @@
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
+  }
+}
+
+/* The wordmark only ever shares its row with the three icon buttons, and a
+   phone has room for both. Only the narrowest keeps the mark alone, so the
+   row stays one line. */
+@media (max-width: 22rem) {
+  .brandWord {
+    display: none;
   }
 }
