@@ -180,3 +180,10 @@ Two jugs of different heights, one of them part full. A balance holding two
 against two and still not level. `Scene` in `src/components/scene.tsx` is the
 frame that all twenty-five are drawn in, and each puzzle's is at the bottom of
 its `glyphs.tsx`.
+
+## Licence
+
+The code is MIT — see [LICENSE](LICENSE). The one exception is the artwork in
+`src/assets/openmoji/`, which is OpenMoji's and stays under CC BY-SA 4.0 (see
+its [NOTICE.md](src/assets/openmoji/NOTICE.md)). A copy of those files carries
+that licence and its attribution, whatever the code around it is under.
