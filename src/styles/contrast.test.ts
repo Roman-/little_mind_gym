@@ -116,6 +116,14 @@ const TEXT: [string, string, string][] = [
 /** Glyphs on enamel pieces: meaningful graphics, so 3:1. */
 const GLYPHS = ['--p-indigo', '--p-moss', '--p-clay', '--p-plum', '--p-teal', '--p-slate']
 
+/**
+ * A line that is the answer itself, on every ground it crosses: 3:1, as for a
+ * glyph. [what it is, the line's colour, the grounds under it]
+ */
+const LINES: [string, string, string[]][] = [
+  ['a fence on the fence posts', '--p-teal', ['--surface', '--surface-sunk', '--amber-soft', '--clay-soft']],
+]
+
 describe.each([
   ['light', base],
   ['dark', dark],
@@ -126,6 +134,13 @@ describe.each([
 
   it.each(GLYPHS)('a glyph on %s is legible', (piece) => {
     expect(contrast(palette, '--p-on-dark', piece)).toBeGreaterThanOrEqual(3)
+  })
+
+  // A fence rail crosses a bone tile, a printed square, a chosen square and a
+  // red one, and it is one colour on all four. Measured: 5.80 / 5.16 / 4.83 /
+  // 4.69 in light and 4.15 / 4.70 / 3.69 / 4.20 in dark.
+  it.each(LINES)('%s stands out on every square it crosses', (_what, line, grounds) => {
+    for (const ground of grounds) expect(contrast(palette, line, ground)).toBeGreaterThanOrEqual(3)
   })
 
   // The three signal colours are deliberately not compared to each other here.

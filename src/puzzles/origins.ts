@@ -56,6 +56,7 @@ export const ORIGINS: Record<string, string> = {
   signposts:
     'Signpost, contributed to Simon Tatham’s collection by James Harvey, and the Janko puzzle Pfeilpfad before that.',
   'light-up': 'Akari, published by Nikoli. Simon Tatham’s collection calls it Light Up.',
+  'fence-posts': 'Gokigen Naname, published by Nikoli. Simon Tatham’s collection calls it Slant.',
   'knight-swap':
     'Guarini’s problem, attributed to Paolo Guarini di Forlì in 1512, and the oldest chessboard puzzle in print.',
   'hedge-maze':

@@ -23,6 +23,7 @@ import { countingPath } from './counting-path'
 import { longSnake } from './long-snake'
 import { signposts } from './signposts'
 import { lightUp } from './light-up'
+import { fencePosts } from './fence-posts'
 import { knightSwap } from './knight-swap'
 import { hedgeMaze } from './hedge-maze'
 
@@ -52,6 +53,7 @@ export const PUZZLES: PuzzleMeta[] = [
   longSnake,
   signposts,
   lightUp,
+  fencePosts,
   knightSwap,
   hedgeMaze,
 ]

@@ -1,0 +1,435 @@
+/* A field of squares with a post at every corner, engraved straight into the
+   stage the shell provides — a second sunk panel inside it would only draw a
+   redundant box and eat the width a six-by-six board needs on a phone.
+
+   Three materials and nothing else, all flat enamel. A square is a bone tile
+   you can press, or a flush patch of the stage where a fence is printed. A
+   fence is a teal rail from corner to corner. A post is a slate disc, with its
+   number on it where it has one, and a small slate dot where it has none.
+
+   There are no region washes and no heavy lines inside the field. This board
+   has no regions, and a wash or a rule every few squares would promise a rule
+   that is not there. Colour on it means what it means everywhere else: amber
+   for the square the next key writes into, clay for a fence breaking a rule,
+   a post with too many and every square of a closed ring. The rail never
+   changes colour, printed or not, right or wrong. It is a thing, and the state
+   is said round it. */
+
+/* The stage is a grid, and a grid item will not shrink below its own content
+   unless it is told it may. Without this the six-by-six field pushes the whole
+   page sideways on a narrow phone instead of sliding inside its own frame. */
+.wrap {
+  min-width: 0;
+}
+
+/* The frame centres the field and scrolls it. A square never drops below a
+   fingertip, so on the narrowest phone a six-by-six field is allowed to be
+   wider than the stage and slide sideways. The padding keeps a focus ring
+   clear of the scroll edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the field ------------------------------------------------ */
+
+.field {
+  /* Lengths, not colours: the rule round the outside, the seat a square sits
+     in, how big a square may get before it turns silly on a big monitor, and
+     how big a post is.
+
+     --cell-min and --cell-max are the pitch of a column, not the size of the
+     button in it: a column spends 2 * var(--seat) on the seat and var(--hair)
+     on the line down its left side before the button starts. The field adds
+     half a post a side of padding, so the posts on the rim stand inside the
+     border rather than hanging off it, and var(--edge) a side for the border
+     itself. Every one of those lengths is inside the width below, because the
+     app is border-box, so the floor is still the floor of a square.
+
+     --n comes in on the style attribute. */
+  --edge: 3px;
+  --seat: 3px;
+  --cell-min: 56px;
+  --cell-max: 104px;
+  --post: clamp(28px, 8vw, 40px);
+
+  width: clamp(
+    calc(var(--n) * var(--cell-min) + var(--post) + 2 * var(--edge)),
+    100%,
+    calc(var(--n) * var(--cell-max) + var(--post) + 2 * var(--edge))
+  );
+  margin-inline: auto;
+  padding: calc(var(--post) / 2);
+  background: var(--surface-sunk);
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+/* More squares to fit, so each one gives up a little, and the posts with them.
+   On a 360px phone the frame leaves 276px for the field, measured. Five by
+   five at its floor is 5 * 48 + 26 + 6 = 272px, so it fits, at a 48.8px pitch
+   and a 47px button.
+
+   Six by six is the tightest. Its button has to stay at --tap-sm, and a 43px
+   pitch less a 1px seat each side and the hairline is exactly 40px, so the
+   floor stops there: 6 * 43 + 27 + 4 = 289px. Below a 373px viewport the field
+   slides sideways inside .frame, 13px of it at 360px, and a 375px phone takes
+   it whole. The garden cats' seven-wide board slides 36px there and suns and
+   moons' eight-wide board 80px, measured the same way. The post stops at 27px
+   rather than the 24px that would save 3px of that, because the numeral
+   inside it is never smaller than 1rem; the rail left showing between two
+   posts is 43 * 1.41 - 27 = 34px. */
+.field[data-size='5'] {
+  --seat: 2px;
+  --cell-min: 48px;
+  --cell-max: 88px;
+  --post: clamp(26px, 7vw, 36px);
+}
+
+.field[data-size='6'] {
+  --edge: 2px;
+  --seat: 2px;
+  --cell-min: 43px;
+  --cell-max: 76px;
+  --post: clamp(27px, 6vw, 32px);
+}
+
+/* The squares, and the posts laid over them on the grid's own corners. The
+   grid is the positioning box for the posts, so a post at row r and column c
+   stands at r / n and c / n of it: exactly where four squares meet. It is
+   isolated so that the layers inside it stay inside it. There are three, from
+   the bottom: a square with the keyboard's ring round it (1), every rail (2),
+   and the posts (3). A rail runs past the corner of its own cell into the
+   next one, so a cell later in the page would otherwise paint its hairline
+   across the end of an earlier cell's rail, just outside the dot. */
+.grid {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+}
+
+.cell {
+  position: relative;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: stretch;
+  padding: var(--seat);
+  border-top: 0;
+  border-left: 0;
+}
+
+.cell[data-top='hair'] {
+  border-top: var(--hair) solid var(--rule);
+}
+
+.cell[data-left='hair'] {
+  border-left: var(--hair) solid var(--rule);
+}
+
+/* One radius for the printed square, the tile and the rings on it, stated
+   once. These squares are big enough to press, so they take the control
+   radius. */
+.given,
+.tile {
+  --tile-r: var(--r-md);
+}
+
+/* A printed fence: flush with the field, nothing to press. */
+.given {
+  background: var(--surface-sunk);
+  border-radius: var(--tile-r);
+}
+
+/* A printed fence on a closed ring: the clay ground the lit ring had, kept
+   for as long as the ring is closed, so the whole ring can still be followed
+   once the cue has run. No clay ring round it, because a printed fence is
+   never the wrong one — the child's own fences on the ring wear that. */
+.given[data-ring='true'] {
+  background: var(--clay-soft);
+}
+
+/* A square you put a fence in: a bone tile seated in the field. */
+.tile {
+  position: relative;
+  background: var(--surface);
+  border: var(--hair) solid var(--rule-strong);
+  border-radius: var(--tile-r);
+}
+
+/* Amber tells a child which square their next key writes into. Clay says the
+   fence in it breaks a rule. A square that is chosen *and* breaking a rule
+   rings clay: the mistake is the more urgent of the two, and a ring is still a
+   ring. */
+.tile[data-selected='true'] {
+  background: var(--amber-soft);
+}
+
+.tile[data-selected='true']::after,
+.tile[data-conflict='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--tile-r);
+}
+
+.tile[data-selected='true']::after {
+  box-shadow: inset 0 0 0 4px var(--amber);
+}
+
+.tile[data-conflict='true'] {
+  background: var(--clay-soft);
+  border-color: var(--clay);
+}
+
+.tile[data-conflict='true']::after {
+  box-shadow: inset 0 0 0 3px var(--clay);
+}
+
+.tile[data-conflict='true'][data-selected='true']::after {
+  box-shadow: inset 0 0 0 4px var(--clay);
+}
+
+.tile:disabled {
+  cursor: default;
+}
+
+/* The press shadow is set on .u-press, which lands after the global focus ring
+   in the cascade, so a square a child has arrived at by keyboard has to ask for
+   the ring back, as the thermometers and the tents do. Most of the time the
+   amber ring says the same thing, but Escape puts that down and leaves the
+   focus where it was. The lift keeps the ring from being clipped by the square
+   next door, and stays under the rails and the posts. */
+.tile:focus-visible {
+  box-shadow: var(--focus-ring);
+  z-index: 1;
+}
+
+/* --- a fence ------------------------------------------------- */
+
+/* The rail is laid over the square, corner to corner of the whole cell, so
+   its two ends run into two post centres exactly. That is the cell's border
+   box, and a positioned child is measured from inside the border, so a cell
+   with a hairline on that side hands the hairline back. It is a sibling of the
+   tile rather than inside it, so the tile sinks under a press and the rail,
+   fixed to its posts, stays where it is. */
+.fence {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.cell[data-top='hair'] > .fence {
+  top: calc(-1 * var(--hair));
+  height: calc(100% + var(--hair));
+}
+
+.cell[data-left='hair'] > .fence {
+  left: calc(-1 * var(--hair));
+  width: calc(100% + var(--hair));
+}
+
+/* The rail is the answer itself, so it is a graphic that carries meaning and
+   needs 3:1 on every ground it crosses: the bone tile, a printed square, a
+   chosen square and a red one. Measured, in that order:
+
+     --p-teal    5.80 / 5.16 / 4.83 / 4.69 light   4.15 / 4.70 / 3.69 / 4.20 dark
+
+   and src/styles/contrast.test.ts holds it there. The other enamels were
+   measured too. Ochre fails light mode (2.02 on a red square) and in dark mode
+   sits 0.018 from --amber in OKLab, the colour for "chosen". Indigo fails a
+   chosen square in dark mode (2.92), and it is the signposts' chain. Plum
+   passes, but it is a post in the tall and the short, and this puzzle already
+   shares the word "post" with that one. Teal is the one enamel no "posts"
+   puzzle wears, and it stays well clear of the three signals: 0.176, 0.063
+   and 0.206 from amber, moss and clay in light mode, and 0.232, 0.123 and 0.220
+   in dark. Nothing on this board is ever moss, because the solved stamp is the
+   shell's.
+
+   Under the teal runs an ink edge two pixels wider — the hairline every enamel
+   piece wears, drawn as a line — which in dark mode is the light halo that
+   lifts the rail off a dark ground. Both keep their width however the square
+   stretches, and both are round at the ends, so the ends sit under the
+   posts as a whole. */
+.railEdge,
+.rail {
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+}
+
+.railEdge {
+  stroke: var(--ink);
+  stroke-opacity: 0.4;
+  stroke-width: calc(var(--post) * 0.3 + 2px);
+}
+
+.rail {
+  stroke: var(--p-teal);
+  stroke-width: calc(var(--post) * 0.3);
+}
+
+/* --- the posts ----------------------------------------------- */
+
+.posts {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.post,
+.dot {
+  position: absolute;
+  left: calc(100% * var(--c) / var(--n));
+  top: calc(100% * var(--r) / var(--n));
+  translate: -50% -50%;
+  border-radius: var(--r-round);
+  background: var(--p-slate);
+}
+
+/* A numbered post: a slate disc under the hairline every enamel piece wears.
+   It never takes a tap — a tap on it lands on the quarter of the square under
+   it, whose hit box is still the whole square. */
+.post {
+  display: grid;
+  place-items: center;
+  width: var(--post);
+  height: var(--post);
+  border: var(--hair) solid color-mix(in oklab, var(--ink) 40%, transparent);
+}
+
+/* A post with more fences touching it than its number. The slate stays,
+   because the post is still the same post; the clay ring round it says so for
+   as long as it is true. */
+.post[data-over='true'] {
+  box-shadow: 0 0 0 3px var(--clay);
+}
+
+/* The clue number. docs/DESIGN.md rations mono to values and names a clue
+   number as one of them, so this is the instrument voice rather than an
+   exception to it. It is never smaller than the 1rem the other boards' clue
+   numbers stop at, which is why the smallest post is 27px rather than 24:
+   16.7, 16 and 16px at 360px wide, and 23, 21 and 19px on a laptop.
+   --p-on-dark on --p-slate is 7.09 in light mode and 4.93 in dark. */
+.num {
+  font-family: var(--font-mono);
+  font-size: max(1rem, calc(var(--post) * 0.58));
+  font-weight: 500;
+  line-height: 1;
+  color: var(--p-on-dark);
+}
+
+/* A post with no number: just enough of a dot that a rail ending there ends
+   on something. */
+.dot {
+  width: calc(var(--post) * 0.36);
+  height: calc(var(--post) * 0.36);
+}
+
+/* --- the keypad ---------------------------------------------- */
+
+.palette {
+  /* One number sets the whole row: the key, the fence on it and the rubber on
+     it all come off this. */
+  --key: clamp(60px, 16vw, 96px);
+
+  margin-top: var(--s5);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: var(--s2);
+}
+
+.key {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s1);
+  width: var(--key);
+  min-height: var(--key);
+  padding: var(--s1) var(--s1) var(--s2);
+  background: var(--surface);
+  color: var(--ink);
+  border: var(--hair) solid var(--ink);
+  border-radius: var(--r-md);
+}
+
+.key:disabled {
+  background: var(--surface-sunk);
+  border-color: var(--rule-strong);
+  color: var(--ink-faint);
+}
+
+/* The fence is the whole face of its key: a square of the board with the
+   rail in it, big enough to read which way it leans from across a table. */
+.keyArt {
+  width: calc(var(--key) * 0.62);
+  height: calc(var(--key) * 0.62);
+}
+
+/* A dead key should not offer a bright rail. */
+.key:disabled .keyArt {
+  opacity: 0.45;
+}
+
+.keyGlyph {
+  width: calc(var(--key) * 0.42);
+  height: calc(var(--key) * 0.42);
+}
+
+/* "Rub out" is a word, not a key value, so it does not take the instrument
+   voice — and it is wider than a fence, so its key is wider too. */
+.keyWord {
+  font-size: var(--t-xs);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ink-muted);
+}
+
+.key:disabled .keyWord {
+  color: var(--ink-faint);
+}
+
+.eraser {
+  width: auto;
+  min-width: calc(var(--key) * 1.2);
+  padding-inline: var(--s3);
+  margin-left: var(--s3);
+}
+
+/* What to tap next, how many posts are still short, or the rule that has
+   just been broken. */
+.note {
+  margin: var(--s4) auto 0;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-sm);
+  line-height: 1.4;
+  color: var(--ink-muted);
+  min-height: 2.8em;
+}
+
+@media (max-width: 30rem) {
+  .field {
+    --seat: 2px;
+  }
+  .field[data-size='5'],
+  .field[data-size='6'] {
+    --seat: 1px;
+  }
+  .palette {
+    margin-top: var(--s4);
+    gap: var(--s1);
+  }
+  .eraser {
+    margin-left: var(--s2);
+  }
+}

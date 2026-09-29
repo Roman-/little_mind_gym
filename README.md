@@ -68,6 +68,7 @@ toolbar, one tap from the screen.
 | The long snake         | Tracing                  |
 | The signposts          | Direction                |
 | The candles            | Counting                 |
+| The fence posts        | Loops                    |
 | The four horses        | Structure                |
 | The hedge maze         | Prediction               |
 
