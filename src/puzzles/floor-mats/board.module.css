@@ -1,0 +1,272 @@
+/* A floor, recessed straight into the stage the shell provides — a second sunk
+   panel inside it would only draw a redundant box and eat the width a six-wide
+   floor needs on a phone.
+
+   There are two materials here, and only two: plain floor, and a mat. A bare
+   square is the neutral sheet the rest of the app is made of, and never the
+   chocolate bar's ochre, so the two carving puzzles do not read as one. A mat
+   is plum, and every mat is the same plum: a piece a child makes gets no colour
+   of its own (docs/DESIGN.md, rule 1). Colouring the mats already down would
+   re-tint them as their neighbours land, and colouring them from the answer
+   would say which of two mats is wrong.
+
+   Why plum. Teal is water or ice on every board that uses it, and
+   src/lib/regions.ts calls it the nearest thing here to a second green; moss
+   would read as "correct" the moment a good but wrong mat went down; ochre is
+   the chocolate bar. Plum names nothing else on any board — one Hanoi disc,
+   one post height, one region wash — and ink on plum at --wash-raised over
+   --surface is a pair src/styles/contrast.test.ts already holds to 4.5:1,
+   because plum is one of the region colours.
+
+   Colour here says state and nothing else over the top of that: amber for the
+   corner that is marked, clay for a mat that breaks a rule. */
+
+/* The stage is a grid, and a grid item will not shrink below its own content
+   unless it is told it may. Without this a six-wide floor pushes the whole
+   page sideways on a narrow phone instead of sliding inside its own frame. */
+.wrap {
+  min-width: 0;
+}
+
+/* The frame centres the floor and scrolls it. A square never drops below a
+   fingertip, so on a phone narrow enough the six-wide floor is allowed to be
+   wider than the stage and slide sideways. The padding keeps a focus ring
+   clear of the scroll edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the floor ----------------------------------------------- */
+
+.grid {
+  /* Lengths, not colours: the floor's own rim, the groove between two squares,
+     the binding round a mat, and how big a square may get before it turns silly
+     on a big monitor.
+
+     --cell-min and --cell-max are the pitch of a column, groove included.
+     What a column's button gets is --cell-min less its share of the grooves,
+     --groove × (n + 1) / n, so with the narrow 3px groove below, a floor on
+     its minimum width has
+
+       four across   56px pitch → 230px wide → a 52.25px square
+       five across   45px pitch → 231px wide → a 41.4px square
+       six across    44px pitch → 270px wide → a 40.5px square
+
+     Six across is the tight one: half a pixel over --tap-sm. At 360px the
+     stage leaves the grid 276px, measured, so no floor is on its minimum
+     there and the squares come to 63.8, 50.4 and 41.5px with nothing
+     scrolling. At 320px it leaves 236px, measured, which the first two floors
+     now fit inside with a few pixels to spare; at 64px and 52px they came to
+     262 and 266px and slid sideways there as well, for squares far bigger than
+     a fingertip needs. The six-wide floor cannot fit 236px and still give a
+     finger 40px, so it is the one that slides. Do not take a pixel off
+     --cell-min, or the narrow groove, without redoing this. The maxima fit the
+     34rem stage: six across is 6 × 88 + 6 = 534px. */
+  --edge: 3px;
+  --groove: 4px;
+  --binding: 3px;
+  --cell-min: 56px;
+  --cell-max: 120px;
+
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  /* The rows hold nothing that could size them — a floor of nothing but mats
+     has no content in any row at all — so the floor states that it is square. */
+  grid-template-rows: repeat(var(--n), 1fr);
+  aspect-ratio: 1;
+  gap: var(--groove);
+  width: 100%;
+  min-width: calc(var(--n) * var(--cell-min) + 2 * var(--edge));
+  max-width: calc(var(--n) * var(--cell-max) + 2 * var(--edge));
+  margin-inline: auto;
+  padding: var(--groove);
+  background: var(--surface-sunk);
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+/* More squares to fit, so each one gives up a little. */
+.grid[data-size='5'] {
+  --cell-min: 45px;
+  --cell-max: 104px;
+}
+
+/* And the binding comes in a pixel, so a one-wide mat on the smallest square
+   still has more field than edge. */
+.grid[data-size='6'] {
+  --binding: 2px;
+  --cell-min: 44px;
+  --cell-max: 88px;
+}
+
+/* --- bare floor ---------------------------------------------- */
+
+.square,
+.mat {
+  position: relative;
+  display: grid;
+  place-items: center;
+  /* A grid item will not go below its own content either. */
+  min-width: 0;
+  min-height: 0;
+  color: var(--ink);
+}
+
+/* Plain floor: the sheet, a hairline, a lattice radius, and a groove on every
+   side of it. */
+.square {
+  background: var(--surface);
+  border: var(--hair) solid var(--rule-strong);
+  border-radius: var(--r-sm);
+}
+
+/* The corner a child has marked. Amber, because it is the move in progress. */
+.square[data-marked='true'] {
+  background: var(--amber-soft);
+}
+
+.square[data-marked='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-sm);
+  box-shadow: inset 0 0 0 4px var(--amber);
+}
+
+/* --- a mat --------------------------------------------------- */
+
+/* The place a mat takes on the floor, and nothing you can see: the mat fills
+   it. It exists to carry the flash when a refused rectangle runs into this
+   mat, so that the mat inside it is free to shake — one element runs one
+   animation. The radius is the mat's, so the flash follows its corners. */
+.slot {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  border-radius: var(--r-md);
+}
+
+/* The flash is an outline 2px out and 3px thick, which is wider than the
+   groove, and a slot is painted before the squares that come after it in
+   reading order. Lifted, its whole ring shows; the outline of the mat about
+   to be laid still draws over it. */
+.slot[data-refused='true'] {
+  z-index: 1;
+}
+
+/* One element for the whole rectangle, however many squares it covers: one
+   offset shadow, one radius, one continuous field and no grooves inside it. A
+   mat of six squares is one thing you can press, not six things pretending.
+   The binding is the tatami's heri, the dark cloth along a mat's long edges,
+   and it is what tells two mats side by side apart without a colour each. It
+   is what shakes when a refused rectangle runs into it, the whole slab, so a
+   mat with no mark on it says no as plainly as one with three. */
+.mat {
+  background: color-mix(in oklab, var(--p-plum) var(--wash-raised), var(--surface));
+  border: var(--binding) solid var(--p-plum);
+  border-radius: var(--r-md);
+}
+
+/* The nested grid is only there to stand each mark on its own square. It fills
+   the mat inside the binding, so it is also what takes the light when a mat
+   lands breaking a rule — the same place the clay ring is drawn, and at the
+   ring's radius. */
+.field {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--w), 1fr);
+  grid-template-rows: repeat(var(--h), 1fr);
+  border-radius: var(--r-sm);
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* A mat that breaks one of the three rules. The plum under it is the mat and
+   stays put, so the mistake is said in clay on top of it: a solid ring drawn on
+   ::after, inside the binding, where it cannot overwrite the press shadow, and
+   it stands until the mat is lifted. */
+.mat[data-fault='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-sm);
+  box-shadow: inset 0 0 0 3px var(--clay);
+}
+
+.square:disabled,
+.mat:disabled {
+  cursor: default;
+}
+
+/* The press shadow is set on .u-press, which lands after the global focus ring
+   in the cascade, so a square or a mat a child has arrived at by keyboard has
+   to ask for the ring back, as the tents, the thermometers and the alice maze
+   do. The lift is so that the ring is not clipped by the square next door;
+   the outline of the mat about to be laid still draws over it. */
+.square:focus-visible,
+.mat:focus-visible {
+  box-shadow: var(--focus-ring);
+  z-index: 1;
+}
+
+/* --- the marks ----------------------------------------------- */
+
+/* A stroke in ink, the same size on a bare square and inside a mat, and no
+   plate behind it: the three marks are told apart by silhouette alone. */
+.glyph {
+  width: 58%;
+  height: 58%;
+}
+
+/* --- the mat before it lands --------------------------------- */
+
+/* The rectangle the second tap would lay, outlined from the marked corner. It
+   carries nothing — no size and no shape word — because measuring it against
+   the mark is the puzzle. Positioned so it draws over the mats it may be
+   crossing, and deaf to the pointer so the square underneath still takes the
+   tap. */
+.preview {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+  border: 2px dashed var(--amber);
+  border-radius: var(--r-md);
+}
+
+/* What is left to do, or the rule that has just been broken. Two lines are
+   held open, because a mat of the wrong shape is said in two sentences —
+   "This mat is wider than it is tall. A standing line needs a mat that is
+   taller than it is wide." — and at 62ch they wrap. Holding one line, the
+   toolbar under the board dropped 26px when that sentence came and rose again
+   when the mat was lifted, measured at 1280px, moving Step back out from
+   under a pointer that was on its way to it. */
+.note {
+  margin: var(--s4) auto 0;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-lg);
+  color: var(--ink);
+  min-height: 2.8em;
+}
+
+@media (max-width: 30rem) {
+  .grid {
+    --groove: 3px;
+  }
+
+  /* On a phone the wrong shape's two sentences take three lines, and with two
+     held open the toolbar still dropped 25px for them at 360 × 740 and 9px at
+     360 × 780, where the stage has no height to spare. Three held open, it
+     stays put at 360 and 390 for every sentence the board says. A 320px phone
+     wraps that one sentence to four lines, and there it still drops 24px. */
+  .note {
+    min-height: 4.2em;
+  }
+}

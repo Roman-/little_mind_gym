@@ -39,6 +39,8 @@ export const ORIGINS: Record<string, string> = {
   'tall-and-short':
     'Futoshiki, by Tamaki Seto. British newspapers have carried it since 2006, and Simon Tatham’s collection calls it Unequal.',
   shikaku: 'Shikaku, published by Nikoli. Simon Tatham’s collection calls it Rectangles.',
+  'floor-mats':
+    'Tatamibari, from Nikoli, who first printed it in Puzzle Communication Nikoli in 2004 and named it after tatami mats. The house version leaves out its rule that four mats may never meet at one corner.',
   'painted-tiles':
     'Tilepaint, or Tairupeinto, sent in by a reader and first published by Nikoli in Puzzle Communication Nikoli, issue 53, in 1995.',
   'garden-cats':
