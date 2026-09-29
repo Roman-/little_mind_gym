@@ -1,0 +1,415 @@
+/* A chart of the sea: the field of squares engraved into the stage the shell
+   provides, the numbers standing outside it in a margin of their own, and the
+   boats to find drawn under it. A second sunk panel inside the stage would
+   only draw a redundant box and eat the width a seven-wide board needs on a
+   phone.
+
+   The plan is the tents and trees' plan, copied rather than shared, because
+   the margin is the same instrument: a number at the end of every row and
+   every column, set big in the instrument voice, in a gutter the rim of the
+   field parts them from.
+
+   Five materials and no more.
+
+   A number, bare, in ink, and nothing else ever. It is never crossed off in
+   moss and never boxed in clay, because either would hand a player who never
+   thinks the whole board (see the top of logic.ts). It says what the finished
+   line holds, the way the thermometers' numbers do.
+
+   A square is a bone tile you can press, seated in the field with the press
+   shadow under it. A printed square is a flush plate, sunk into the field with
+   a transparent hairline so it sits exactly where a tile would: nobody can
+   press it, because nobody can take it away.
+
+   A hull is flat indigo enamel under the same hairline every enamel piece
+   wears. Each boat square carries its own piece of hull, rounded where the
+   boat ends and flat where it runs on, so a boat reads as pieces laid flat
+   face to flat face across the seat between tiles.
+
+   A square the boats already down leave no room for keeps its tile and takes
+   a small faint dot: the paper game's water, drawn free, because a mark is not
+   a move.
+
+   And the boats to find are small outlines under the board, which fill with
+   the same enamel as the hulls.
+
+   Colour says state and nothing else here: clay for a boat square a rule
+   hands back and for the group it fell foul of. Indigo is a piece colour — a
+   hull is a thing on the board — and it was taken for board reasons alone.
+   Moss and clay pieces would sit beside the moss of solved and the clay of a
+   broken rule; ochre would sit beside the amber of focus; and slate is the
+   piece colour nearest the dots' faint ink, and a dot must never read as a
+   small boat. Indigo is the cool colour left with the most contrast on bone,
+   in both themes. The sea is not coloured at all: there are no regions here,
+   and a blue wash would be decoration. */
+
+/* The stage is a grid, and a grid item will not shrink below its own content
+   unless it is told it may. Without this the seven-wide board pushes the whole
+   page sideways on a narrow phone instead of sliding inside its own frame. */
+.wrap {
+  min-width: 0;
+}
+
+/* The frame scrolls the plan, which centres itself inside it. A square never
+   drops below a fingertip, so on the narrowest phones a board is allowed to be
+   wider than the stage and slide sideways: the five-wide board fits from 360px
+   up, the six-wide from 390px and the seven-wide from 430px (see --cell
+   below). The padding keeps a focus ring clear of the scroll edge. */
+.frame {
+  overflow-x: auto;
+  padding: var(--s1);
+}
+
+/* --- the plan ------------------------------------------------- */
+
+.plan {
+  /* Lengths, not colours: the rim round the field, the seat a tile sits in,
+     one square, and the margin the numbers stand in. Everything on the board
+     is measured off --cell, so the numbers grow with the squares they count
+     and the whole plan stays square.
+
+     The floor is the pitch of a column, and what is left of it after the seat
+     on both sides is the square a finger lands on: 42px at 46 and 40px at 44,
+     and 2px more on a phone, where the seat is 1px — never under --tap-sm,
+     even on a short window where the height holds --cell at its floor. The
+     five-wide floor is low enough for the whole of the first level to fit a
+     360px phone; at the tents and trees' 52px it slid 26px off the right-hand
+     side there. The six-wide floor comes down from their 48px to 44 as well,
+     which fits it from 390px rather than from 412.
+
+     And the ceiling follows the height as well as the width, as the stone
+     path's does. Sized off the width alone, a 1366 by 768 laptop drew the
+     bottom row of the field, the boats to find and the note under the fold at
+     every level — the note ended at 888, 912 and 894px — so a child counting
+     a line had to scroll between its number and the strip. Held to the height
+     too, the note ends at 712, 723 and 732px there, and a 1280 by 900 screen
+     still gets a field 438 to 474px across. */
+  --edge: 3px;
+  --seat: 2px;
+  --cell: clamp(46px, min(10.5vw, 9.5vh), 104px);
+  --gutter: calc(var(--cell) * 0.66);
+
+  display: grid;
+  grid-template-columns: var(--gutter) auto;
+  grid-template-rows: var(--gutter) auto;
+  /* Shrink-wrapped and then centred, rather than centred by the frame: a flex
+     box that centres a child wider than itself puts the overflow out of reach
+     on the left, and an auto margin simply gives up and lets the frame scroll. */
+  width: max-content;
+  margin-inline: auto;
+}
+
+/* More squares to fit, so each one gives up a little. */
+.plan[data-size='6'] {
+  --cell: clamp(44px, min(9.5vw, 8.3vh), 92px);
+}
+
+.plan[data-size='7'] {
+  --edge: 2px;
+  --cell: clamp(44px, min(8.5vw, 7.4vh), 78px);
+}
+
+/* --- the numbers ---------------------------------------------- */
+
+/* The two gutters take the field's own tracks, less the rim and the seat, so
+   a number stands square with the line it counts. */
+.top {
+  display: grid;
+  grid-template-columns: repeat(var(--n), var(--cell));
+  align-items: center;
+  justify-items: center;
+  padding-inline: calc(var(--edge) + var(--seat));
+}
+
+.left {
+  display: grid;
+  grid-template-rows: repeat(var(--n), var(--cell));
+  align-items: center;
+  justify-items: center;
+  padding-block: calc(var(--edge) + var(--seat));
+}
+
+/* docs/DESIGN.md rations the mono face to values and names a clue number as
+   one of them, so this is the instrument voice rather than an exception to
+   it — sized for the field it measures rather than for a caption, which is
+   why it is not the .u-mono utility. Off --cell and never off the viewport,
+   for the reason the tents and trees found the hard way: a number sized off
+   the viewport outgrew its gutter wherever --cell had stopped at its floor
+   and the viewport had not. 1.6em is 1.6 x 0.38 = 0.61 of a square against a
+   gutter of 0.66, which has room to spare at every size. */
+.clue {
+  display: block;
+  text-align: center;
+  min-width: 1.6em;
+  padding: 0.14em 0.16em;
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: clamp(1rem, calc(var(--cell) * 0.38), 1.7rem);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink);
+}
+
+/* --- the field ------------------------------------------------ */
+
+.field {
+  display: grid;
+  grid-template-columns: repeat(var(--n), var(--cell));
+  grid-auto-rows: var(--cell);
+  padding: var(--seat);
+  background: var(--surface-sunk);
+  border: var(--edge) solid var(--ink-muted);
+  border-radius: var(--r-md);
+}
+
+.cell {
+  display: grid;
+  place-items: stretch;
+  padding: var(--seat);
+}
+
+/* --- a printed square ----------------------------------------- */
+
+/* Flush with the field, nothing to press: the printed-mark idiom of suns and
+   moons, on the sunk ground rather than a sky. The transparent hairline keeps
+   its hull exactly where a hull on a tile beside it stands. */
+.given {
+  position: relative;
+  background: var(--surface-sunk);
+  border: var(--hair) solid transparent;
+  border-radius: var(--r-md);
+}
+
+/* --- a square ------------------------------------------------- */
+
+.tile {
+  --tile-r: var(--r-md);
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  border: var(--hair) solid var(--rule-strong);
+  border-radius: var(--tile-r);
+  transition: border-color var(--dur-2) var(--ease);
+}
+
+.tile:not(:disabled):not([aria-disabled='true']):hover {
+  border-color: var(--ink);
+}
+
+.tile:disabled {
+  cursor: default;
+}
+
+/* Dead because the player asked for a forbidden boat square to be refused up
+   front, rather than offered and handed back. It is aria-disabled and never
+   disabled: a disabled button cannot take focus, and the roving tab stop would
+   go off the board in silence. What it drops is the shadow that promises
+   something will happen, and the sink under a press that will not come. */
+.tile[aria-disabled='true'] {
+  box-shadow: var(--press-none);
+  cursor: default;
+}
+
+/* Outscoring .u-press:active:not(:disabled), which is set in another
+   stylesheet and so cannot be settled by order. */
+.tile[aria-disabled='true']:active:not(:disabled) {
+  transform: none;
+}
+
+/* The press shadow is set on .u-press, which lands after the global focus ring
+   in the cascade, so a square a child has arrived at by keyboard has to ask
+   for the ring back. The tents and trees and the thermometers do the same. */
+.tile:focus-visible {
+  box-shadow: var(--focus-ring);
+  border-radius: var(--tile-r);
+}
+
+/* A square the boats already down leave no room for: at the corner of a boat
+   square, at either end of a boat as long as the longest, or against the
+   closed side of a printed piece. The dot is the paper game's water and it
+   costs no move. It never says a word about a line's number. */
+.tile[data-room='none'] {
+  border-color: var(--rule);
+}
+
+.tile[data-room='none']::after {
+  content: '';
+  width: 15%;
+  height: 15%;
+  border-radius: var(--r-round);
+  background: var(--ink-faint);
+}
+
+/* --- a hull --------------------------------------------------- */
+
+/* One piece of boat to a square, a fifth of a square in from its edges. A
+   boat of one is a round boat; an end is flat on the side its boat runs on
+   and reaches that edge; a middle reaches both. The pieces of one boat meet
+   flat face to flat face across the seat between two tiles, and the seam is
+   left open on purpose: u-press moves a pressed tile 2px, which would tear
+   any artwork drawn across the edge of a button. */
+.hull {
+  position: absolute;
+  inset: 20%;
+  background: var(--p-indigo);
+  border: var(--hair) solid color-mix(in oklab, var(--ink) 40%, transparent);
+  border-radius: var(--r-round);
+}
+
+.hull[data-hull='end-right'] {
+  right: 0;
+  border-right: 0;
+  border-radius: var(--r-round) 0 0 var(--r-round);
+}
+
+.hull[data-hull='end-left'] {
+  left: 0;
+  border-left: 0;
+  border-radius: 0 var(--r-round) var(--r-round) 0;
+}
+
+.hull[data-hull='end-down'] {
+  bottom: 0;
+  border-bottom: 0;
+  border-radius: var(--r-round) var(--r-round) 0 0;
+}
+
+.hull[data-hull='end-up'] {
+  top: 0;
+  border-top: 0;
+  border-radius: 0 0 var(--r-round) var(--r-round);
+}
+
+.hull[data-hull='across'] {
+  left: 0;
+  right: 0;
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
+}
+
+.hull[data-hull='down'] {
+  top: 0;
+  bottom: 0;
+  border-top: 0;
+  border-bottom: 0;
+  border-radius: 0;
+}
+
+/* A piece of boat whose way is not known yet: a printed middle before either
+   of its neighbours is down, or the corner of a bend that a refusal draws for
+   one cue. Square-ish, because it runs on, but not a way. */
+.hull[data-hull='block'] {
+  border-radius: var(--r-sm);
+}
+
+/* --- the boats to find ---------------------------------------- */
+
+/* Not touchable, so not held to a fingertip: a mini square is only as small
+   as it has to be for the fleet to fit a 360px phone in one line, where the
+   row under the board is 284px wide. Four boats are seven squares and three
+   gaps, so they keep 20px (165px in all); six boats are ten squares and five
+   gaps at 18px (220px); seven boats are fourteen squares and six gaps at 16px
+   (272px). At one size for all three, 14px, a boat of one on the first level
+   was a dot in a box. The row wraps rather than overflows if it ever does not
+   fit. */
+.fleetRow {
+  --mini: clamp(20px, 5.6vw, 26px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2) var(--s4);
+  margin-top: var(--s4);
+}
+
+/* More boats to fit, so each square gives up a little, as --cell does. */
+.fleetRow[data-size='6'] {
+  --mini: clamp(18px, 5vw, 26px);
+}
+
+.fleetRow[data-size='7'] {
+  --mini: clamp(16px, 4.4vw, 26px);
+}
+
+.fleetLabel {
+  margin: 0;
+}
+
+.fleet {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A boat of this many mini squares, and its hull laid across all of them at
+   the board's own proportions: a fifth of one square in from every edge. */
+.ship {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: repeat(var(--len), var(--mini));
+  grid-auto-rows: var(--mini);
+}
+
+.slot {
+  background: var(--surface);
+  border: var(--hair) solid var(--rule);
+  border-radius: var(--r-sm);
+}
+
+/* Still an outline: a mark in faint ink, which is what faint ink is for. */
+.ship::after {
+  content: '';
+  position: absolute;
+  inset: calc(var(--mini) * 0.2);
+  border: 1.5px solid var(--ink-faint);
+  border-radius: var(--r-round);
+}
+
+/* Filled in: the same enamel and hairline as a hull on the board. */
+.ship[data-lit='true']::after {
+  background: var(--p-indigo);
+  border: var(--hair) solid color-mix(in oklab, var(--ink) 40%, transparent);
+}
+
+/* --- what is left to do --------------------------------------- */
+
+/* Room held for the longest thing the note says, so a refusal that puts its
+   sentence in front does not push the toolbar under it down a line and then
+   pull it back up on the next move. On a phone a refusal in front of the tally
+   runs to three lines at 360 and 375px wide, where two were held and Step
+   back dropped 21px for the length of the sentence. Three are held there now.
+
+   One sentence is longer still: a refusal in front of "Every boat square is
+   placed", which is four lines at 360 and 375px, three from 390px up, and two
+   on a desktop, where one is held. Holding room for it would cost more than
+   it saves: a fourth line puts Step back under the fold of a 360 by 780 phone
+   at seven boats, and a second line on a desktop puts it under the fold of a
+   1366 by 768 laptop, where half of it is there already. It is also the rarest
+   thing the note says — a forbidden square tapped once every square is down. */
+.note {
+  margin: var(--s4) auto 0;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-lg);
+  color: var(--ink);
+  min-height: 1.4em;
+}
+
+@media (max-width: 30rem) {
+  .plan {
+    --seat: 1px;
+  }
+  .fleet {
+    gap: var(--s2);
+  }
+  .note {
+    font-size: var(--t-body);
+    min-height: 4.2em;
+  }
+}

@@ -53,6 +53,8 @@ export const ORIGINS: Record<string, string> = {
     'Thermometers, also sold as Mercury. It comes out of the puzzle-contest world — Conceptis, Logic Masters, the World Puzzle Championship — from the 1990s on.',
   'logic-grid':
     'Traditional. The newspaper logic-grid puzzle, descended from the zebra puzzle printed in Life International in 1962.',
+  'hidden-boats':
+    'Solitaire Battleships, first printed in 1982 in Humor & Juegos, the Argentine magazine that Jaime Poniachik founded. Poniachik made it with three of its editors, Eduardo Abel Gimenez, Jorge Varlotta and Daniel Samoilovich. It is also sold as Bimaru and Yubotu.',
   'counting-path':
     'Numbrix, Marilyn vos Savant’s newspaper puzzle, which is the orthogonal cousin of Gyora Benedek’s Hidato.',
   'long-snake':

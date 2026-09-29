@@ -66,6 +66,7 @@ toolbar, one tap from the screen.
 | The tents and trees    | Pairing                  |
 | The thermometers       | Totals                   |
 | Who has what           | Deduction                |
+| The hidden boats       | Search                   |
 | The counting path      | Paths                    |
 | The long snake         | Tracing                  |
 | The signposts          | Direction                |
