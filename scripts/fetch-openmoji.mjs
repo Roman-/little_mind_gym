@@ -61,6 +61,8 @@ const MANIFEST = {
   moon: '1F319',
   // the kangaroo's hops
   kangaroo: '1F998',
+  // the long snake
+  snake: '1F40D',
 }
 
 mkdirSync(OUT, { recursive: true })

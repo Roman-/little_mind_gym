@@ -65,6 +65,7 @@ toolbar, one tap from the screen.
 | The thermometers       | Totals                   |
 | Who has what           | Deduction                |
 | The counting path      | Paths                    |
+| The long snake         | Tracing                  |
 | The signposts          | Direction                |
 | The candles            | Counting                 |
 | The four horses        | Structure                |

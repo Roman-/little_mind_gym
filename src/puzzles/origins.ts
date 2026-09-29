@@ -51,6 +51,8 @@ export const ORIGINS: Record<string, string> = {
     'Traditional. The newspaper logic-grid puzzle, descended from the zebra puzzle printed in Life International in 1962.',
   'counting-path':
     'Numbrix, Marilyn vos Savant’s newspaper puzzle, which is the orthogonal cousin of Gyora Benedek’s Hidato.',
+  'long-snake':
+    'Snake, a pencil puzzle from the puzzle-contest world, where it is set at the World Puzzle Championship. It has also gone by the name Tunnel.',
   signposts:
     'Signpost, contributed to Simon Tatham’s collection by James Harvey, and the Janko puzzle Pfeilpfad before that.',
   'light-up': 'Akari, published by Nikoli. Simon Tatham’s collection calls it Light Up.',

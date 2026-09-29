@@ -20,6 +20,7 @@ import { tentsAndTrees } from './tents-and-trees'
 import { thermometers } from './thermometers'
 import { logicGrid } from './logic-grid'
 import { countingPath } from './counting-path'
+import { longSnake } from './long-snake'
 import { signposts } from './signposts'
 import { lightUp } from './light-up'
 import { knightSwap } from './knight-swap'
@@ -48,6 +49,7 @@ export const PUZZLES: PuzzleMeta[] = [
   thermometers,
   logicGrid,
   countingPath,
+  longSnake,
   signposts,
   lightUp,
   knightSwap,
