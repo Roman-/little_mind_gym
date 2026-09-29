@@ -262,8 +262,8 @@
 
 /* The press shadow is set on .u-press, which lands after the global focus ring
    in the cascade, so a gap a child has arrived at by keyboard has to ask for
-   the ring back. The alice maze, the tents, the thermometers and the balance
-   scales all do the same.
+   the ring back. The alice maze, the tents and the thermometers all do the
+   same.
 
    This board has to ask twice. `.seam` is its only control and the whole row
    is meant to be walked by keyboard — the arrow-key rover above is nothing
@@ -308,8 +308,8 @@
 
 /* --- what is left -------------------------------------------- */
 
-/* The budget is a rule of the level, the way the balance has a number of
-   weighings: it is stated, not counted down from behind the child's back. */
+/* The budget is a rule of the level: it is stated, not counted down from
+   behind the child's back. */
 .counter {
   align-self: center;
   padding: var(--s2) var(--s4);

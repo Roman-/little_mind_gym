@@ -59,8 +59,8 @@ Board: ComponentType<BoardProps<S, A>>
    during render. An effect would clear it *after* paint, so every move would
    show one frame of the old selection over the new position.
 
-Hidden information (which ball is heavy, the sudoku solution) lives in the
-state too — just don't render it.
+Hidden information (the sudoku solution, say) lives in the state too — just
+don't render it.
 
 ### The way back out
 
@@ -81,11 +81,10 @@ one they can still win: the river crossing, whose every move undoes, and the
 alice maze, whose `failure` already fires the moment the ring goes out of
 reach. Both prove that in their own `logic.test.ts` rather than assuming it.
 
-The answer can be arithmetic (`candidates <= 3 ** weighingsLeft` in the balance
-scales), a table the level already built (`swapsToGo <= swapsLeft` in the long
-table), or `shortestSolution` over a small graph (the frogs, the stones, the
-hedges). It runs at most once a move in the player's history, and only at a
-dead end, so a search over a few hundred positions is nothing.
+The answer can be a table the level already built (`swapsToGo <= swapsLeft` in
+the long table) or `shortestSolution` over a small graph (the frogs, the
+stones, the hedges). It runs at most once a move in the player's history, and
+only at a dead end, so a search over a few hundred positions is nothing.
 
 ## Board rules
 
@@ -129,9 +128,9 @@ Four rules, and `src/components/scene.test.tsx` holds you to the first two.
    fill or a stroke on `Scene` would land on artwork that brought its own
    colours. Every shape declares what it is drawn in.
 3. **Use the board's own materials.** A thing a child can name is a `Piece`; a
-   disc, a water level, a weighing ball or a lit cell is flat enamel under
-   `edge`, exactly as the board draws it. Nothing appears on the card that is
-   not on the stage behind it.
+   disc, a water level or a lit cell is flat enamel under `edge`, exactly as
+   the board draws it. Nothing appears on the card that is not on the stage
+   behind it.
 4. **Three or four big shapes.** The plate on the collection card gives the
    scene about 68px and the row above a puzzle gives it 28. It has to read as
    a silhouette at the smaller of those.
@@ -160,12 +159,12 @@ Four rules, and `src/components/scene.test.tsx` holds you to the first two.
   filling a full jug, writing the digit that is already there — stays dead.
   See docs/DESIGN.md, **A forbidden move is offered, not hidden**.
 - **You do not have to manage focus.** Boards routinely replace the very button
-  that was pressed — a piece moves into the boat, a ball moves onto a pan, a
-  Fill button greys out — which drops focus onto `<body>`. The shell listens
-  for `focusout` on the stage and puts focus back on the board, so a child
-  playing by keyboard carries on from where they were. Do not disable a control
-  a player has just used and leave nothing behind: use `aria-disabled` if the
-  control must stay put.
+  that was pressed — a piece moves into the boat, a Fill button greys out —
+  which drops focus onto `<body>`. The shell listens for `focusout` on the
+  stage and puts focus back on the board, so a child playing by keyboard
+  carries on from where they were. Do not disable a control a player has just
+  used and leave nothing behind: use `aria-disabled` if the control must stay
+  put.
 - **You do not have to announce a win or a dead end.** The shell keeps one
   permanently-mounted `role="status"` region for `failure()` and the solved
   message. If your board has news of its own — the row read out, how many lamps

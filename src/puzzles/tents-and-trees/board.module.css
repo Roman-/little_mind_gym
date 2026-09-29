@@ -239,7 +239,7 @@
 
 /* The press shadow is set on .u-press, which lands after the global focus ring
    in the cascade, so a square a child has arrived at by keyboard has to ask
-   for the ring back. The balance scales' pieces do the same. */
+   for the ring back. The alice maze and the thermometers do the same. */
 .tile:focus-visible {
   box-shadow: var(--focus-ring);
   border-radius: var(--tile-r);

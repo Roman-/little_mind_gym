@@ -192,7 +192,7 @@
 
 /* The press shadow is set on .u-press, which lands after the global focus ring
    in the cascade, so a square a child has arrived at by keyboard has to ask for
-   the ring back. The tents and the balance scales do the same. This board needs
+   the ring back. The tents and the thermometers do the same. This board needs
    it more than most: one tab stop roves thirty-six squares, and most of them
    are dead at any moment. */
 .square:focus-visible {

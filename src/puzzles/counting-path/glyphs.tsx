@@ -3,7 +3,7 @@ import { Scene, edge } from '../../components/scene'
 /**
  * Nothing on this board is a thing a child could point at and name, so there
  * is no pictogram anywhere near it — a numbered square is abstract in exactly
- * the way a Hanoi disc and a weighing ball are. Everything here is our own
+ * the way a Hanoi disc is. Everything here is our own
  * hand: one stroke mark for the rubber, and flat enamel for the card.
  */
 

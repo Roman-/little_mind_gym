@@ -62,7 +62,6 @@ toolbar, one tap from the screen.
 | The garden cats        | Elimination              |
 | The tents and trees    | Pairing                  |
 | The thermometers       | Totals                   |
-| The heavier one        | Evidence                 |
 | Who has what           | Deduction                |
 | The counting path      | Paths                    |
 | The signposts          | Direction                |
@@ -108,8 +107,8 @@ was wrong, and the board puts it back — with nothing on the move tape and
 nothing in the history, so a forbidden position is drawn and never played from.
 A dead button would have said which moves are legal without the child ever
 having to work it out. **Allow moves that break a rule** in the settings turns
-it off, and the controls go back to refusing up front. It changes twelve of the
-puzzles — the Tower of Hanoi, leapfrog and the balance scales among them; the
+it off, and the controls go back to refusing up front. It changes eleven of the
+puzzles — the Tower of Hanoi, leapfrog and the four horses among them; the
 other thirteen disable nothing their rules forbid.
 
 **Immerse gives the whole window to the board.** The button is in the navbar
@@ -146,7 +145,7 @@ page loads, so the first one plays without a gap. The speaker in the navbar and
 **Nothing here is ours alone, and `/credits` says so.** The footer of every
 page carries the domain the site is part of, a link to the source code on
 GitHub, and one link to that page, which
-names the inventor or the publisher of all twenty-five puzzles, the OpenMoji
+names the inventor or the publisher of all twenty-four puzzles, the OpenMoji
 artwork and its licence, the three typefaces, and the five tools the app is
 built with. The puzzle lines live in `src/puzzles/origins.ts`, one to an id, and
 `src/routes/credits.test.tsx` fails if a puzzle ever ships without one.
@@ -177,9 +176,8 @@ had to be told what it stood for. Each puzzle draws a **scene** instead — a
 small picture of its own board, three or four shapes big enough to read across
 a table, made of the same materials the board is. Three discs on the first of
 three pegs. A boat out on the water with the goat still waiting on the bank.
-Two jugs of different heights, one of them part full. A balance holding two
-against two and still not level. `Scene` in `src/components/scene.tsx` is the
-frame that all twenty-five are drawn in, and each puzzle's is at the bottom of
+Two jugs of different heights, one of them part full. `Scene` in
+`src/components/scene.tsx` is the frame that all twenty-four are drawn in, and each puzzle's is at the bottom of
 its `glyphs.tsx`.
 
 ## Licence

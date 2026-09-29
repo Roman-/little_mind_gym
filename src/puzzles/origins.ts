@@ -45,8 +45,6 @@ export const ORIGINS: Record<string, string> = {
     'Tents and Trees, a newspaper pencil puzzle in the Nikoli tradition. Simon Tatham’s collection calls it Tents.',
   thermometers:
     'Thermometers, also sold as Mercury. It comes out of the puzzle-contest world — Conceptis, Logic Masters, the World Puzzle Championship — from the 1990s on.',
-  'balance-scales':
-    'Traditional. The counterfeit-coin weighing problem, a staple of recreational mathematics since the 1940s.',
   'logic-grid':
     'Traditional. The newspaper logic-grid puzzle, descended from the zebra puzzle printed in Life International in 1962.',
   'counting-path':

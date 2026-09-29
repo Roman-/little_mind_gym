@@ -216,10 +216,8 @@ export interface TableFailure {
  * Shown by the shell when the last swap has been spent and the row is still
  * wrong.
  *
- * Two sentences: what happened, and then what it means. That is the shape of
- * balance-scales' 'You have used every weighing. More than one ball could
- * still be the heavy one.', and it is the order docs/DESIGN.md asks for. The
- * shell adds the way out.
+ * Two sentences: what happened, and then what it means. That is the order
+ * docs/DESIGN.md asks for. The shell adds the way out.
  *
  * Both halves are checkable at the moment it is said, which is the whole
  * reason it may be said at all: the counter beside it reads "No swaps left",

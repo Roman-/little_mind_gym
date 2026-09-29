@@ -6,17 +6,15 @@ import type { PictoName } from './pictogram-art'
  * The picture on a puzzle's card, and the frame every one of them is drawn in.
  *
  * A puzzle is not a thing, so no single picture names one: an abacus is not a
- * Tower of Hanoi, a pair of scales is not the puzzle of finding the heavier
- * ball, and a clipboard is not a question about who has what. Each card
- * carries a **small picture of its own board** instead — the pieces it is
- * played with, arranged the way they are arranged on the stage.
+ * Tower of Hanoi, and a clipboard is not a question about who has what. Each
+ * card carries a **small picture of its own board** instead — the pieces it
+ * is played with, arranged the way they are arranged on the stage.
  *
  * That keeps rule 3 of docs/DESIGN.md rather than bending it. A scene is built out
  * of the same two materials the board is: a thing a child can point at and
  * name is an OpenMoji `Piece`, and an abstract piece — a disc, a jug of water,
- * a weighing ball, a lit cell — is flat enamel under a hairline, exactly as
- * the board draws it. Nothing is invented for the card that is not on the
- * stage behind it.
+ * a lit cell — is flat enamel under a hairline, exactly as the board draws
+ * it. Nothing is invented for the card that is not on the stage behind it.
  *
  * ## The box
  *
@@ -68,7 +66,7 @@ export function Piece({
 
 /**
  * The hairline every enamel piece on a board wears — `--ink` at four tenths,
- * the same border `.disc` and the weighing balls take. Spread onto a shape
+ * the same border `.disc` takes. Spread onto a shape
  * that already has its `--p-*` fill.
  */
 export const edge = {

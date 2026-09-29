@@ -861,9 +861,7 @@ describe('the words', () => {
   it('answers a dead end with what happened and then what it means', () => {
     // docs/DESIGN.md, Words: say what happened and what to do. The shell adds
     // the way out — "Nothing is lost. Go back one move and try another way." —
-    // so the message owes the other two, in that order, and balance-scales'
-    // 'You have used every weighing. More than one ball could still be the
-    // heavy one.' is the same shape, for the same reason: a budget that ran
+    // so the message owes the other two, in that order: a budget that ran
     // out, and then what is still wrong with the board.
     //
     // Both halves are true of the position at the moment it is said, and "the
@@ -1446,8 +1444,8 @@ describe('the long table — board', () => {
     // whatever the order. So the rule asks twice: `.seam:focus-visible` for
     // the live gaps, and the same with the attribute for a level that is over,
     // which is exactly when a child reads the row back. The alice maze, the
-    // tents, the thermometers and the balance scales carry the first half of
-    // this; this board is the only one that needs the second.
+    // tents and the thermometers carry the first half of this; this board is
+    // the only one that needs the second.
     const css = readFileSync(
       resolvePath(process.cwd(), 'src/puzzles/long-table/board.module.css'),
       'utf8',

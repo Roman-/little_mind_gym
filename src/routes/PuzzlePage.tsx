@@ -122,10 +122,10 @@ function PuzzleShell({ meta }: { meta: PuzzleMeta }) {
 
   /**
    * Several boards replace the very button that was pressed — a piece moves
-   * into the boat, a ball moves onto a pan, a Fill button greys out — which
-   * drops the browser's focus onto <body> and sends the next Tab back to the
-   * top of the page. When that happens, put focus on the board instead so a
-   * child playing by keyboard carries on from where they were.
+   * into the boat, a Fill button greys out — which drops the browser's focus
+   * onto <body> and sends the next Tab back to the top of the page. When that
+   * happens, put focus on the board instead so a child playing by keyboard
+   * carries on from where they were.
    *
    * It cannot be an effect on the puzzle state. Half the taps in a puzzle are a
    * *selection* — putting the goat in the boat, lifting a disc — which by

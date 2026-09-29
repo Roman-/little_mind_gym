@@ -21,6 +21,21 @@ Sixty-seven were ranked. The other twenty-eight are listed at the bottom with th
 one sentence that settles each of them, and no more work was spent on them than
 that.
 
+## Taken out, and not to be built again
+
+**The heavier one** (`balance-scales`) — the counterfeit-coin weighing problem:
+one ball in eight, nine or twelve is heavier, and a balance with a fixed number
+of weighings has to find it. It shipped, and it was taken out on 2026-09-29
+because it does not fit this collection. **Do not propose it or build it
+again**, and that holds for its relatives under any other name or picture too:
+the twelve-coin problem, a lighter fake instead of a heavier one, a fake that
+could be either, or the same balance with other numbers of balls or weighings.
+
+Where this document still names `balance-scales` — as one of the nine, or as
+the precedent for a hidden answer or a minimax par — it is describing the app
+as it stood when the list was written, not a puzzle that still ships. The code
+is in the history: `git show 34327c7:src/puzzles/balance-scales/logic.ts`.
+
 ## The first five
 
 **Hidato, Light Up, Guarini's knight swap, Shikaku, and Theseus and the Minotaur** —
@@ -1210,14 +1225,13 @@ nine either fill in a structure or move pieces within one.
 
 ## What already ships
 
-Eight of Tatham's forty are wholly or largely in the app already, which is why
+Seven of Tatham's forty are wholly or largely in the app already, which is why
 several famous names sit low in the list or do not appear in it at all.
 
 | Tatham's puzzle | Ships here as | How close | Why |
 | --- | --- | --- | --- |
 | Flip | `lights-out` | Identical | A grid of lights where a tap toggles a set of cells and the goal is all off. In its crosses mode the toggle set is exactly lights-out's. |
 | Solo | `mini-sudoku` | Identical | Sudoku with rectangular blocks. The shipped 6x6 with 2x3 boxes is literally a Solo configuration. |
-| Black Box | `balance-scales` | Strong | Both hold the hidden truth in the state and never draw it, and both answer a probe rather than a move. |
 | Keen | `mini-sudoku` | Strong | A Latin square with arithmetic cages in place of boxes. The row and column half is mini-sudoku exactly. |
 | Pegs | `frog-leap` | Strong | Jump a piece over its neighbour into the one hole. `hopTarget()` in frog-leap is that move in one dimension. |
 | Tents | `garden-cats` | Strong | One tent to a tree and no two tents touching, even at a corner — the same eight-neighbour exclusion, with a counting clue added. |

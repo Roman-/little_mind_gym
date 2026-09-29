@@ -134,7 +134,7 @@
 }
 
 /* A printed number: flat enamel under a hairline, the same material a Hanoi
-   disc and a weighing ball are drawn in. It never changes, and it never wants
+   disc is drawn in. It never changes, and it never wants
    rubbing out. */
 .tile[data-given='true'] {
   background: var(--p-bone);

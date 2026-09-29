@@ -60,10 +60,10 @@ strokes, round caps, a 24-unit box. Arrows, ticks, crosses, the undo curl, the
 rubber, a drop marker. The test is one question: *could a child point at it and
 name it?* A goat, yes. A "step back" arrow, no.
 
-Where a shape is abstract by nature — a Hanoi disc, an identical weighing ball,
-a water level, a sudoku cell — it stays abstract, in **flat enamel**: a solid
-`--p-*` fill, a hairline dark border, and no picture stapled on top. No
-gradients, no glow, no drop shadows other than the press shadow.
+Where a shape is abstract by nature — a Hanoi disc, a water level, a sudoku
+cell — it stays abstract, in **flat enamel**: a solid `--p-*` fill, a hairline
+dark border, and no picture stapled on top. No gradients, no glow, no drop
+shadows other than the press shadow.
 
 **A puzzle is not a thing, so no one picture names one.** The card in the
 collection carries a small picture of the board instead — a **scene**, drawn
@@ -123,13 +123,12 @@ screen, the page goes quiet anyway and the toolbar carries both the way in and
 the way out. The button belongs on a puzzle page: there is nothing to immerse
 on the collection or the settings.
 
-**A place stays a place.** When a piece leaves its row — into the boat, onto a
-pan — the row does not close up behind it. The place stays where it was, drawn
-as an empty outline, and every other piece keeps its position. A row that
-closes up slides the piece that a child was already reaching for out from under
-their finger, so the second of two taps lands on the wrong animal. Both banks
-of the river crossing and the bench in the balance scales are laid out this
-way: only a move rearranges anybody.
+**A place stays a place.** When a piece leaves its row — into the boat, say —
+the row does not close up behind it. The place stays where it was, drawn as an
+empty outline, and every other piece keeps its position. A row that closes up
+slides the piece that a child was already reaching for out from under their
+finger, so the second of two taps lands on the wrong animal. Both banks of the
+river crossing are laid out this way: only a move rearranges anybody.
 
 ## Materials
 
@@ -278,11 +277,10 @@ shell, so nothing reaches the history, the move tape or the solved check — and
 a position that breaks a rule is drawn but never played from.
 
 Two things follow. **A tell that only legal moves get goes with it**: an amber
-drop mark over exactly the pegs that will take the disc, or a sentence counting
-the pans before Weigh is pressed, is the same dead button in another coat. A
-drop mark now means "let go here", and it is on every peg. And **a screen
-reader hears what a looker sees**: every peg still says what is standing on it,
-and no label says "blocked".
+drop mark over exactly the pegs that will take the disc is the same dead button
+in another coat. A drop mark now means "let go here", and it is on every peg.
+And **a screen reader hears what a looker sees**: every peg still says what is
+standing on it, and no label says "blocked".
 
 The line is a rule *broken*, not a move that changes nothing. Filling a jug
 that is already full breaks no rule — it is nothing happening, and a dead Fill
@@ -292,8 +290,7 @@ which hands back both the position to draw and the sentence to say.
 
 Where a piece cannot honestly pretend to move, nothing moves and it takes
 `.shake` as well: a frog jumping its own colour would swap two frogs of one
-colour past each other, and a balance tipping for a load it refused would say
-which side the heavy ball is on.
+colour past each other.
 
 One hook holds all of it — `useRefusal(state)` in `src/lib/refusal.ts`: the
 setting, the pretend position, the two cues and the sentence. **Allow moves

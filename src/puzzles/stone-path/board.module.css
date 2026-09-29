@@ -157,8 +157,8 @@
   border-radius: var(--r-round);
 }
 
-/* Flat enamel under a hairline, exactly as a Hanoi disc and a weighing ball
-   are drawn. A go stone is not a thing a child could name a picture of. */
+/* Flat enamel under a hairline, exactly as a Hanoi disc is drawn. A go stone
+   is not a thing a child could name a picture of. */
 .disc {
   width: 100%;
   height: 100%;

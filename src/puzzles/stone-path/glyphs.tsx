@@ -4,7 +4,7 @@ import { Scene, edge } from '../../components/scene'
 /**
  * Nothing on this board is a thing a child could point at and name, so no
  * pictogram comes near it. A go stone is abstract in exactly the way a Hanoi
- * disc and a weighing ball are — a plain enamel counter — and it is drawn as
+ * disc is — a plain enamel counter — and it is drawn as
  * one. What is drawn here in our own hand is the one mark the board needs, the
  * arrow that says which way the walk is going, and then the card.
  */

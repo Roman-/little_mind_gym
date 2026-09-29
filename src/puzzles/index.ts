@@ -17,7 +17,6 @@ import { shikaku } from './shikaku'
 import { gardenCats } from './garden-cats'
 import { tentsAndTrees } from './tents-and-trees'
 import { thermometers } from './thermometers'
-import { balanceScales } from './balance-scales'
 import { logicGrid } from './logic-grid'
 import { countingPath } from './counting-path'
 import { signposts } from './signposts'
@@ -45,7 +44,6 @@ export const PUZZLES: PuzzleMeta[] = [
   gardenCats,
   tentsAndTrees,
   thermometers,
-  balanceScales,
   logicGrid,
   countingPath,
   signposts,
