@@ -3,6 +3,7 @@ import type { CSSProperties, KeyboardEvent } from 'react'
 import { useEphemeral } from '../../lib/ephemeral'
 import { cues, cx, useCue } from '../../lib/motion'
 import { useRefusal } from '../../lib/refusal'
+import { colourRegions, regionPaint } from '../../lib/regions'
 import { playSound } from '../../lib/sound'
 import type { BoardProps } from '../../lib/types'
 import type { Clash, QuiltAction, QuiltState } from './logic'
@@ -237,15 +238,24 @@ export function Board({ state, dispatch, locked }: BoardProps<QuiltState, QuiltA
   /**
    * Which patch this square is in, and how big the numbers in it go.
    *
-   * The letter is the seam said out loud. A looker reads the heavy lines and
-   * sees where one patch stops; a listener has no lines, and two squares on
-   * either side of a seam would otherwise read out word for word the same —
-   * with nothing to say that the number in one of them has anything to do with
-   * the number in the other. It cannot be a colour: colour here means state.
-   * The letters run in reading order, so the patch in the top left corner is
-   * always A.
+   * The letter is the seam said out loud. A looker reads the colours and the
+   * heavy lines and sees where one patch stops; a listener has neither, and two
+   * squares on either side of a seam would otherwise read out word for word the
+   * same — with nothing to say that the number in one of them has anything to
+   * do with the number in the other. It is a letter rather than the colour's
+   * name because a big quilt has more patches than there are colours: two
+   * patches that never touch can be the same blue, and two squares in them
+   * would read out as one patch. The letters run in reading order, so the patch
+   * in the top left corner is always A.
    */
   const names = patchNames(patches)
+  /**
+   * The colour of each patch, as an index into the enamel palette. A patch is a
+   * piece of fabric you can see on the board, so it takes a piece colour, and
+   * no two patches that touch — even corner to corner — take the same one. The
+   * quilt is dealt once and never changes, so neither does a patch's colour.
+   */
+  const colours = colourRegions(n, patches)
   const patchWord = (index: number) =>
     `patch ${names[patches[index]]} of ${countWord(biggest(index))} squares`
 
@@ -253,16 +263,31 @@ export function Board({ state, dispatch, locked }: BoardProps<QuiltState, QuiltA
     const r = rowOf(n, i)
     const c = colOf(n, i)
     // A hairline inside a patch, a heavy seam where one patch meets the next.
-    // The seams are the first thing the eye reads on this board, and they are
-    // the only thing that says how big a number a square may hold — which is
-    // why the label under them names the patch as well as its size.
+    // The colours and the seams are the first thing the eye reads on this
+    // board, and they are the only thing that says how big a number a square
+    // may hold — which is why the label under them names the patch as well as
+    // its size. The seams stay for a child who cannot tell two colours apart.
     const top = r === 0 ? undefined : patches[i - n] === patches[i] ? 'hair' : 'seam'
     const left = c === 0 ? undefined : patches[i - 1] === patches[i] ? 'hair' : 'seam'
+    // The four corner squares round off with the quilt, so the fabric under
+    // them does not poke out past its rim.
+    const corner =
+      (r === 0 || r === n - 1) && (c === 0 || c === n - 1)
+        ? `${r === 0 ? 'top' : 'bottom'}-${c === 0 ? 'left' : 'right'}`
+        : undefined
+    const fabric = { '--patch': regionPaint(colours[patches[i]]) } as CSSProperties
     const where = `Row ${r + 1}, column ${c + 1}, ${patchWord(i)}`
 
     if (given !== 0) {
       return (
-        <div className={s.cell} data-top={top} data-left={left} key={i}>
+        <div
+          className={s.cell}
+          data-top={top}
+          data-left={left}
+          data-corner={corner}
+          style={fabric}
+          key={i}
+        >
           <div
             className={cx(s.given, litGroup.has(i) && cues.highlight)}
             role="img"
@@ -283,7 +308,14 @@ export function Board({ state, dispatch, locked }: BoardProps<QuiltState, QuiltA
     const repeated = wrong[i] && bounced === undefined
     const label = `${where}, ${value === 0 ? 'empty' : value}${repeated ? ', repeated' : ''}`
     return (
-      <div className={s.cell} data-top={top} data-left={left} key={i}>
+      <div
+        className={s.cell}
+        data-top={top}
+        data-left={left}
+        data-corner={corner}
+        style={fabric}
+        key={i}
+      >
         <button
           type="button"
           className={cx(s.tile, 'u-press', litGroup.has(i) && cues.highlight, bounced)}

@@ -1,12 +1,14 @@
 import { Pictogram } from '../../components/Pictogram'
 import { Piece, Scene } from '../../components/scene'
-import { FRUIT_NAMES } from './logic'
+import { colourRegions, regionPaint } from '../../lib/regions'
+import { FRUIT_NAMES, boxesOf } from './logic'
 
 /**
  * The four symbols of a 4x4 board. A drawn circle and a drawn diamond had to
  * be learned before the puzzle could start; an apple and a bunch of grapes do
- * not. Each fruit brings its own colour, so the plate under it stays neutral
- * and amber, moss and clay are left free to mean what they mean.
+ * not. Each fruit brings its own colour and its own dark outline, so it reads
+ * on the colour of any box it is put in, and the amber and clay rings round a
+ * square still mean what they mean over the top of both.
  */
 export function FruitGlyph({ value, className }: { value: number; className?: string }) {
   const name = FRUIT_NAMES[value - 1]
@@ -44,13 +46,18 @@ const CELL = 6.25
 /** The middle of column or row `i`. */
 const at = (i: number) => EDGE + CELL * i + CELL / 2
 
+/** The four boxes of the card, coloured the way the board colours its own. */
+const BOXES = boxesOf(4, 2, 2)
+const BOX_COLOURS = colourRegions(4, BOXES)
+
 /**
- * The card: a small square with its four boxes ruled off, and one fruit
- * standing in each of them. Four boxes and four fruits is the rule the whole
- * puzzle runs on — one of each in every box — said without a word.
+ * The card: a small square with its four boxes ruled off and washed in their
+ * four colours, and one fruit standing in each of them. Four boxes and four
+ * fruits is the rule the whole puzzle runs on — one of each in every box —
+ * said without a word.
  *
- * The heavy line is `--ink-muted` and the light one is `--rule`, the same two
- * weights the board rules its boxes and its cells with.
+ * The heavy line is `--ink-muted` and the light one is `--rule-strong`, the
+ * same two weights the board rules its boxes and its cells with.
  */
 export function SudokuIcon({ className }: { className?: string }) {
   return (
@@ -61,7 +68,29 @@ export function SudokuIcon({ className }: { className?: string }) {
         width={CELL * 4}
         height={CELL * 4}
         rx={1.6}
-        fill="var(--surface)"
+        fill="var(--surface-sunk)"
+      />
+      {[0, 1].map((br) =>
+        [0, 1].map((bc) => (
+          <rect
+            key={`${br},${bc}`}
+            x={EDGE + CELL * 2 * bc}
+            y={EDGE + CELL * 2 * br}
+            width={CELL * 2}
+            height={CELL * 2}
+            fill={`color-mix(in oklab, ${regionPaint(
+              BOX_COLOURS[BOXES[br * 2 * 4 + bc * 2]],
+            )} var(--wash-ground), var(--surface-sunk))`}
+          />
+        )),
+      )}
+      <rect
+        x={EDGE}
+        y={EDGE}
+        width={CELL * 4}
+        height={CELL * 4}
+        rx={1.6}
+        fill="none"
         stroke="var(--ink-muted)"
         strokeWidth={1.5}
       />
@@ -69,7 +98,7 @@ export function SudokuIcon({ className }: { className?: string }) {
         <path
           key={i}
           d={`M${EDGE + CELL * i} ${EDGE}v${CELL * 4}M${EDGE} ${EDGE + CELL * i}h${CELL * 4}`}
-          stroke="var(--rule)"
+          stroke="var(--rule-strong)"
           strokeWidth={0.9}
         />
       ))}

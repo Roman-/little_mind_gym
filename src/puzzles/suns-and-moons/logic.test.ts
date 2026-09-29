@@ -735,6 +735,24 @@ describe('the board', () => {
     )
   }
 
+  it('puts a day behind every sun and a night behind every moon, wherever it came from', () => {
+    const state = start(levels[1], 2)
+    const blank = state.givens.indexOf(EMPTY)
+    const written = reduce(state, { type: 'set', index: blank, value: MOON })
+    setup(written)
+    for (let i = 0; i < state.n * state.n; i++) {
+      const value = state.givens[i] !== EMPTY ? state.givens[i] : written.entries[i]
+      const sky = squareAt(state, i).getAttribute('data-sky')
+      expect(sky).toBe(value === SUN ? 'day' : value === MOON ? 'night' : null)
+    }
+    // The two keys carry the sky of the mark they put down.
+    expect(screen.getByRole('button', { name: 'Put suns down' })).toHaveAttribute('data-sky', 'day')
+    expect(screen.getByRole('button', { name: 'Put moons down' })).toHaveAttribute(
+      'data-sky',
+      'night',
+    )
+  })
+
   it('draws a pressable square for every empty one and a printed mark for the rest', () => {
     const state = start(levels[1], 2)
     setup(state)

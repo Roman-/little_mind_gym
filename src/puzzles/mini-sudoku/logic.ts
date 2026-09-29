@@ -86,6 +86,26 @@ export function unitsOf(n: number, boxH: number, boxW: number): number[][] {
   return units
 }
 
+const boxCache = new Map<string, number[]>()
+
+/**
+ * Row-major: which box each square is in, numbered in reading order. Kept per
+ * shape, so a board asks for the same array every time and anything worked out
+ * from it — the colour of each box — is worked out once.
+ */
+export function boxesOf(n: number, boxH: number, boxW: number): number[] {
+  const key = shapeKey(n, boxH, boxW)
+  const hit = boxCache.get(key)
+  if (hit) return hit
+  const across = n / boxW
+  const boxes = Array.from(
+    { length: n * n },
+    (_, i) => Math.floor(Math.floor(i / n) / boxH) * across + Math.floor((i % n) / boxW),
+  )
+  boxCache.set(key, boxes)
+  return boxes
+}
+
 /** Every cell that shares a row, column or box with this one. */
 export function peersOf(n: number, boxH: number, boxW: number): number[][] {
   const key = shapeKey(n, boxH, boxW)

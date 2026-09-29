@@ -1,9 +1,11 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { cues, cx, useCue } from '../../lib/motion'
+import { colourRegions, regionPaint } from '../../lib/regions'
 import { playSound } from '../../lib/sound'
 import type { BoardProps } from '../../lib/types'
 import type { Clash, SudokuAction, SudokuState, SymbolSet } from './logic'
-import { FRUIT_NAMES, clashOf, conflicts, describeClash, symbolName } from './logic'
+import { FRUIT_NAMES, boxesOf, clashOf, conflicts, describeClash, symbolName } from './logic'
 import { ClearGlyph, FruitGlyph } from './glyphs'
 import s from './board.module.css'
 
@@ -146,16 +148,40 @@ export function Board({ state, dispatch, locked }: BoardProps<SudokuState, Sudok
     if (event.key === 'Escape') setSelected(null)
   }
 
+  /**
+   * Every box its own colour, so "no box holds the same thing twice" is about a
+   * shape a child can see at a glance rather than one traced along a rule. A
+   * box is a region of the board, the same kind of thing as a patch of the
+   * quilt or a garden, and it is coloured by the same hand. The board never has
+   * more boxes than there are colours, so no two share one.
+   */
+  const boxes = boxesOf(n, boxH, boxW)
+  const colours = colourRegions(n, boxes)
+
   const cells = givens.map((given, i) => {
     const row = Math.floor(i / n)
     const col = i % n
     const top = row === 0 ? undefined : row % boxH === 0 ? 'thick' : 'hair'
     const left = col === 0 ? undefined : col % boxW === 0 ? 'thick' : 'hair'
+    // The four corner squares round off with the grid, so the colour under
+    // them does not poke out past its rim.
+    const corner =
+      (row === 0 || row === n - 1) && (col === 0 || col === n - 1)
+        ? `${row === 0 ? 'top' : 'bottom'}-${col === 0 ? 'left' : 'right'}`
+        : undefined
+    const box = { '--box': regionPaint(colours[boxes[i]]) } as CSSProperties
     const where = `Row ${row + 1}, column ${col + 1}`
 
     if (given !== 0) {
       return (
-        <div className={s.cell} data-top={top} data-left={left} key={i}>
+        <div
+          className={s.cell}
+          data-top={top}
+          data-left={left}
+          data-corner={corner}
+          style={box}
+          key={i}
+        >
           <div
             className={cx(s.given, litUnit.has(i) && cues.highlight)}
             role="img"
@@ -170,7 +196,14 @@ export function Board({ state, dispatch, locked }: BoardProps<SudokuState, Sudok
     const value = entries[i]
     const label = `${where}, ${symbolName(symbols, value)}${wrong[i] ? ', repeated' : ''}`
     return (
-      <div className={s.cell} data-top={top} data-left={left} key={i}>
+      <div
+        className={s.cell}
+        data-top={top}
+        data-left={left}
+        data-corner={corner}
+        style={box}
+        key={i}
+      >
         <button
           type="button"
           className={cx(s.tile, 'u-press', litUnit.has(i) && cues.highlight)}

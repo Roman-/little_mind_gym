@@ -14,6 +14,7 @@ import {
   allGeometries,
   applyGeometry,
   blankCount,
+  boxesOf,
   canonicalKey,
   clashOf,
   conflicts,
@@ -672,6 +673,28 @@ describe('the board', () => {
     }
     throw new Error('no row holds both a blank and a printed clue')
   }
+
+  it('washes every box in its own colour, and every square of a box in the same one', () => {
+    // Four boxes on the fruit boards and six on the numbers board, and seven
+    // colours to go round: no two boxes ever share one.
+    for (const level of levels) {
+      const { state, view } = setup(level, 3)
+      const { n, boxH, boxW } = state
+      const boxes = boxesOf(n, boxH, boxW)
+      const paint = Array.from({ length: n * n }, (_, i) =>
+        (tileAt(state, i).parentElement as HTMLElement).style.getPropertyValue('--box'),
+      )
+      expect(paint.every((value) => /^var\(--p-[a-z]+\)$/.test(value))).toBe(true)
+      const byBox = new Map<number, string>()
+      boxes.forEach((box, i) => {
+        const seen = byBox.get(box)
+        if (seen === undefined) byBox.set(box, paint[i])
+        else expect(paint[i]).toBe(seen)
+      })
+      expect(new Set(byBox.values()).size).toBe((n / boxH) * (n / boxW))
+      view.unmount()
+    }
+  })
 
   it('draws a pressable tile for every blank and a printed clue for every given', () => {
     const { state } = setup(levels[0], 2)

@@ -1,10 +1,11 @@
 import { Scene } from '../../components/scene'
+import { colourRegions, regionPaint } from '../../lib/regions'
 
 /**
  * Nothing on this board is a picture. A square of a grid is abstract by
  * nature — docs/DESIGN.md names a sudoku cell in that list — so a square here
- * is flat bone with a numeral on it and a heavy seam round its patch, and
- * that is the whole material list.
+ * is flat enamel with a numeral on it and a heavy seam round its patch, and
+ * that is the whole material list. The enamel is the patch's own colour.
  */
 
 /**
@@ -64,6 +65,17 @@ const PATCH = [
 ]
 const of_ = (col: number, row: number) => PATCH[row * 3 + col]
 const LINES = [0, 1, 2]
+
+/**
+ * The card's patches coloured by the same rule the board colours its own with,
+ * rather than picked for the card: the corner of three is yellow because it
+ * holds the top left square, and the domino and the T take the next two
+ * colours because each of them touches both of the others.
+ */
+const REGIONS = PATCH.map((letter) => 'ABC'.indexOf(letter))
+const COLOURS = colourRegions(3, REGIONS)
+const fabricOf = (col: number, row: number) =>
+  `color-mix(in oklab, ${regionPaint(COLOURS[REGIONS[row * 3 + col]])} var(--wash-ground), var(--surface-sunk))`
 
 /**
  * The numerals written on the card, one to a square and 0 where the square is
@@ -134,10 +146,11 @@ function Numeral({ value, col, row }: { value: number; col: number; row: number 
  * The card: a quilt part written in. The patch of two squares down the right
  * side holds its 1 and its 2, which is the whole rule of the puzzle said
  * without a word — count the squares in a patch and that is how far its
- * numbers go. What carries at 28px is the heavy seam: it turns a corner round
- * the patch of three and runs the length of the domino, cutting the board into
- * three shapes, and nothing else in the collection is cut into shapes like
- * that.
+ * numbers go. What carries at 28px is the three colours and the heavy seam
+ * between them: it turns a corner round the patch of three and runs the length
+ * of the domino, cutting the board into three shapes of three fabrics. The
+ * garden cats are cut into coloured shapes too, and told apart from this by
+ * the cats sitting in theirs.
  *
  * The weights are the scene's own: our 1.5 stroke is 2 units in a 32-unit box
  * and our hairline is 1, so a seam is twice the line inside a patch here, as
@@ -145,12 +158,24 @@ function Numeral({ value, col, row }: { value: number; col: number; row: number 
  */
 export function SuguruIcon({ className }: { className?: string }) {
   const rule = (heavy: boolean) => ({
-    stroke: heavy ? 'var(--ink)' : 'var(--rule)',
+    stroke: heavy ? 'var(--ink)' : 'var(--rule-strong)',
     strokeWidth: heavy ? 2 : 1,
   })
   return (
     <Scene className={className}>
-      <rect x={EDGE} y={EDGE} width={SPAN} height={SPAN} rx={1.6} fill="var(--surface)" />
+      <rect x={EDGE} y={EDGE} width={SPAN} height={SPAN} rx={1.6} fill="var(--surface-sunk)" />
+      {LINES.map((row) =>
+        LINES.map((col) => (
+          <rect
+            key={`${col},${row}`}
+            x={EDGE + col * CELL}
+            y={EDGE + row * CELL}
+            width={CELL}
+            height={CELL}
+            fill={fabricOf(col, row)}
+          />
+        )),
+      )}
 
       {/* Every seam between two squares, heavy where it parts two patches. */}
       {[1, 2].map((col) =>

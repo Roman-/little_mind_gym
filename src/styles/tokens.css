@@ -48,6 +48,12 @@
   /* Readable text on top of the enamel colours. */
   --p-on-dark: #faf9f5;
   --p-on-light: #22262b;
+  /* How much of an enamel colour a region of a board is washed in: the ground
+     a region is cut into, and a tile raised out of it. On bone a raised tile is
+     the paler of the two and in the dark it is the brighter, so a tile always
+     stands lighter than the ground under it, in either theme. */
+  --wash-ground: 42%;
+  --wash-raised: 24%;
 
   /* --- Depth. A hard offset shadow means "you can touch it". */
   --shadow-ink: rgba(34, 38, 43, 0.30);
@@ -150,6 +156,8 @@
   --p-bone: #cdc7b6;
   --p-on-dark: #141715;
   --p-on-light: #141715;
+  --wash-ground: 30%;
+  --wash-raised: 44%;
 
   --shadow-ink: rgba(0, 0, 0, 0.55);
   --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--amber);

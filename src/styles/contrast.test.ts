@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve as resolvePath } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { REGION_COLOURS } from '../lib/regions'
 
 /**
  * The palette is read straight out of tokens.css, so this fails the moment a
@@ -41,11 +42,58 @@ function luminance(hex: string): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b
 }
 
-function contrast(palette: Record<string, string>, fg: string, bg: string): number {
-  const a = luminance(resolve(palette, fg))
-  const b = luminance(resolve(palette, bg))
+function ratio(a: number, b: number): number {
   const [hi, lo] = a > b ? [a, b] : [b, a]
   return (hi + 0.05) / (lo + 0.05)
+}
+
+function contrast(palette: Record<string, string>, fg: string, bg: string): number {
+  return ratio(luminance(resolve(palette, fg)), luminance(resolve(palette, bg)))
+}
+
+/* --- color-mix(in oklab, …), worked out the way the browser does ---- */
+
+type Triple = [number, number, number]
+
+const linearOf = (hex: string): Triple =>
+  [1, 3, 5].map((i) => channel(parseInt(hex.slice(i, i + 2), 16) / 255)) as Triple
+
+function oklabOf([r, g, b]: Triple): Triple {
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
+  return [
+    0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+    0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+  ]
+}
+
+function linearFromOklab([L, a, b]: Triple): Triple {
+  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3
+  const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3
+  const s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3
+  const clip = (v: number) => Math.min(1, Math.max(0, v))
+  return [
+    clip(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s),
+    clip(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s),
+    clip(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s),
+  ]
+}
+
+/** The luminance of `color-mix(in oklab, <colour> <amount>, <base>)`. */
+function mixedLuminance(colour: string, amount: number, base: string): number {
+  const a = oklabOf(linearOf(colour))
+  const b = oklabOf(linearOf(base))
+  const [r, g, bl] = linearFromOklab(a.map((v, i) => v * amount + b[i] * (1 - amount)) as Triple)
+  return 0.2126 * r + 0.7152 * g + 0.0722 * bl
+}
+
+/** A percentage token, as a fraction. */
+function amountOf(palette: Record<string, string>, name: string): number {
+  const raw = palette[name]
+  if (!/^\d+(\.\d+)?%$/.test(raw ?? '')) throw new Error(`token ${name} is not a percentage: ${raw}`)
+  return parseFloat(raw) / 100
 }
 
 /** [what it is, foreground token, background token] */
@@ -86,6 +134,44 @@ describe.each([
   // a colour-blind reader is that no state anywhere here is shown by colour
   // alone: every one carries a word, a stamp or a sentence as well, which
   // src/routes/shell.test.tsx checks on the real pages.
+
+  // A region of a board is washed in its colour, and a number is written on
+  // the wash: on the ground where it was printed, and on the raised tile where
+  // a child wrote it. Both have to read, in every colour a region can take.
+  it.each(REGION_COLOURS.map((c) => c.token))('a number on a %s region is readable', (token) => {
+    const ink = luminance(resolve(palette, '--ink'))
+    const colour = resolve(palette, token)
+    const ground = mixedLuminance(
+      colour,
+      amountOf(palette, '--wash-ground'),
+      resolve(palette, '--surface-sunk'),
+    )
+    const raised = mixedLuminance(
+      colour,
+      amountOf(palette, '--wash-raised'),
+      resolve(palette, '--surface'),
+    )
+    expect(ratio(ink, ground)).toBeGreaterThanOrEqual(4.5)
+    expect(ratio(ink, raised)).toBeGreaterThanOrEqual(4.5)
+  })
+
+  // The two washes are told apart by lightness — the raised tile is the lighter
+  // one in both themes, which is what makes it read as standing up — so this
+  // one is a luminance question, unlike the signals below.
+  it.each(REGION_COLOURS.map((c) => c.token))('a raised tile on a %s region is the lighter', (token) => {
+    const colour = resolve(palette, token)
+    const ground = mixedLuminance(
+      colour,
+      amountOf(palette, '--wash-ground'),
+      resolve(palette, '--surface-sunk'),
+    )
+    const raised = mixedLuminance(
+      colour,
+      amountOf(palette, '--wash-raised'),
+      resolve(palette, '--surface'),
+    )
+    expect(raised).toBeGreaterThan(ground)
+  })
 
   it('never lets a signal colour disappear into the sheet it sits on', () => {
     for (const signal of ['--amber', '--moss', '--clay']) {

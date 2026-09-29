@@ -191,6 +191,15 @@ export function Board({ state, dispatch, locked }: BoardProps<SunsState, SunsAct
     }
   }
 
+  /**
+   * The sky behind a mark: day behind a sun, night behind a moon. The picture
+   * already says which mark it is; the sky says it again in a colour the eye
+   * can count along a line without reading a single picture — half day and
+   * half night is a line that balances, and three days side by side is a band
+   * too long to miss.
+   */
+  const skyOf = (value: number) => (value === SUN ? 'day' : value === MOON ? 'night' : undefined)
+
   const squares = givens.map((given, i) => {
     const r = rowOf(n, i)
     const c = colOf(n, i)
@@ -203,6 +212,7 @@ export function Board({ state, dispatch, locked }: BoardProps<SunsState, SunsAct
         <div className={s.cell} data-top={top} data-left={left} key={i}>
           <div
             className={cx(s.given, litGroup.has(i) && cues.highlight)}
+            data-sky={skyOf(given)}
             role="img"
             aria-label={`${where}, ${markName(given)}, printed`}
           >
@@ -226,6 +236,7 @@ export function Board({ state, dispatch, locked }: BoardProps<SunsState, SunsAct
             refs.current[i] = el
           }}
           tabIndex={i === cursor ? 0 : -1}
+          data-sky={skyOf(value)}
           data-conflict={wrong[i] ? 'true' : undefined}
           disabled={locked}
           aria-label={label}
@@ -279,6 +290,7 @@ export function Board({ state, dispatch, locked }: BoardProps<SunsState, SunsAct
             key={mark}
             type="button"
             className={`${s.key} u-press`}
+            data-sky={skyOf(mark)}
             aria-pressed={brush === mark}
             disabled={locked}
             aria-label={`Put ${markName(mark)}s down`}

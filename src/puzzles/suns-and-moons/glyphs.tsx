@@ -5,9 +5,9 @@ import { MOON, SUN } from './logic'
 /**
  * The two marks of the board. A sun and a moon are things a child can point at
  * and name, so both are OpenMoji pictures and nothing here is drawn in our own
- * hand. They tell each other apart by shape rather than by colour — a spiked
- * disc against an open hook — which is what lets the plate under them stay
- * neutral and leaves amber, moss and clay free to mean what they mean.
+ * hand. They tell each other apart by shape — a spiked disc against an open
+ * hook — so the day and the night the board puts behind them are a second way
+ * of seeing which is which, never the only one.
  */
 export function MarkGlyph({ value, className }: { value: number; className?: string }) {
   if (value === SUN) return <Pictogram name="sun" className={className} />
@@ -21,6 +21,9 @@ const EDGE = 3
 const CELL = 13
 /** The middle of column or row `i`. */
 const at = (i: number) => EDGE + CELL * i + CELL / 2
+/** The sky behind a mark on the card: the board's own wash of that colour. */
+const sky = (token: string) =>
+  `color-mix(in oklab, var(${token}) var(--wash-ground), var(--surface-sunk))`
 
 /**
  * The card: a corner of the board, part filled. A sun and a moon along the top,
@@ -29,9 +32,9 @@ const at = (i: number) => EDGE + CELL * i + CELL / 2
  * more sun. So the picture is not just suns and moons on a grid; it is the
  * question the puzzle asks, small enough to answer from across the room.
  *
- * The materials are the board's own: the sunk ground it is engraved into, the
- * hairlines between squares, and one bone tile for the square you can still
- * press.
+ * The materials are the board's own: a warm day behind the sun and a cool
+ * night behind each moon, the hairlines between squares, and one bone tile for
+ * the square you can still press.
  */
 export function SunsAndMoonsIcon({ className }: { className?: string }) {
   return (
@@ -43,6 +46,17 @@ export function SunsAndMoonsIcon({ className }: { className?: string }) {
         height={CELL * 2}
         rx={1.8}
         fill="var(--surface-sunk)"
+      />
+      <rect x={EDGE} y={EDGE} width={CELL} height={CELL} fill={sky('--p-ochre')} />
+      <rect x={EDGE + CELL} y={EDGE} width={CELL} height={CELL} fill={sky('--p-indigo')} />
+      <rect x={EDGE} y={EDGE + CELL} width={CELL} height={CELL} fill={sky('--p-indigo')} />
+      <rect
+        x={EDGE}
+        y={EDGE}
+        width={CELL * 2}
+        height={CELL * 2}
+        rx={1.8}
+        fill="none"
         stroke="var(--ink-muted)"
         strokeWidth={1.5}
       />

@@ -3,6 +3,7 @@ import type { CSSProperties, KeyboardEvent } from 'react'
 import { Pictogram } from '../../components/Pictogram'
 import { useEphemeral } from '../../lib/ephemeral'
 import { cues, cx, useCue } from '../../lib/motion'
+import { REGION_COLOURS } from '../../lib/regions'
 import { playSound } from '../../lib/sound'
 import type { BoardProps } from '../../lib/types'
 import type { Clash, GardenAction, GardenState } from './logic'
@@ -10,24 +11,17 @@ import { clashOf, colOf, conflicts, describeClash, emptyGardens, rowOf } from '.
 import s from './board.module.css'
 
 /**
- * One colour a garden, most distinct first: a five-garden board takes yellow,
- * blue, green, purple and red, and only a seven-garden board has to reach for
- * teal, which is the nearest thing here to a second green. Seven is as many
- * gardens as there are colours, and the levels are held to that.
+ * One colour a garden, from the palette every board cut into regions shares:
+ * a five-garden board takes yellow, blue, green, purple and red, a six-garden
+ * board adds teal, and only a seven-garden board reaches for grey. Seven is as
+ * many gardens as there are colours, and the levels are held to that, so a
+ * garden's own number is its colour and no two gardens ever share one.
  *
  * The word beside each is what a screen reader reads out — the only handle on
  * a garden for anyone who cannot see the colours. The thick lines round a
  * garden are the handle for anyone who cannot tell two of them apart.
  */
-const PATCHES = [
-  { token: '--p-ochre', word: 'yellow' },
-  { token: '--p-indigo', word: 'blue' },
-  { token: '--p-moss', word: 'green' },
-  { token: '--p-plum', word: 'purple' },
-  { token: '--p-clay', word: 'red' },
-  { token: '--p-teal', word: 'teal' },
-  { token: '--p-slate', word: 'grey' },
-] as const
+const PATCHES = REGION_COLOURS
 
 /** The one number a player reads off the board, and what to do about it. */
 function statusLine(empty: number): string {

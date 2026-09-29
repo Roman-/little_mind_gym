@@ -3,16 +3,22 @@
    seven-wide grid needs on a phone.
 
    One thing about this board is different from every other grid here, and it
-   is the whole puzzle: the seams. A square's patch is what says how big a
-   number it may hold, so the line between two patches is drawn in full --ink
-   at three pixels and the lattice inside a patch is a --rule hairline. Held
-   next to each other those two weights are the first thing the eye picks up,
-   before any number on the board — which is what the puzzle needs, and what
-   keeps this quilt from reading as the small square's ruled boxes.
+   is the whole puzzle: the patches. A square's patch is what says how big a
+   number it may hold, so every patch is cut from its own fabric — a wash of
+   one enamel colour that the board hands in as --patch, never the same as a
+   patch it touches — and the line between two patches is drawn in full --ink
+   at three pixels, while the lattice inside a patch is a hairline. The colour
+   is what the eye picks up first, before any number on the board; the seam
+   says the same thing again for a child who cannot tell two colours apart.
 
-   State stays off the seams entirely. Amber rings the square a tap will write
-   into and clay rings a number that repeats another, both inside the square,
-   so identity and state are never drawn in the same ink. */
+   The fabric is the ground a square sits on, so a printed number lies flat on
+   it. A square still to be written in is a tile of the same fabric, paler and
+   raised — one patch, one colour, and the squares that want a number stand up
+   out of it.
+
+   State stays off the fabric and the seams entirely. Amber rings the square a
+   tap will write into and clay rings a number that repeats another, both
+   inside the square, so identity and state are never drawn in the same ink. */
 
 /* The stage is a grid, and a grid item will not shrink below its own content
    unless it is told it may. Without this a seven-wide quilt pushes the whole
@@ -85,6 +91,9 @@
   --cell-max: 76px;
 }
 
+/* One square of one patch. The fabric fills the whole square, seat and all,
+   so a patch reads as one piece of cloth with a hairline stitched through it
+   rather than as a row of separate tiles. */
 .cell {
   aspect-ratio: 1;
   display: grid;
@@ -92,19 +101,36 @@
   padding: var(--seat);
   border-top: 0;
   border-left: 0;
+  background: color-mix(in oklab, var(--patch) var(--wash-ground), var(--surface-sunk));
 }
 
+/* The stitching inside a patch: a darker thread of the same cloth. */
 .cell[data-top='hair'] {
-  border-top: var(--hair) solid var(--rule);
+  border-top: var(--hair) solid color-mix(in oklab, var(--patch) 55%, var(--rule-strong));
 }
 .cell[data-top='seam'] {
   border-top: var(--seam) solid var(--ink);
 }
 .cell[data-left='hair'] {
-  border-left: var(--hair) solid var(--rule);
+  border-left: var(--hair) solid color-mix(in oklab, var(--patch) 55%, var(--rule-strong));
 }
 .cell[data-left='seam'] {
   border-left: var(--seam) solid var(--ink);
+}
+
+/* The quilt's rim is rounded and the fabric under the corner squares is not,
+   so those four follow the curve on the inside of the rim. */
+.cell[data-corner='top-left'] {
+  border-top-left-radius: calc(var(--r-md) - var(--seam));
+}
+.cell[data-corner='top-right'] {
+  border-top-right-radius: calc(var(--r-md) - var(--seam));
+}
+.cell[data-corner='bottom-left'] {
+  border-bottom-left-radius: calc(var(--r-md) - var(--seam));
+}
+.cell[data-corner='bottom-right'] {
+  border-bottom-right-radius: calc(var(--r-md) - var(--seam));
 }
 
 /* One radius for the printed square, the tile and the ring, stated once.
@@ -114,23 +140,24 @@
   --tile-r: var(--r-md);
 }
 
-/* A number the puzzle printed: flush with the quilt, nothing to press. */
+/* A number the puzzle printed: flush with the fabric, nothing to press. */
 .given {
   display: grid;
   place-items: center;
-  background: var(--surface-sunk);
+  background: transparent;
   color: var(--ink);
   border-radius: var(--tile-r);
 }
 
-/* A square you write in: a bone tile seated in the quilt. It carries no line
-   of its own — the lattice under it is the only line inside a patch, and a
-   second one round every tile would weigh as much as the seams. */
+/* A square you write in: a tile of the patch's own fabric, washed paler and
+   seated in the quilt. It carries no line of its own — the stitching under it
+   is the only line inside a patch, and a second one round every tile would
+   weigh as much as the seams. */
 .tile {
   position: relative;
   display: grid;
   place-items: center;
-  background: var(--surface);
+  background: color-mix(in oklab, var(--patch) var(--wash-raised), var(--surface));
   color: var(--ink);
   border-radius: var(--tile-r);
 }
@@ -190,7 +217,7 @@
   font-size: 7.2cqw;
 }
 
-/* A printed number is heavier than one the player wrote. The bone tile under
+/* A printed number is heavier than one the player wrote. The raised tile under
    an answer already says which is which; this says it again in the ink. */
 .given .mark {
   font-weight: 600;

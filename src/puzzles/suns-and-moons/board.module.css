@@ -3,10 +3,15 @@
    width an eight-wide grid needs on a phone.
 
    Every square carries one thing: a sun, a moon, or nothing yet. The picture
-   says which mark it is, so the plate under it is free to carry state — bone
-   for a square you can press, sunk and flush for a printed one, clay for a
-   mark that breaks a rule. Nothing here is told apart by colour: a sun is a
-   spiked disc and a moon is an open hook, and that holds at any size. */
+   says which mark it is, and the sky behind it says so again: a sun stands on
+   a warm ochre day and a moon on a cool indigo night, so a line that balances
+   is half one and half the other, and three of a kind in a row is a band of
+   one colour. The sky is the mark's own colour rather than a state — it goes
+   wherever the mark goes and nowhere else — so the plate still says the rest:
+   raised for a square you can press, flush for a printed one, and clay for a
+   mark that breaks a rule, which outranks the sky. The pictures do not need
+   the colour to be told apart: a sun is a spiked disc and a moon is an open
+   hook, and that holds at any size and for any eye. */
 
 /* The stage is a grid, and a grid item will not shrink below its own content
    unless it is told it may. Without this the eight-wide board pushes the whole
@@ -124,6 +129,23 @@
   border-radius: var(--tile-r);
 }
 
+/* The sky behind a mark. The printed one lies flush on the stronger wash and
+   a square you filled is the paler, raised tile of the same sky. */
+.given[data-sky='day'] {
+  background: color-mix(in oklab, var(--p-ochre) var(--wash-ground), var(--surface-sunk));
+}
+.given[data-sky='night'] {
+  background: color-mix(in oklab, var(--p-indigo) var(--wash-ground), var(--surface-sunk));
+}
+.tile[data-sky='day'] {
+  background: color-mix(in oklab, var(--p-ochre) var(--wash-raised), var(--surface));
+  border-color: color-mix(in oklab, var(--p-ochre) 55%, var(--rule-strong));
+}
+.tile[data-sky='night'] {
+  background: color-mix(in oklab, var(--p-indigo) var(--wash-raised), var(--surface));
+  border-color: color-mix(in oklab, var(--p-indigo) 55%, var(--rule-strong));
+}
+
 /* A mark that breaks one of the two rules. The picture brings its own colours,
    so the mistake is said in clay round it: the plate, the border and a solid
    ring, with the shake the board fires at the same time. */
@@ -179,6 +201,16 @@
   color: var(--ink);
   border: var(--hair) solid var(--ink);
   border-radius: var(--r-md);
+}
+
+/* Each key carries the sky its mark brings to the board, so the key and the
+   squares it fills are plainly the same thing. Choosing a key puts amber over
+   it, which says "your turn" louder than the sky says "day". */
+.key[data-sky='day'] {
+  background: color-mix(in oklab, var(--p-ochre) var(--wash-raised), var(--surface));
+}
+.key[data-sky='night'] {
+  background: color-mix(in oklab, var(--p-indigo) var(--wash-raised), var(--surface));
 }
 
 /* Amber is "your turn": this is the mark the next tap on the board puts down.

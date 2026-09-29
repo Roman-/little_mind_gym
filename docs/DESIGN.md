@@ -37,6 +37,33 @@ Where a picture already says which thing this is, the plate under it goes
 neutral. Identity has been paid for by the picture, so the plate is free to
 carry state, and that is the whole reason pictograms are worth their colours.
 
+**A region of a board is a thing too.** A patch of the quilt, a garden, a box
+of the small square: each is a shape that the rule is about, and the eye should
+find where one stops before it reads a single number in it. So a region takes
+a piece colour, washed rather than solid — `--wash-ground` for the ground it is
+cut into and `--wash-raised` for a tile in it that is still to be filled, which
+between them keep the tile the lighter of the two in either theme. The colours
+come from one palette, `REGION_COLOURS` in `src/lib/regions.ts`, and where a
+board has more regions than there are colours, `colourRegions` hands them out
+the way a map is coloured: no two regions that touch share one, even corner to
+corner, and a region keeps its colour for the whole game. The heavy line round
+a region stays, for a child who cannot tell two of the colours apart. State is
+still said over the top in rings — amber for the chosen square, clay for a
+mistake — and never by changing the wash.
+
+A mark can carry a colour behind it on the same terms. A sun stands on a warm
+day and a moon on a cool night, so a line that balances is half one and half
+the other before any picture in it is read, and three of a kind in a row is a
+band that is hard to miss. That colour goes wherever the mark goes and nowhere
+else, so it names the mark, the way the picture does — and the picture still
+tells the two apart without it.
+
+What never gets a colour of its own is a piece a child makes. The chocolate
+bar's snapped-off pieces stay one colour, for the reason its stylesheet gives:
+a colour worked out from where the pieces lie would change under a piece as its
+neighbours land, and a colour worked out from the answer would tell a child
+which of two pieces is wrong.
+
 **2. A hard offset shadow means "you can touch this."**
 `u-press` puts a 2px offset shadow under an element and collapses it under the
 press, so it physically sinks. Put it on every control and every touchable

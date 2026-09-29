@@ -2,6 +2,7 @@ import { createElement, useState } from 'react'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { cues } from '../../lib/motion'
+import { colourRegions } from '../../lib/regions'
 import { makeRng } from '../../lib/rng'
 import { shortestSolution } from '../../lib/search'
 import { underSettings } from '../../test/settings'
@@ -949,6 +950,43 @@ describe('the board', () => {
       [2, 'C'],
       [3, 'D'],
     ])
+  })
+
+  it('cuts every patch from its own fabric, and no two patches that touch alike', () => {
+    // The fixture's four patches all touch one another, so a quilt with
+    // colours enough for them gives each its own. The colour sits on the
+    // square rather than on the button, so a printed number and an empty
+    // square in one patch lie on the same cloth.
+    const { view } = paint(fixture())
+    const fabric = [...view.container.querySelectorAll('[aria-label^="Row "]')].map((el) =>
+      (el.parentElement as HTMLElement).style.getPropertyValue('--patch'),
+    )
+    expect(fabric).toHaveLength(16)
+    expect(fabric.every((paint) => /^var\(--p-[a-z]+\)$/.test(paint))).toBe(true)
+    const byPatch = new Map<number, string>()
+    FIXTURE_PATCHES.forEach((patch, i) => {
+      const seen = byPatch.get(patch)
+      if (seen === undefined) byPatch.set(patch, fabric[i])
+      else expect(fabric[i]).toBe(seen)
+    })
+    expect(new Set(byPatch.values()).size).toBe(4)
+    // Reading order: the patch holding the top left square is the first colour.
+    expect(byPatch.get(0)).toBe('var(--p-ochre)')
+  })
+
+  it('never hands two touching patches of a dealt quilt the same colour', () => {
+    for (const level of levels) {
+      const { n } = level.config
+      for (const seed of SEEDS.slice(0, 10)) {
+        const { patches } = start(level, seed)
+        const colours = colourRegions(n, patches)
+        for (let i = 0; i < n * n; i++) {
+          for (const t of touching(n, i)) {
+            if (patches[t] !== patches[i]) expect(colours[patches[t]]).not.toBe(colours[patches[i]])
+          }
+        }
+      }
+    }
   })
 
   it('writes a number on a tap of a square and then a tap of a key', () => {
