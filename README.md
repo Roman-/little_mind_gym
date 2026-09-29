@@ -113,9 +113,9 @@ was wrong, and the board puts it back — with nothing on the move tape and
 nothing in the history, so a forbidden position is drawn and never played from.
 A dead button would have said which moves are legal without the child ever
 having to work it out. **Allow moves that break a rule** in the settings turns
-it off, and the controls go back to refusing up front. It changes eleven of the
+it off, and the controls go back to refusing up front. It changes fourteen of the
 puzzles — the Tower of Hanoi, leapfrog and the four horses among them; the
-other thirteen disable nothing their rules forbid.
+other sixteen disable nothing their rules forbid.
 
 **Immerse gives the whole window to the board.** The button is in the navbar
 on a puzzle page. It asks the browser for the screen and takes away the navbar,
@@ -151,7 +151,7 @@ page loads, so the first one plays without a gap. The speaker in the navbar and
 **Nothing here is ours alone, and `/credits` says so.** The footer of every
 page carries the domain the site is part of, a link to the source code on
 GitHub, and one link to that page, which
-names the inventor or the publisher of all twenty-four puzzles, the OpenMoji
+names the inventor or the publisher of all thirty puzzles, the OpenMoji
 artwork and its licence, the three typefaces, and the five tools the app is
 built with. The puzzle lines live in `src/puzzles/origins.ts`, one to an id, and
 `src/routes/credits.test.tsx` fails if a puzzle ever ships without one.
@@ -183,7 +183,7 @@ small picture of its own board, three or four shapes big enough to read across
 a table, made of the same materials the board is. Three discs on the first of
 three pegs. A boat out on the water with the goat still waiting on the bank.
 Two jugs of different heights, one of them part full. `Scene` in
-`src/components/scene.tsx` is the frame that all twenty-four are drawn in, and each puzzle's is at the bottom of
+`src/components/scene.tsx` is the frame that all thirty are drawn in, and each puzzle's is at the bottom of
 its `glyphs.tsx`.
 
 ## Licence
