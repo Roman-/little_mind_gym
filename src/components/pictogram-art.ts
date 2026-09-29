@@ -55,6 +55,8 @@ export const PICTO_NAMES = [
   'moon',
   'kangaroo',
   'snake',
+  'drop',
+  'tulip',
 ] as const
 
 export type PictoName = (typeof PICTO_NAMES)[number]

@@ -49,6 +49,7 @@ toolbar, one tap from the screen.
 | Lights out             | Patterns                 |
 | Leapfrog               | Sequence                 |
 | The long table         | Arranging                |
+| The pipes              | Connection               |
 | The slippery ice       | Foresight                |
 | The stone path         | Route                    |
 | The kangaroo’s hops    | Steps                    |

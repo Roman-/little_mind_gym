@@ -63,6 +63,9 @@ const MANIFEST = {
   kangaroo: '1F998',
   // the long snake
   snake: '1F40D',
+  // the pipes
+  drop: '1F4A7',
+  tulip: '1F337',
 }
 
 mkdirSync(OUT, { recursive: true })

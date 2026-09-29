@@ -20,6 +20,8 @@ export const ORIGINS: Record<string, string> = {
     'Traditional. The hop-over puzzle of nineteenth-century puzzle books, where the frogs and the toads have to change places. It is peg solitaire in one line.',
   'long-table':
     'Made here. It was designed backwards from its own par, and the goal is a condition — nobody sitting beside somebody they quarrel with — rather than a picture.',
+  pipes:
+    'FreeNet, a Flash game by Pavils Jurjans. Simon Tatham’s collection calls it Net, and other versions go by the name NetWalk.',
   'slippery-ice':
     'The sliding move comes from Ricochet Robots, Alex Randolph’s board game, published as Rasende Roboter by Hans im Glück in 1999. The ponds are ours.',
   'stone-path':

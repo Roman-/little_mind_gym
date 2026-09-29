@@ -1,0 +1,224 @@
+/* A board of pipes, one to a plate, sized for a child's hand.
+
+   Every square is its own bone plate with a seam of stage between it and the
+   next, and the pipe on it is flat enamel: slate, under the hairline every
+   enamel piece wears. A join is two pipe ends facing each other across a
+   seam, never a line drawn over one. That is what lets u-press stay exactly
+   as it is. With no seam, a pressed square steps its pipes 2px at all four
+   joins and the board reads as torn; with a seam of 4px or more, nothing
+   crosses a button's edge, the 2px press never makes two plates touch, and
+   the pressed square reads as one piece pushed down — which is what the
+   shadow promises.
+
+   Nothing here is coloured for state while the child works. There is no live
+   water and no count of anything: the water is a rimmed teal core inside every
+   pipe that appears on the solving position and not before, because a wash
+   that followed the drop across the board would climb the puzzle for a child
+   who is only tapping. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s4);
+  /* The stage is a grid, and a grid item will not shrink below its own
+     content unless it is told it may. */
+  min-width: 0;
+}
+
+/* The grid sits centred. On a phone narrow enough that a pipe would drop
+   below a fingertip, this scrolls sideways instead of shrinking one. */
+.scroller {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-content: safe center;
+  /* Exactly the room the press shadow (2px) and the focus ring (4px) need:
+     this box clips at its padding edge, and any more would cost a pipe width
+     on a 360px phone. */
+  padding: var(--s1);
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.grid {
+  /* The seam never goes under 4px, twice the press, so a pressed plate never
+     touches the one beside it. */
+  --seam: clamp(4px, 0.9vw, 8px);
+  /* The ceiling eases up on the smaller boards — 125px a pipe at 3 wide,
+     114px at 4, 103px at 5 — so a 3x3 grows into the stage instead of
+     huddling in the middle of it, and a 5x5 still fits a laptop.
+
+     In between, a row of plates takes 65vw whatever its length, which is
+     13vw a plate at 5 wide. A flat 13vw, as the lamps have, left a 3x3 at
+     158px and a 4x4 at 212px in a stage 284px wide on a 360px phone:
+     a huddle. Shared out by the row, they are 242px and 246px.
+
+     The floor is 50px, and it is set by the narrowest phone. Measured in the
+     shell in Chromium, the stage's content box is 284px wide at a 360px
+     viewport, 299px at 375 and 314px at 390, after the page gutter, the
+     panel and the stage's own padding. The 5x5 at its floor needs five 50px
+     plates, four 4px seams and the scroller's 4px a side: 274px, so it fits
+     with 10px to spare and does not scroll. A floor of 56px needed 304px and
+     scrolled sideways by 20. */
+  --cell: clamp(50px, calc(65vw / var(--n)), calc(158px - var(--n) * 11px));
+  display: grid;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--n), minmax(0, 1fr));
+  gap: var(--seam);
+  aspect-ratio: 1;
+  /* Fill the stage: never wider than --cell a pipe, never narrower than the
+     floor. Below that the width stands still and .scroller scrolls. */
+  flex: none;
+  width: clamp(
+    calc(var(--n) * 50px + (var(--n) - 1) * var(--seam)),
+    100%,
+    calc(var(--n) * var(--cell) + (var(--n) - 1) * var(--seam))
+  );
+}
+
+/* A plate: a touchable cell, so the control radius, a hairline and no wash.
+   This board has no regions, and a plate carries no colour of its own. */
+.square {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: var(--surface);
+  border: var(--hair) solid var(--rule-strong);
+  border-radius: var(--r-md);
+}
+
+/* The press shadow is set on .u-press, which lands after the global focus
+   ring in the cascade, so a square a child has arrived at by keyboard has to
+   ask for the ring back, as the alice maze, the tents and the thermometers
+   do. The ring stands 4px proud of the plate and the seam can be as narrow,
+   so the square with the ring is lifted over the one next door. */
+.square:focus-visible {
+  box-shadow: var(--focus-ring);
+  z-index: 1;
+}
+
+/* The pipe turns inside this span; the picture over it does not. It reaches
+   out over the plate's border so that every pipe end sits flush with the
+   plate's outer edge, which is where it meets the pipe end across the seam.
+
+   Neither the pipe nor the picture takes a pointer: a tap lands on the plate
+   itself. It has to. The first tap on a square moves the tab stop to it,
+   which draws the board again, and every redraw replaces the drop's and the
+   tulip's artwork with a fresh copy of itself. A tap that went down on the
+   old artwork and came up on the new one was no click at all. Measured in
+   Chromium: of six taps in a row on the drop, the first — the one that moved
+   the tab stop — never arrived. */
+.turn,
+.art {
+  pointer-events: none;
+}
+
+.turn {
+  position: absolute;
+  inset: calc(-1 * var(--hair));
+  transform: rotate(var(--angle));
+  /* A state change answering a tap: a quarter turn, and nothing spinning to
+     fill a wait. */
+  transition: transform var(--dur-2) var(--ease);
+}
+
+/* A new deal lands straight on its picture. */
+.grid[data-snap='true'] .turn {
+  transition: none;
+}
+
+.pipe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* The four layers `PipeMark` draws in currentColor, bottom up. */
+.pipe [data-part='edge'] {
+  color: var(--ink);
+  opacity: 0.4;
+}
+
+.pipe [data-part='body'] {
+  color: var(--p-slate);
+}
+
+/* The water's rim is in --p-on-dark, the ink every mark on enamel is drawn in,
+   and the pair that src/styles/contrast.test.ts already holds to 3:1 against
+   both slate and teal. Teal on slate alone is 1.22:1 in the light theme and
+   1.07:1 in the dark: told apart by hue and by nothing else, so to a child who
+   cannot see that hue — measured under a deuteranopia simulation, and in
+   greyscale — the water arrived on the solve and the board still looked dry.
+   The rim is 7.1:1 on slate and 5.8:1 on teal in the light theme, 4.9:1 and
+   5.3:1 in the dark, so the water reads as a channel with or without its
+   colour. It comes and goes with the water. */
+.pipe [data-part='rim'] {
+  color: var(--p-on-dark);
+}
+
+.pipe [data-part='water'] {
+  color: var(--p-teal);
+}
+
+/* The water: invisible until the board is solved, and then it fades into
+   every pipe at once. */
+.pipe [data-part='rim'],
+.pipe [data-part='water'] {
+  opacity: 0;
+  transition: opacity var(--dur-2) var(--ease);
+}
+
+.grid[data-water='true'] .pipe [data-part='rim'],
+.grid[data-water='true'] .pipe [data-part='water'] {
+  opacity: 1;
+}
+
+/* The drop and the tulip stand over the hub, upright whichever way the pipe
+   under them points. The drop is the smaller: it is a compact shape that
+   reads at 60%, and the tulip's stem and leaf need the room. */
+.art {
+  position: relative;
+  width: 60%;
+  height: 60%;
+}
+
+.square[data-kind='flower'] .art {
+  width: 72%;
+  height: 72%;
+}
+
+/* The board's own sentence, and the room kept for it: every sentence it can
+   say, stacked in one cell, so the cell is as tall as the longest of them.
+   The copies are hidden from the eye and from a screen reader alike.
+
+   Measured in the shell, the room costs nothing at 360px and 390px, where
+   the stage keeps its own height with 3px and 32px to spare under the 5x5.
+   At 320px, where the split sentence takes four lines, it makes the 5x5's
+   stage 68px taller: the toolbar sits lower, and stays there. */
+.say {
+  display: grid;
+  justify-items: center;
+}
+
+.say > * {
+  grid-area: 1 / 1;
+}
+
+.room {
+  visibility: hidden;
+}
+
+/* Silent while the child works. */
+.status {
+  margin: 0;
+  max-width: 62ch;
+  text-align: center;
+  font-size: var(--t-lg);
+  color: var(--ink);
+}

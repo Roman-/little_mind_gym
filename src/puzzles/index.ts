@@ -4,6 +4,7 @@ import { towerOfHanoi } from './tower-of-hanoi'
 import { lightsOut } from './lights-out'
 import { frogLeap } from './frog-leap'
 import { longTable } from './long-table'
+import { pipes } from './pipes'
 import { slipperyIce } from './slippery-ice'
 import { stonePath } from './stone-path'
 import { aliceMaze } from './alice-maze'
@@ -35,6 +36,7 @@ export const PUZZLES: PuzzleMeta[] = [
   lightsOut,
   frogLeap,
   longTable,
+  pipes,
   slipperyIce,
   stonePath,
   aliceMaze,
