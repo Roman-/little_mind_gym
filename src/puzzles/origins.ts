@@ -39,6 +39,8 @@ export const ORIGINS: Record<string, string> = {
   'tall-and-short':
     'Futoshiki, by Tamaki Seto. British newspapers have carried it since 2006, and Simon Tatham’s collection calls it Unequal.',
   shikaku: 'Shikaku, published by Nikoli. Simon Tatham’s collection calls it Rectangles.',
+  'painted-tiles':
+    'Tilepaint, or Tairupeinto, sent in by a reader and first published by Nikoli in Puzzle Communication Nikoli, issue 53, in 1995.',
   'garden-cats':
     'The star-battle board of the puzzle-contest world — one star to a region, and no two of them touching — which is sold with cats on it as Meowdoku.',
   'tents-and-trees':

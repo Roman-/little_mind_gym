@@ -173,6 +173,31 @@ describe.each([
     expect(raised).toBeGreaterThan(ground)
   })
 
+  // The painted tiles lay paint on a tile: the tile's colour mixed 40% into
+  // --ink, where a plain tile is the raised wash. Painted against plain is the
+  // one difference a child counts on that board, and a line can hold any two
+  // colours side by side, so every pairing has to stand 3:1 apart. The worst of
+  // them comes out at 4.82 in the light theme and 3.20 in the dark. The tile's
+  // own enamel, which the paint could have been instead, gives 1.65 and 1.44.
+  // The board's stylesheet test holds its CSS to the same 40%.
+  //
+  // A traced painted tile is ringed in amber behind a gap of --surface, because
+  // amber on paint is 1.50 and 1.15. That gap has to stand clear of every paint
+  // too, and does at 7.30 and 7.33.
+  it('keeps a painted tile 3:1 from every raised tile, whatever their colours', () => {
+    const ink = resolve(palette, '--ink')
+    const surface = resolve(palette, '--surface')
+    const raise = amountOf(palette, '--wash-raised')
+    for (const a of REGION_COLOURS) {
+      const paint = mixedLuminance(resolve(palette, a.token), 0.4, ink)
+      for (const b of REGION_COLOURS) {
+        const plain = mixedLuminance(resolve(palette, b.token), raise, surface)
+        expect(ratio(paint, plain)).toBeGreaterThanOrEqual(3)
+      }
+      expect(ratio(paint, luminance(surface))).toBeGreaterThanOrEqual(3)
+    }
+  })
+
   it('never lets a signal colour disappear into the sheet it sits on', () => {
     for (const signal of ['--amber', '--moss', '--clay']) {
       expect(contrast(palette, signal, '--surface')).toBeGreaterThanOrEqual(4.5)

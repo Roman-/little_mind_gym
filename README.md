@@ -59,6 +59,7 @@ toolbar, one tap from the screen.
 | The patchwork quilt    | Neighbours               |
 | The tall and the short | Ranking                  |
 | The chocolate bar      | Area                     |
+| The painted tiles      | Grouping                 |
 | The garden cats        | Elimination              |
 | The tents and trees    | Pairing                  |
 | The thermometers       | Totals                   |

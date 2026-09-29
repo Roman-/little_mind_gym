@@ -14,6 +14,7 @@ import { sunsAndMoons } from './suns-and-moons'
 import { suguru } from './suguru'
 import { tallAndShort } from './tall-and-short'
 import { shikaku } from './shikaku'
+import { paintedTiles } from './painted-tiles'
 import { gardenCats } from './garden-cats'
 import { tentsAndTrees } from './tents-and-trees'
 import { thermometers } from './thermometers'
@@ -41,6 +42,7 @@ export const PUZZLES: PuzzleMeta[] = [
   suguru,
   tallAndShort,
   shikaku,
+  paintedTiles,
   gardenCats,
   tentsAndTrees,
   thermometers,

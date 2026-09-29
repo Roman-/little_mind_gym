@@ -1,0 +1,316 @@
+/* A field of tiles engraved into the stage the shell provides, and the numbers
+   standing outside it in a margin of their own. A second sunk panel inside the
+   stage would only draw a redundant box and eat the width a seven-across board
+   needs on a phone.
+
+   The field is the patchwork quilt's, square for square. Every tile is cut from
+   its own fabric — a wash of one enamel colour that the board hands in as
+   --patch, never the same as a tile it touches — with a heavy seam in full ink
+   where one tile meets the next and a hairline of the same fabric inside one.
+   The seam is where a tap stops, so it is drawn for a child who cannot tell two
+   of the colours apart as well as for one who can.
+
+   Four materials and no more.
+
+   A number, bare, in ink, in the instrument voice. It never changes and it
+   never comments: this board says nothing about how a line is getting on, and
+   Board.tsx says why.
+
+   A seat: the tile's ground wash, filling the whole square under the button.
+   It never changes, whatever the child does, which is docs/DESIGN.md's "never
+   by changing the wash" — a tile's identity stays put.
+
+   A plain square: the quilt's raised tile, a paler wash of the same fabric,
+   seated in the ground and pressable.
+
+   And paint. Paint is a substance laid on the tile, the way the counting
+   squares' indigo and the thermometers' mercury are, so it may change with a
+   move — and it goes on the button only, never on the seat or the seams. It
+   takes the tile's own fixed colour as a tint, mixed 40% into --ink, and
+   nothing worked out from the answer or from where the paint lies. So in the
+   light theme a painted tile is a dark one, and in the dark theme, where --ink
+   is pale, a pale one: at opposite ends from every plain tile in both.
+
+   Why 40% into ink rather than the tile's own enamel. Painted against plain is
+   the one difference a child counts, so it has to read against every plain tile
+   in a mixed line, in either theme, and for a child who cannot tell two colours
+   apart. Worked out from tokens.css with the oklab mixing that
+   src/styles/contrast.test.ts does, the worst case over every pairing of the
+   seven colours: paint in the tile's own enamel stands 1.65:1 from some plain
+   tile in the light theme and 1.44:1 in the dark, which is not a difference at
+   all. 40% into ink stands at least 4.82:1 from any plain tile in the light
+   theme and 3.20:1 in the dark, and 4.75:1 and 5.89:1 from its own seat. 50%
+   would drop the dark theme to 2.83:1. That test holds the 3:1, and
+   logic.test.ts holds this file to the 40%. The seven paints still stand apart
+   from one another, so a painted tile keeps its tile's colour. */
+
+/* The stage is a grid, and a grid item will not shrink below its own content
+   unless it is told it may. Without this a seven-across board pushes the whole
+   page sideways on a narrow phone instead of sliding inside its frame. */
+.wrap {
+  min-width: 0;
+}
+
+/* The frame scrolls the plan, which centres itself inside it. A square never
+   drops below a fingertip, so on the narrowest phones a six- or seven-across
+   board is allowed to be wider than the stage and slide sideways. The padding
+   keeps a focus ring clear of the scroll edge: above and below it is the
+   frame's, and either side it is the plan's, so that the side margin pinned
+   below stands on the frame's own edge. Pinned inside a padding it left a strip
+   of the field showing past the numbers. */
+.frame {
+  overflow-x: auto;
+  padding-block: var(--s1);
+}
+
+/* --- the plan ------------------------------------------------- */
+
+.plan {
+  /* Lengths, not colours: the seam round and between the tiles, the seat a
+     button sits in, one square's pitch, and the margin the numbers stand in.
+     Everything is measured off --cell, so the numbers grow with the squares
+     they count and the whole board stays square.
+
+     --cell is a pitch, not a button. The narrowest button on the board is one
+     with a seam down its left side, and it is --cell less that seam and two
+     seats: 56 - 3 - 4 = 49px at five across, 50 - 3 - 4 = 43px at six and
+     47 - 3 - 4 = 40px at seven, which is --tap-sm exactly. Take a pixel off a
+     floor and that button goes under it; logic.test.ts reads the floors back
+     out of this file and does the subtraction. The ceilings give about 520px
+     of field at every size, so on a laptop the board fills the stage: at a
+     1,100px window the buttons are 97, 81 and 69px. */
+  --seam: 3px;
+  --seat: 2px;
+  --cell: clamp(56px, 10.5vw, 104px);
+  --gutter: calc(var(--cell) * 0.66);
+
+  display: grid;
+  grid-template-columns: var(--gutter) auto;
+  grid-template-rows: var(--gutter) auto;
+  /* Shrink-wrapped and then centred, rather than centred by the frame: a flex
+     box that centres a child wider than itself puts the overflow out of reach
+     on the left, and an auto margin simply gives up and lets the frame scroll. */
+  width: max-content;
+  margin-inline: auto;
+  padding-inline: var(--s1);
+}
+
+.plan[data-size='6'] {
+  --cell: clamp(50px, 9.5vw, 88px);
+}
+
+.plan[data-size='7'] {
+  --cell: clamp(47px, 8.5vw, 76px);
+}
+
+/* --- the numbers ---------------------------------------------- */
+
+/* The two gutters take the field's own tracks, inside the rim, so a number
+   stands square with the line it counts. */
+.top {
+  display: grid;
+  grid-template-columns: repeat(var(--n), var(--cell));
+  align-items: center;
+  justify-items: center;
+  padding-inline: var(--seam);
+}
+
+.left {
+  display: grid;
+  grid-template-rows: repeat(var(--n), var(--cell));
+  align-items: center;
+  justify-items: center;
+  padding-block: var(--seam);
+}
+
+/* On a phone too narrow for six or seven across, the frame slides the board
+   sideways, and the row numbers would slide away with the first columns. At a
+   360px window seven across hides 90px, so a child reaching for its last two
+   columns would have no row number on screen at all — and the row numbers are
+   half of what that child is counting against. So the side margin, and the
+   empty corner above it, stand still on the stage's own ground while the field
+   slides under them. The numbers along the top slide with the columns they
+   count, which is where they belong. The lift clears a focused square's. */
+.corner,
+.left {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--surface-sunk);
+}
+
+/* docs/DESIGN.md rations the mono face to values and names a clue number as
+   one of them, so this is the instrument voice rather than an exception to it
+   — sized for the field it measures rather than for a caption, which is why it
+   is not the .u-mono utility. The thermometers' number, unchanged. */
+.clue {
+  display: block;
+  text-align: center;
+  min-width: 1.6em;
+  font-family: var(--font-mono);
+  font-size: clamp(1rem, 4.4vw, 1.7rem);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink);
+}
+
+/* --- the field ------------------------------------------------ */
+
+.field {
+  display: grid;
+  grid-template-columns: repeat(var(--n), var(--cell));
+  grid-auto-rows: var(--cell);
+  background: var(--surface-sunk);
+  border: var(--seam) solid var(--ink);
+  border-radius: var(--r-md);
+}
+
+/* One square of one tile. The seat fills the whole square, so a tile reads as
+   one piece of cloth with a hairline stitched through it rather than as a row
+   of separate squares — and it is the same under a painted square as under a
+   plain one. Only the button on it changes. */
+.cell {
+  display: grid;
+  place-items: stretch;
+  padding: var(--seat);
+  border-top: 0;
+  border-left: 0;
+  background: color-mix(in oklab, var(--patch) var(--wash-ground), var(--surface-sunk));
+}
+
+/* The stitching inside a tile: a darker thread of the same cloth. It is the
+   same whether the tile is painted or not. */
+.cell[data-top='hair'] {
+  border-top: var(--hair) solid color-mix(in oklab, var(--patch) 55%, var(--rule-strong));
+}
+.cell[data-top='seam'] {
+  border-top: var(--seam) solid var(--ink);
+}
+.cell[data-left='hair'] {
+  border-left: var(--hair) solid color-mix(in oklab, var(--patch) 55%, var(--rule-strong));
+}
+.cell[data-left='seam'] {
+  border-left: var(--seam) solid var(--ink);
+}
+
+/* The field's rim is rounded and the wash under the corner squares is not, so
+   those four follow the curve on the inside of the rim. */
+.cell[data-corner='top-left'] {
+  border-top-left-radius: calc(var(--r-md) - var(--seam));
+}
+.cell[data-corner='top-right'] {
+  border-top-right-radius: calc(var(--r-md) - var(--seam));
+}
+.cell[data-corner='bottom-left'] {
+  border-bottom-left-radius: calc(var(--r-md) - var(--seam));
+}
+.cell[data-corner='bottom-right'] {
+  border-bottom-right-radius: calc(var(--r-md) - var(--seam));
+}
+
+/* --- a square ------------------------------------------------- */
+
+/* A plain square: a tile of the square's own fabric, washed paler and seated
+   in the field. One radius for the button and its trace, stated once; these
+   squares are big enough to press, so they take the control radius. */
+.tile {
+  --tile-r: var(--r-md);
+  position: relative;
+  display: block;
+  border: 0;
+  padding: 0;
+  background: color-mix(in oklab, var(--patch) var(--wash-raised), var(--surface));
+  border-radius: var(--tile-r);
+  /* A square that the arrow keys walk to on a sliding board is scrolled clear
+     of the side margin that stands over the field, and its focus ring with it:
+     the ring is 4px, which is --s1 again. Board.tsx does the scrolling, because
+     Chromium leaves a square that is only partly hidden where it is. */
+  scroll-margin-inline-start: calc(var(--gutter) + var(--s1));
+}
+
+/* Beats .u-press, which sets its own transition list at the same weight, so
+   the paint goes on at --dur-2 while the press still snaps at --dur-1. */
+.field .tile {
+  transition:
+    transform var(--dur-1) var(--ease),
+    box-shadow var(--dur-1) var(--ease),
+    background-color var(--dur-2) var(--ease),
+    border-color var(--dur-1) var(--ease);
+}
+
+/* Painted: the same button in paint. See the head of this file for the 40%. */
+.tile[data-painted='true'] {
+  background: color-mix(in oklab, var(--patch) 40%, var(--ink));
+}
+
+/* The trace: every square of the tile a tap would take, on hover or focus.
+   Amber, because it says "this is what you are about to choose". On a plain
+   square it is a plain inset ring, at least 3.22:1 against the plain washes in
+   the light theme and 2.80:1 in the dark, which is the ring the patchwork
+   quilt already draws on the same wash. */
+.tile[data-traced='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--tile-r);
+  box-shadow: inset 0 0 0 3px var(--amber);
+  pointer-events: none;
+}
+
+/* On paint, amber disappears — 1.50:1 in the light theme and 1.15:1 in the dark
+   — and so does ink, at 1.23 and 1.25. So the ring there is the focus ring's
+   own idiom turned inwards: a gap of --surface, which stands at least 7.30:1
+   from every paint in both themes, and then the amber. */
+.tile[data-traced='true'][data-painted='true']::after {
+  box-shadow:
+    inset 0 0 0 2px var(--surface),
+    inset 0 0 0 5px var(--amber);
+}
+
+/* The press shadow is set on .u-press, which lands after the global focus ring
+   in the cascade, so a square a child has arrived at by keyboard has to ask for
+   the ring back. The lift is so that the ring is not clipped by the square next
+   door. The thermometers and the tents do the same. */
+.tile:focus-visible {
+  box-shadow: var(--focus-ring);
+  z-index: 1;
+}
+
+.tile:disabled {
+  cursor: default;
+}
+
+/* On a phone the seat is where the width comes from, and every size floors at
+   the same 47px pitch: 47 - 3 - 2 = 42px of button, never under --tap-sm. The
+   shell leaves the plan the window less 84px, measured at every width from 320
+   to 480, and a plan is 0.66 of a pitch for the margin, n pitches and the rim
+   either side. So five across at the floor needs 272px, which fits every phone
+   from 360px up; at 320px it slides 36px inside .frame, as the larger boards
+   do.
+
+   Above the floor five across grows at 13vw, which keeps it inside the window
+   at every width — 48.75px at 375 (282 of 291px) and 55.9px at 430 (322 of
+   346px) — where 10.5vw left it at 272px on every phone up to 448px, and a
+   quarter of a 430px stage empty. Six across grows at 11.5vw and fits from
+   404px. Both stop at the wide rule's floor, 56px and 50px, which they reach
+   at 431 and 435px, so a board never shrinks as the window widens past 30rem:
+   a 104px ceiling here would draw five across 36px wider at 480px than at 481.
+   Seven across stays at the floor and fits from 451px. Below those widths six
+   and seven across slide inside .frame, as the seven-across thermometers and
+   quilt do, and neither could fit 360px without a button under 40px.
+
+   The 1px seat lets the 2px press shadow reach a pixel onto the seam to its
+   right and below. That is the patchwork quilt's own phone layout at six and
+   seven across, and the seam still reads as a heavy line in both themes. */
+@media (max-width: 30rem) {
+  .plan {
+    --seat: 1px;
+    --cell: clamp(47px, 13vw, 56px);
+  }
+  .plan[data-size='6'] {
+    --cell: clamp(47px, 11.5vw, 50px);
+  }
+  .plan[data-size='7'] {
+    --cell: clamp(47px, 8.5vw, 76px);
+  }
+}
