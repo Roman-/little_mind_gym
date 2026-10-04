@@ -20,33 +20,6 @@
 
 /* --- the collection ---------------------------------------- */
 
-/* The whole of the row above the cards. It had a heading beside it once, and
-   the space-between that heading needed would now push three chips out to the
-   right-hand edge of an empty line. */
-.filters {
-  display: flex;
-  gap: var(--s2);
-  flex-wrap: wrap;
-  margin: var(--s5) 0 var(--s4);
-}
-
-.chip {
-  padding: var(--s2) var(--s4);
-  min-height: var(--tap-sm);
-  border: var(--hair) solid var(--ink-muted);
-  border-radius: var(--r-md);
-  background: var(--surface);
-  font-size: var(--t-sm);
-  font-weight: 600;
-  color: var(--ink-muted);
-}
-
-.chip[aria-pressed='true'] {
-  background: var(--amber);
-  border-color: var(--ink);
-  color: var(--p-on-dark);
-}
-
 /* As many columns as fit a card 22rem wide, which is two on a laptop and one
    on a phone. The rule is the card's width rather than the collection's size,
    so a ninth puzzle changes nothing here: a name and one line about it need
@@ -54,7 +27,7 @@
 .grid {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: var(--s5) 0 0;
   display: grid;
   /* min() so the track can go under 22rem on a narrow phone rather than
      pushing the page sideways. */
@@ -152,12 +125,6 @@
   color: var(--ink-muted);
   font-size: var(--t-body);
   line-height: 1.5;
-}
-
-.empty {
-  padding: var(--s6);
-  text-align: center;
-  color: var(--ink-muted);
 }
 
 /* Too narrow to stand a button beside the words, so it drops under them and
