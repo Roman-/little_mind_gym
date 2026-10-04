@@ -132,15 +132,29 @@
   cursor: default;
 }
 
-/* The arrow, turned to face its own way. The whole box turns, so a mark drawn
-   at the top of it ends up on the rim the square points at. */
+/* The arrow, turned to face its own way. The whole drawing turns, so a mark
+   drawn at the top of it ends up on the rim the square points at.
+
+   It turns inside the svg, never as the svg's box. A box turned to a diagonal
+   is as big as its corners, 41% wider and taller than the square, and the
+   frame counts those corners as overflow it may scroll to: with a diagonal
+   arrow anywhere on the bottom row, the frame wore a vertical scrollbar for
+   as long as the board was open — measured in Chromium, 11px under the 4x4
+   and 9px under the 5x5, at every width. What an svg draws inside itself is
+   paint and never overflow, and the mark lies inside the circle the square's
+   sides touch, so it stays on the square whichever way it faces. */
 .arrow {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  transform: rotate(var(--turn));
   pointer-events: none;
+}
+
+.arrow [data-turn] {
+  transform: rotate(var(--turn));
+  transform-box: view-box;
+  transform-origin: center;
 }
 
 /* --- the chain ------------------------------------------------ */

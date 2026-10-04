@@ -105,6 +105,8 @@
 /* The pipe turns inside this span; the picture over it does not. It reaches
    out over the plate's border so that every pipe end sits flush with the
    plate's outer edge, which is where it meets the pipe end across the seam.
+   The span carries the angle and stands still: what turns is the drawing in
+   it (below).
 
    Neither the pipe nor the picture takes a pointer: a tap lands on the plate
    itself. It has to. The first tap on a square moves the tab stop to it,
@@ -121,15 +123,6 @@
 .turn {
   position: absolute;
   inset: calc(-1 * var(--hair));
-  transform: rotate(var(--angle));
-  /* A state change answering a tap: a quarter turn, and nothing spinning to
-     fill a wait. */
-  transition: transform var(--dur-2) var(--ease);
-}
-
-/* A new deal lands straight on its picture. */
-.grid[data-snap='true'] .turn {
-  transition: none;
 }
 
 .pipe {
@@ -137,6 +130,30 @@
   width: 100%;
   height: 100%;
   overflow: visible;
+}
+
+/* The turn, inside the svg rather than on the span. A box that CSS turns is
+   as big as its corners while it turns — half a quarter round, a plate's
+   span is 41% wider and taller — and the scroller counts those corners as
+   overflow it may scroll to. On the bottom row every tap flashed a vertical
+   scrollbar beside the board for as long as the turn lasted: measured in
+   Chromium, 17px of overflow under the 5x5 and 22px under the 3x3. What an
+   svg draws past its own box is paint and never overflow, so the corners of
+   the pipe's ends still swing out over the seam as they turn, and nothing
+   scrolls.
+
+   A state change answering a tap: a quarter turn, and nothing spinning to
+   fill a wait. */
+.pipe [data-turn] {
+  transform: rotate(var(--angle));
+  transform-box: view-box;
+  transform-origin: center;
+  transition: transform var(--dur-2) var(--ease);
+}
+
+/* A new deal lands straight on its picture. */
+.grid[data-snap='true'] .pipe [data-turn] {
+  transition: none;
 }
 
 /* The four layers `PipeMark` draws in currentColor, bottom up. */

@@ -16,15 +16,23 @@
 }
 
 /* The setting. Water above and below the stones, so the row sits in a place
-   rather than floating in the middle of an empty panel. */
+   rather than floating in the middle of an empty panel.
+
+   The water either side is at least as wide as the ledge's overhang. Where
+   the row fills the stream, the ledge reaches past it into the padding, and a
+   flat var(--s4) left the last 7px of it on the right as overflow: on the
+   longest row, at every desktop width, the stream wore a scrollbar to show a
+   strip of earth. */
 .stream {
+  /* How far the ledge runs past each end of the row: a fifth of a stone. */
+  --overhang: calc(var(--cell) * 0.2);
   position: relative;
   overflow-x: auto;
   overflow-y: hidden;
   border-radius: var(--r-md);
   border: var(--hair) solid var(--rule);
   background: color-mix(in oklab, var(--p-teal) 14%, var(--surface-sunk));
-  padding: var(--s5) var(--s4);
+  padding: var(--s5) max(var(--s4), var(--overhang));
   display: grid;
   place-items: center;
   min-height: clamp(14rem, 40vh, 24rem);
@@ -53,11 +61,12 @@
   margin-inline: auto;
 }
 
-/* The earth ledge the stones are set into, running a little past both ends. */
+/* The earth ledge the stones are set into, running a little past both ends,
+   as far as .stream keeps water for. */
 .ledge {
   position: absolute;
-  left: calc(var(--cell) * -0.2);
-  right: calc(var(--cell) * -0.2);
+  left: calc(-1 * var(--overhang));
+  right: calc(-1 * var(--overhang));
   top: 64%;
   height: clamp(7px, 1.8vw, 13px);
   border-radius: var(--r-sm);
@@ -227,9 +236,12 @@
   transform: scaleX(-1);
 }
 
+/* On a phone the water either side narrows to var(--s2), and the ledge with
+   it: the row is at its floor here, and a wider margin would push it over. */
 @media (max-width: 30rem) {
   .stream {
-    padding: var(--s4) var(--s2);
+    --overhang: var(--s2);
+    padding: var(--s4) var(--overhang);
     min-height: 9rem;
   }
   .end {

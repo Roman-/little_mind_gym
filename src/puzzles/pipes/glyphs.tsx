@@ -38,19 +38,25 @@ const LAYERS = [
   { part: 'water', width: 12, hub: 6 },
 ] as const
 
-/** A pipe with the ends `mask` names, drawn as dealt; `Board.tsx` turns it. */
+/**
+ * A pipe with the ends `mask` names, drawn as dealt. The four layers stand in
+ * one `<g data-turn>`, which the stylesheet turns to the angle `Board.tsx`
+ * sets — inside the svg, so that the turn is never part of the page's layout.
+ */
 export function PipeMark({ mask, className }: { mask: number; className?: string }) {
   const arms = SIDES.filter((side) => mask & side)
     .map((side) => ARM[side])
     .join(' ')
   return (
     <svg className={className} viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-      {LAYERS.map(({ part, width, hub }) => (
-        <g key={part} data-part={part}>
-          <path d={arms} fill="none" stroke="currentColor" strokeWidth={width} strokeLinecap="butt" />
-          <circle cx={50} cy={50} r={hub} fill="currentColor" />
-        </g>
-      ))}
+      <g data-turn="">
+        {LAYERS.map(({ part, width, hub }) => (
+          <g key={part} data-part={part}>
+            <path d={arms} fill="none" stroke="currentColor" strokeWidth={width} strokeLinecap="butt" />
+            <circle cx={50} cy={50} r={hub} fill="currentColor" />
+          </g>
+        ))}
+      </g>
     </svg>
   )
 }

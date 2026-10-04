@@ -10,10 +10,10 @@ import { Scene, edge } from '../../components/scene'
  */
 
 /**
- * The way a square points. It is drawn at the top of its box and the board
- * turns the whole box, so the mark lands on the rim of the square facing the
- * way it points. That is what a signpost does, and it leaves the middle of the
- * square free for the number and for the line running through it.
+ * The way a square points. It is drawn at the top of its box and turned
+ * whole, so the mark lands on the rim of the square facing the way it points.
+ * That is what a signpost does, and it leaves the middle of the square free
+ * for the number and for the line running through it.
  *
  * Three things in here are load-bearing. The box is the whole square, so the
  * stroke is written thin — a 1.5 in a 24-unit box drawn at a hundred and
@@ -25,6 +25,10 @@ import { Scene, edge } from '../../components/scene'
  * reads as a corner bracket rather than as a way to go. The chain does leave a
  * square along the shaft and cover it — but a line ending in an arrowhead is a
  * true picture of what has been joined, so that costs nothing.
+ *
+ * The board sets the angle as `--turn` on the svg, and the stylesheet turns
+ * the `<g data-turn>` inside it rather than the svg itself: see `.arrow` there
+ * for why.
  */
 export function ArrowMark({ className, style }: { className?: string; style?: CSSProperties }) {
   return (
@@ -39,7 +43,9 @@ export function ArrowMark({ className, style }: { className?: string; style?: CS
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M12 7.2V2.16M9.6 5.04 12 2.16 14.4 5.04" />
+      <g data-turn="">
+        <path d="M12 7.2V2.16M9.6 5.04 12 2.16 14.4 5.04" />
+      </g>
     </svg>
   )
 }

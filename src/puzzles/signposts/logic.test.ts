@@ -1,6 +1,7 @@
 import { createElement, useState } from 'react'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
 import { underSettings } from '../../test/settings'
 import { makeRng } from '../../lib/rng'
 import { reachableCount, shortestSolution } from '../../lib/search'
@@ -609,6 +610,19 @@ describe('the signposts board', () => {
     // Right, down-right, down; up-right, left, down-left; up, left — and then
     // nothing at all for the square that ends the chain.
     expect(turns).toEqual(['90deg', '135deg', '180deg', '45deg', '270deg', '225deg', '0deg', '270deg'])
+  })
+
+  it('turns the drawing inside each arrow, never its box, so a diagonal adds no overflow', () => {
+    // A box turned to a diagonal is as big as its corners, and the frame
+    // scrolled to them: a diagonal on the bottom row kept a scrollbar up.
+    const { view } = draw(NINE)
+    for (const arrow of view.container.querySelectorAll('svg[class*="arrow"]')) {
+      expect(arrow.querySelector(':scope > g[data-turn] > path')).not.toBeNull()
+    }
+    const css = readFileSync(new URL(import.meta.url).pathname.replace(/[^/]+$/, 'board.module.css'), 'utf8')
+    const bare = css.replace(/\/\*[\s\S]*?\*\//g, '')
+    expect(bare.match(/\.arrow\s*\{([^}]*)\}/)?.[1]).not.toMatch(/transform/)
+    expect(bare.match(/\.arrow \[data-turn\]\s*\{([^}]*)\}/)?.[1]).toMatch(/transform:\s*rotate\(var\(--turn\)\)/)
   })
 
   it('sends nothing for the first of the two taps', () => {

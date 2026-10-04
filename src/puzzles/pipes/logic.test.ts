@@ -1105,8 +1105,18 @@ describe('the pipes — the styles', () => {
   }))
   const bodiesFor = (selector: string) => rules.filter((r) => r.selectors.includes(selector)).map((r) => r.body)
 
+  it('turns the drawing inside the svg, never the span, so a turn adds no overflow', () => {
+    // A span turned by CSS is as big as its corners mid-turn, and the scroller
+    // counted them: every tap on the bottom row flashed a scrollbar.
+    expect(bodiesFor('.turn').join()).not.toMatch(/transform|transition/)
+    expect(bodiesFor('.pipe [data-turn]').join()).toMatch(/transform:\s*rotate\(var\(--angle\)\)/)
+    expect(bodiesFor('.grid[data-snap=\'true\'] .pipe [data-turn]').join()).toMatch(/transition:\s*none/)
+    const { container } = render(createElement(PipeMark, { mask: UP | RIGHT }))
+    expect(container.querySelector('svg > g[data-turn] > g[data-part="edge"]')).not.toBeNull()
+  })
+
   it('turns a pipe and brings the water in at --dur-2, rim and all', () => {
-    expect(css).toMatch(/\.turn\s*\{[^}]*transition:\s*transform var\(--dur-2\) var\(--ease\)/)
+    expect(bodiesFor('.pipe [data-turn]').join()).toMatch(/transition:\s*transform var\(--dur-2\) var\(--ease\)/)
     for (const part of ['rim', 'water']) {
       expect(bodiesFor(`.pipe [data-part='${part}']`).join()).toMatch(/transition:\s*opacity var\(--dur-2\) var\(--ease\)/)
     }

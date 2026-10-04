@@ -118,8 +118,9 @@ export function Board({ state, dispatch, locked }: BoardProps<PipesState, PipesA
           if (!locked) dispatch({ type: 'turn', index: i })
         }}
       >
-        {/* The pipe is drawn as dealt and turned here, so that the picture on
-            top of it — which is outside this span — stays upright. */}
+        {/* The pipe is drawn as dealt and turned to the angle this span
+            carries, so that the picture on top of it — which is outside this
+            span — stays upright. */}
         <span className={s.turn} style={{ '--angle': `${shown.angles[i]}deg` } as CSSProperties}>
           <PipeMark mask={piece} className={s.pipe} />
         </span>
