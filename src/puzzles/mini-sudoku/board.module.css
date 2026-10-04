@@ -131,13 +131,13 @@
 
 /* Amber tells a child which square their next tap writes into. Clay says the
    square repeats something. A fruit brings its own colours, so both signals
-   land on the plate under it — and clay also takes the numeral, which is our
-   own ink. A square that is chosen *and* repeating rings clay: the mistake is
-   the more urgent of the two, and a ring is still a ring. */
-.tile[data-selected='true'] {
-  background: var(--amber-soft);
-}
+   are rings round the plate under it — and clay also takes the numeral, which
+   is our own ink. A square that is chosen *and* repeating rings clay: the
+   mistake is the more urgent of the two, and a ring is still a ring.
 
+   Neither one tints the plate. The box's colour is how a child tells which box
+   a square belongs to, and a plate washed amber or clay stops looking like its
+   box-mates at the very moment the child is deciding what goes on it. */
 .tile[data-selected='true']::after,
 .tile[data-conflict='true']::after {
   content: '';
@@ -151,9 +151,8 @@
 }
 
 .tile[data-conflict='true'] {
-  background: var(--clay-soft);
   border-color: var(--clay);
-  color: var(--clay);
+  color: var(--clay-on-wash);
 }
 
 .tile[data-conflict='true']::after {

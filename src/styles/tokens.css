@@ -35,6 +35,9 @@
   --clay-soft: #f3ddd4;
   /* Clay is a sheet colour; on the desk it needs to go darker to stay readable. */
   --clay-on-desk: #8f3418;
+  /* A wrong numeral on a region's coloured wash. Plain clay holds 3:1 on every
+     wash on bone; in the dark the yellow wash is too bright for it. */
+  --clay-on-wash: var(--clay);
 
   /* --- Enamel piece palette. Flat, no gradients. ------------ */
   --p-indigo: #2f4b84;
@@ -145,6 +148,7 @@
   --clay: #e08260;
   --clay-soft: #3b241d;
   --clay-on-desk: var(--clay);
+  --clay-on-wash: #ffa17e;
 
   --p-indigo: #5878bd;
   --p-ochre: #d8a63f;

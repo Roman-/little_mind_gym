@@ -165,11 +165,12 @@
 /* Amber says which square the next number goes into. Clay says the number in
    it repeats one of its neighbours or one of its patch-mates. A square that is
    chosen *and* repeating rings clay: the mistake is the more urgent of the
-   two, and a ring is still a ring. */
-.tile[data-chosen='true'] {
-  background: var(--amber-soft);
-}
+   two, and a ring is still a ring.
 
+   Neither one tints the square. The fabric is how a child tells which patch a
+   square belongs to, and a square washed amber or clay stops looking like its
+   patch-mates at the very moment the child is deciding what number goes in it
+   — or working out which patch-mate it repeats. */
 .tile[data-chosen='true']::after,
 .tile[data-conflict='true']::after {
   content: '';
@@ -183,8 +184,7 @@
 }
 
 .tile[data-conflict='true'] {
-  background: var(--clay-soft);
-  color: var(--clay);
+  color: var(--clay-on-wash);
 }
 
 .tile[data-conflict='true']::after {
